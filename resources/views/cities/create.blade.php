@@ -1,0 +1,43 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="admin-form-container">
+    <h2 class="mb-4">Добавить город</h2>
+
+    <form method="POST" action="{{ route('cities.store') }}" class="city-form">
+        @csrf
+
+        <div class="form-group">
+            <label for="name">Название города *</label>
+            <input type="text" id="name" name="name" class="form-control" 
+                   placeholder="Введите название города" 
+                   value="{{ old('name') }}" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="lat">Широта (lat)</label>
+                <input type="number" id="lat" name="lat" class="form-control" 
+                       placeholder="55.7558" 
+                       value="{{ old('lat') }}" 
+                       step="any" min="-90" max="90">
+                <small class="form-text">От -90 до 90 (например, для Москвы: 55.7558)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="lng">Долгота (lng)</label>
+                <input type="number" id="lng" name="lng" class="form-control" 
+                       placeholder="37.6173" 
+                       value="{{ old('lng') }}" 
+                       step="any" min="-180" max="180">
+                <small class="form-text">От -180 до 180 (например, для Москвы: 37.6173)</small>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Сохранить город</button>
+            <a href="{{ route('cities.index') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+@endsection
