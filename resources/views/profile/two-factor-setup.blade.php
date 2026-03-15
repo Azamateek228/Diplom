@@ -9,10 +9,9 @@
             </div>
             <div class="auth-body">
                 <div class="auth-alert auth-alert-info">
-                    <strong>Код для тестирования: <code>{{ $code }}</code></strong>
+                    <strong>✅ Код отправлен на ваш email</strong>
                     <p class="mb-0 mt-2">
-                        В реальном проекте этот код будет отправлен на ваш email или SMS.
-                        Для демонстрации он показан здесь.
+                        Проверьте папку «Входящие» или «Спам».
                     </p>
                 </div>
 
@@ -22,24 +21,26 @@
 
                 <form method="POST" action="{{ route('two-factor.confirm') }}">
                     @csrf
-                    
+
                     <div class="auth-form-group">
                         <label for="code" class="auth-label">Код подтверждения</label>
-                        <input 
-                            type="text" 
-                            class="auth-input @error('code') is-invalid @enderror" 
-                            id="code" 
+                        <input
+                            type="text"
+                            class="auth-input @error('code') is-invalid @enderror"
+                            id="code"
                             name="code"
                             placeholder="000000"
                             maxlength="6"
                             pattern="[0-9]{6}"
                             inputmode="numeric"
+                            autocomplete="one-time-code"
                             required
                             autofocus
                         >
                         @error('code')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                        <small class="auth-form-text">Код действителен в течение 5 минут</small>
                     </div>
 
                     <button type="submit" class="auth-btn auth-btn-success">Подтвердить и включить 2FA</button>
@@ -60,7 +61,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const codeInput = document.getElementById('code');
-    
+
     codeInput.addEventListener('input', function() {
         this.value = this.value.replace(/[^0-9]/g, '');
     });

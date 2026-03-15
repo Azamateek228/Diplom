@@ -19,7 +19,7 @@ class MovieController extends Controller
             $query->where('city_id', $request->city_id);
         }
 
-        $movies = $query->orderByDesc('votes_count')->get();
+        $movies = $query->orderByDesc('rating')->get();
         $cities = City::orderBy('name')->get();
 
         $userCityStats = null;
@@ -52,6 +52,7 @@ class MovieController extends Controller
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
             'expected_attendees' => 'nullable|integer|min:0',
+            'rating' => 'nullable|integer|min:0',
         ]);
 
         Movie::create($validated);
@@ -77,6 +78,7 @@ class MovieController extends Controller
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
             'expected_attendees' => 'nullable|integer|min:0',
+            'rating' => 'nullable|integer|min:0',
         ]);
 
         $movie->update($validated);

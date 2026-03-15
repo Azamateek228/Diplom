@@ -10,6 +10,8 @@ use App\Http\Controllers\MovieController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\RouteController;
+use App\Http\Controllers\SitemapController;
 
 // Маршруты аутентификации
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -56,10 +58,22 @@ Route::delete('/cities/{city}', [CityController::class, 'destroy'])->middleware(
 // Главная страница
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
+
+// Sitemap.xml для SEO
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
 // Карта
 Route::get('/map', [MapController::class, 'index']);
+
+// Маршрут на неделю
+Route::get('/route', [RouteController::class, 'index'])->name('route.index');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/route/admin', [RouteController::class, 'admin'])->name('route.admin');
+    Route::post('/route', [RouteController::class, 'store'])->name('route.store');
+    Route::put('/route/{route}', [RouteController::class, 'update'])->name('route.update');
+    Route::delete('/route/{route}', [RouteController::class, 'destroy'])->name('route.destroy');
+});
 
 // Защищённые маршруты (требуется аутентификация)
 Route::middleware('auth')->group(function () {

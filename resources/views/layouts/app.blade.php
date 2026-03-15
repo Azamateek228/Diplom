@@ -17,12 +17,14 @@
         <div class="container d-flex flex-nowrap justify-content-between align-items-center">
             <a class="navbar-brand mb-0 me-3" href="/">Кино на колёсах</a>
             <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
-                <a class="btn btn-outline-light btn-sm" href="/movies">Фильмы</a>
-                <a class="btn btn-outline-light btn-sm" href="/map">Где мы?</a>
+                <a class="btn btn-outline-light btn-sm" href="{{ route('movies.index') }}">🎬 Афиша</a>
+                <a class="btn btn-outline-light btn-sm" href="{{ route('route.index') }}">🗓️ Маршрут</a>
+                <a class="btn btn-outline-light btn-sm" href="/map">🗺️ Где мы?</a>
                 @auth
                     <a class="btn btn-outline-light btn-sm" href="{{ route('profile.edit') }}">Профиль</a>
                     @if(auth()->user()->role === 'admin')
                         <a class="btn btn-warning btn-sm" href="{{ route('admin.stats') }}">Админ-панель</a>
+                        <a class="btn btn-warning btn-sm" href="{{ route('route.admin') }}">Маршруты</a>
                     @endif
                     <form method="POST" action="/logout" class="d-inline">
                         @csrf

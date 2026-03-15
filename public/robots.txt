@@ -1,2 +1,88 @@
+# robots.txt для Кинотеатр на колёсах
+# https://kinokolesa.ru/robots.txt
+
+# Основные настройки для всех поисковых роботов
 User-agent: *
-Disallow:
+# Разрешаем индексацию основных страниц
+Allow: /
+Allow: /movies
+Allow: /map
+Allow: /route
+
+# Запрещаем индексацию служебных страниц
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /two-factor
+Disallow: /profile
+Disallow: /votes
+Disallow: /admin
+Disallow: /cities
+
+# Запрещаем индексацию параметров сортировки и фильтрации
+Disallow: /*?*
+Disallow: /*&*
+
+# Запрещаем доступ к файлам конфигурации
+Disallow: /.env
+Disallow: /.git
+Disallow: /vendor
+Disallow: /node_modules
+Disallow: /storage
+Disallow: /bootstrap
+
+# Sitemap
+Sitemap: https://kinokolesa.ru/sitemap.xml
+
+# Хост (для Яндекс)
+Host: https://kinokolesa.ru
+
+# Специфичные настройки для Яндекс
+User-agent: Yandex
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /profile
+Crawl-delay: 2
+
+# Специфичные настройки для Google
+User-agent: Googlebot
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /profile
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /profile
+Crawl-delay: 2
+
+# Запрещаем агрессивных ботов
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Разрешаем социальных сетей
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /

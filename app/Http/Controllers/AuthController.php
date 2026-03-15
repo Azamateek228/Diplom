@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
@@ -63,6 +65,17 @@ class AuthController extends Controller
 
         // Если включена 2FA, перенаправляем на страницу ввода кода
         if ($user->two_factor_enabled) {
+            // Генерируем код и отправляем на email
+            $code = $user->generateTwoFactorCode();
+            
+            try {
+                Mail::to($user->email)->send(
+                    new TwoFactorCodeMail($code, $user->name, 5)
+                );
+            } catch (\Exception $e) {
+                \Log::error('Mail error: ' . $e->getMessage());
+            }
+
             session([
                 '2fa_user_id' => $user->id,
                 '2fa_user_email' => $user->email,

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+    @extends('layouts.app')
 
 @section('content')
 <div class="auth-page">
@@ -15,14 +15,14 @@
 
                 <form method="POST" action="{{ route('two-factor.verify') }}">
                     @csrf
-                    
+
                     <!-- Код -->
                     <div class="auth-form-group">
                         <label for="code" class="auth-label">Код подтверждения</label>
-                        <input 
-                            type="text" 
-                            class="auth-input @error('code') is-invalid @enderror" 
-                            id="code" 
+                        <input
+                            type="text"
+                            class="auth-input @error('code') is-invalid @enderror"
+                            id="code"
                             name="code"
                             placeholder="000000"
                             maxlength="6"

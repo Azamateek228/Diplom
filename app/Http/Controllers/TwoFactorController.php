@@ -82,11 +82,11 @@ class TwoFactorController extends Controller
                 new TwoFactorCodeMail($code, $user->name, 5)
             );
         } catch (\Exception $e) {
-            // В случае ошибки почты, показываем код в интерфейсе (для тестирования)
+            // В случае ошибки почты, логируем
             \Log::error('Mail error: ' . $e->getMessage());
         }
 
-        return view('profile.two-factor-setup', ['code' => null]);
+        return view('profile.two-factor-setup');
     }
 
     /**
