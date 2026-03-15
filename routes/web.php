@@ -101,6 +101,3 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['get', 'post'], '/admin/stats', [AdminController::class, 'stats'])
         ->name('admin.stats');
 });
-
-// Ресурсный маршрут для фильмов (дублирование, можно удалить)
-Route::resource('movies', MovieController::class);
