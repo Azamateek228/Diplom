@@ -53,6 +53,20 @@
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="show_at">Дата и время показа</label>
+                    <input type="datetime-local" id="show_at" name="show_at" class="form-control"
+                        value="{{ old('show_at', $movie->show_at ? $movie->show_at->format('Y-m-d\TH:i') : '') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket_price">Цена билета (₽) *</label>
+                    <input type="number" id="ticket_price" name="ticket_price" class="form-control"
+                        value="{{ old('ticket_price', $movie->ticket_price ?? 500) }}" min="1" required>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="city_id">Город</label>
                 <select id="city_id" name="city_id" class="form-control">

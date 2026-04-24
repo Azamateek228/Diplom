@@ -5,21 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Movie;
 use App\Models\Vote;
 use App\Models\City;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
 {
+    private const VOTING_DEADLINE = '2026-05-31 23:59:59';
+
     public function index(Request $request)
     {
         $query = Movie::with(['city', 'votes'])
             ->withCount('votes');
 
-        // Фильтр по городу
         if ($request->has('city_id') && $request->city_id) {
             $query->where('city_id', $request->city_id);
         }
 
-        $movies = $query->orderByDesc('votes_count')->get();
+        $movies = $query
+            ->orderByRaw('show_at IS NULL, show_at ASC')
+            ->orderBy('city_id')
+            ->orderBy('title')
+            ->get();
+
         $cities = City::orderBy('name')->get();
 
         $userCityStats = null;
@@ -32,7 +39,12 @@ class MovieController extends Controller
             ];
         }
 
-        return view('movies.index', compact('movies', 'cities', 'userCityStats'));
+        $soldByMovie = Ticket::whereNull('refunded_at')
+            ->selectRaw('movie_id, SUM(quantity) as sold')
+            ->groupBy('movie_id')
+            ->pluck('sold', 'movie_id');
+
+        return view('movies.index', compact('movies', 'cities', 'userCityStats', 'soldByMovie'));
     }
 
     public function create()
@@ -52,6 +64,8 @@ class MovieController extends Controller
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
             'expected_attendees' => 'nullable|integer|min:0',
+            'show_at' => 'nullable|date',
+            'ticket_price' => 'required|integer|min:1',
         ]);
 
         Movie::create($validated);
@@ -77,6 +91,8 @@ class MovieController extends Controller
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
             'expected_attendees' => 'nullable|integer|min:0',
+            'show_at' => 'nullable|date',
+            'ticket_price' => 'required|integer|min:1',
         ]);
 
         $movie->update($validated);

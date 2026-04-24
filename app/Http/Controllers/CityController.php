@@ -9,7 +9,7 @@ class CityController extends Controller
 {
     public function index()
     {
-        $cities = City::all();
+        $cities = City::withCount('votes')->get();
         return view('cities.index', compact('cities'));
     }
 
@@ -24,6 +24,7 @@ class CityController extends Controller
             'name' => 'required|string|max:255',
             'lat' => 'nullable|numeric|between:-90,90',
             'lng' => 'nullable|numeric|between:-180,180',
+            'population' => 'nullable|integer|min:1000',
         ]);
 
         City::create($validated);
@@ -41,6 +42,7 @@ class CityController extends Controller
             'name' => 'required|string|max:255',
             'lat' => 'nullable|numeric|between:-90,90',
             'lng' => 'nullable|numeric|between:-180,180',
+            'population' => 'nullable|integer|min:1000',
         ]);
 
         $city->update($validated);
@@ -49,7 +51,6 @@ class CityController extends Controller
 
     public function destroy(City $city)
     {
-        // Проверяем, есть ли связанные записи
         if ($city->votes()->count() > 0) {
             return redirect()->route('cities.index')
                 ->with('error', 'Нельзя удалить город, так как есть голоса, связанные с этим городом.');

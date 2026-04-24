@@ -39,6 +39,18 @@
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="show_at">Дата и время показа</label>
+                    <input type="datetime-local" id="show_at" name="show_at" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket_price">Цена билета (₽) *</label>
+                    <input type="number" id="ticket_price" name="ticket_price" class="form-control" value="500" min="1" required>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="city_id">Город</label>
                 <select id="city_id" name="city_id" class="form-control">

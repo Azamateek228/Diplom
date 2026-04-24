@@ -31,6 +31,9 @@ class User extends Authenticatable
         'lock_expires_at',
         'failed_login_attempts',
         'lock_reason',
+        'payment_method',
+        'payment_qr_url',
+        'payment_pdf_url',
     ];
 
     public function city()
@@ -41,6 +44,11 @@ class User extends Authenticatable
     public function twoFactorCodes(): HasMany
     {
         return $this->hasMany(TwoFactorCode::class);
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
     }
 
     /**
