@@ -10,6 +10,7 @@ use App\Http\Controllers\MovieController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\TicketController;
 
 // Маршруты аутентификации
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -70,6 +71,10 @@ Route::middleware('auth')->group(function () {
     // Профиль
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Билеты
+    Route::post('/movies/{movie}/tickets', [TicketController::class, 'store'])->name('tickets.store');
+    Route::post('/tickets/{ticket}/refund', [TicketController::class, 'refund'])->name('tickets.refund');
     
     // Двухфакторная аутентификация (настройки)
     Route::get('/two-factor/settings', [TwoFactorController::class, 'showSettings'])
@@ -88,5 +93,3 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.stats');
 });
 
-// Ресурсный маршрут для фильмов (дублирование, можно удалить)
-Route::resource('movies', MovieController::class);

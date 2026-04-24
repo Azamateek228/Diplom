@@ -15,6 +15,16 @@
                    value="{{ old('name', $city->name) }}" required>
         </div>
 
+
+        <div class="form-group">
+            <label for="population">Население города</label>
+            <input type="number" id="population" name="population" class="form-control"
+                   placeholder="1200000"
+                   value="{{ old('population', $city->population) }}"
+                   min="1000">
+            <small class="form-text">Используется для расчёта лимита билетов: малые города — от 50.</small>
+        </div>
+
         <div class="form-row">
             <div class="form-group">
                 <label for="lat">Широта (lat)</label>

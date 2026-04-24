@@ -53,9 +53,17 @@
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="show_at">Дата и время показа</label>
+                    <input type="datetime-local" id="show_at" name="show_at" class="form-control"
+                        value="{{ old('show_at', $movie->show_at ? $movie->show_at->format('Y-m-d\TH:i') : '') }}">
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="city_id">Город</label>
-                <select id="city_id" name="city_id" class="form-control">
+                <select id="city_id" name="city_id" class="form-control" required>
                     <option value="">Выберите город</option>
                     @foreach ($cities as $city)
                         <option value="{{ $city->id }}"

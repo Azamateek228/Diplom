@@ -47,6 +47,17 @@
                         </div>
 
                         <div class="city-admin-details">
+                            @if ($city->population)
+                                <div class="detail-row">
+                                    <span class="label">Население:</span>
+                                    <span class="value">{{ number_format($city->population, 0, ',', ' ') }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Лимит билетов:</span>
+                                    <span class="value">{{ $city->ticketLimit() }}</span>
+                                </div>
+                            @endif
+
                             @if ($city->lat && $city->lng)
                                 <div class="detail-row">
                                     <span class="label">Широта:</span>

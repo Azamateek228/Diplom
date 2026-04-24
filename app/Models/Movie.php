@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Movie extends Model
 {
+    protected $casts = [
+        'show_at' => 'datetime',
+    ];
     protected $fillable = [
         'title',
         'genre',
@@ -17,11 +21,17 @@ class Movie extends Model
         'city_id',
         'venue',
         'expected_attendees',
+        'show_at',
     ];
 
-    public function votes()
+    public function votes(): HasMany
     {
         return $this->hasMany(Vote::class);
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
     }
 
     public function city()
