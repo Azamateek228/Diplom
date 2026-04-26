@@ -52,6 +52,7 @@
     <script>
         let map;
         let routePolyline;
+        let routeMultiRoute;
         let movingMarker;
         let cityMarkers = [];
         let isAnimating = false;
@@ -241,6 +242,11 @@
                 routePolyline = null;
             }
 
+            if (routeMultiRoute) {
+                map.geoObjects.remove(routeMultiRoute);
+                routeMultiRoute = null;
+            }
+
             const orderedCities = orderCities(cities);
             const routePoints = orderedCities
                 .map(city => [parseFloat(city.lat), parseFloat(city.lng)])
@@ -260,6 +266,10 @@
 
                     roadPathCoordinates = fullRoadPath;
 
+                    if (routePolyline) {
+                        map.geoObjects.remove(routePolyline);
+                    }
+
                     routePolyline = new ymaps.Polyline(
                         roadPathCoordinates, {}, {
                             strokeColor: '#ff8c00',
@@ -267,6 +277,7 @@
                             strokeOpacity: 0.95
                         }
                     );
+
                     map.geoObjects.add(routePolyline);
                     map.setBounds(routePolyline.geometry.getBounds(), {
                         checkZoomRange: true,
@@ -299,45 +310,55 @@
 
         function buildRoadPath(points) {
             return new Promise((resolve, reject) => {
-                const result = [];
+                routeMultiRoute = new ymaps.multiRouter.MultiRoute({
+                    referencePoints: points,
+                    params: {
+                        routingMode: 'auto',
+                        results: 1
+                    }
+                }, {
+                    wayPointVisible: false,
+                    viaPointVisible: false,
+                    routeActiveStrokeColor: '#ff8c00',
+                    routeActiveStrokeWidth: 0,
+                    routeActiveStrokeOpacity: 0,
+                    boundsAutoApply: false
+                });
 
-                function loadSegment(index) {
-                    if (index >= points.length - 1) {
-                        resolve(result);
+                routeMultiRoute.model.events.once('requestsuccess', () => {
+                    const activeRoute = routeMultiRoute.getActiveRoute();
+                    if (!activeRoute) {
+                        reject(new Error('Активный маршрут не найден'));
                         return;
                     }
 
-                    ymaps.route([points[index], points[index + 1]], {
-                            routingMode: 'auto',
-                            mapStateAutoApply: false
-                        })
-                        .then((route) => {
-                            const paths = route.getPaths();
-                            let segmentCoords = [];
+                    const paths = activeRoute.getPaths();
+                    let fullPath = [];
 
-                            paths.each((path) => {
-                                const coords = path.geometry.getCoordinates();
-                                if (Array.isArray(coords) && coords.length) {
-                                    segmentCoords = segmentCoords.concat(coords);
-                                }
-                            });
+                    paths.each((path, idx) => {
+                        const segmentCoords = path.geometry.getCoordinates();
+                        if (!Array.isArray(segmentCoords) || segmentCoords.length === 0) {
+                            return;
+                        }
+                        if (idx > 0) {
+                            segmentCoords.shift();
+                        }
+                        fullPath = fullPath.concat(segmentCoords);
+                    });
 
-                            if (!segmentCoords.length) {
-                                reject(new Error('Пустой сегмент маршрута'));
-                                return;
-                            }
+                    if (fullPath.length < 2) {
+                        reject(new Error('Пустая геометрия дорожного маршрута'));
+                        return;
+                    }
 
-                            if (result.length > 0) {
-                                segmentCoords.shift();
-                            }
+                    resolve(fullPath);
+                });
 
-                            result.push(...segmentCoords);
-                            loadSegment(index + 1);
-                        })
-                        .catch(reject);
-                }
+                routeMultiRoute.model.events.once('requestfail', (event) => {
+                    reject(new Error('Ошибка запроса маршрута: ' + (event.get('error') || 'unknown')));
+                });
 
-                loadSegment(0);
+                map.geoObjects.add(routeMultiRoute);
             });
         }
 
@@ -363,6 +384,7 @@
             }
 
             const speedPointsPerFrame = 1;
+            const frameIntervalMs = 120;
             const routeInfo = document.getElementById('routeInfo');
             const currentCityNameEl = document.getElementById('currentCityName');
             const nextCityNameEl = document.getElementById('nextCityName');
@@ -375,21 +397,32 @@
             }
 
             let pointIndex = startIndex;
+            let lastTick = null;
 
-            function animate() {
+            function animate(timestamp) {
                 if (!isAnimating || !movingMarker) {
                     return;
                 }
 
-                pointIndex += speedPointsPerFrame;
-                if (pointIndex >= roadPathCoordinates.length) {
-                    pointIndex = 0;
+                if (!lastTick) {
+                    lastTick = timestamp;
                 }
-                movingMarker.geometry.setCoordinates(roadPathCoordinates[Math.floor(pointIndex)]);
 
-                if (progressBar) {
-                    const progress = (pointIndex / roadPathCoordinates.length) * 100;
-                    progressBar.style.width = progress + '%';
+                const elapsed = timestamp - lastTick;
+                if (elapsed >= frameIntervalMs) {
+                    pointIndex += speedPointsPerFrame;
+                    if (pointIndex >= roadPathCoordinates.length) {
+                        pointIndex = 0;
+                    }
+
+                    movingMarker.geometry.setCoordinates(roadPathCoordinates[Math.floor(pointIndex)]);
+
+                    if (progressBar) {
+                        const progress = (pointIndex / roadPathCoordinates.length) * 100;
+                        progressBar.style.width = progress + '%';
+                    }
+
+                    lastTick = timestamp;
                 }
 
                 animationFrameId = requestAnimationFrame(animate);
