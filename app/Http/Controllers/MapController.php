@@ -9,9 +9,10 @@ class MapController extends Controller
 {
     public function index()
     {
-        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10);
+        $settings = Setting::first();
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $settings?->current_city_id);
 
-        $settingsCurrentCity = Setting::first()?->currentCity;
+        $settingsCurrentCity = $settings?->currentCity;
         $currentCity = $cities->firstWhere('id', $settingsCurrentCity?->id)
             ?? $cities->first(function ($city) {
                 $name = mb_strtolower(trim((string) $city->name));
