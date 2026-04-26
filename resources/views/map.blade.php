@@ -68,6 +68,18 @@
         console.log('Cities data:', cities);
         console.log('Default center:', defaultCenter);
 
+        function parseCoordinate(value) {
+            if (typeof value === 'number') {
+                return value;
+            }
+
+            if (typeof value === 'string') {
+                return parseFloat(value.replace(',', '.').trim());
+            }
+
+            return NaN;
+        }
+
         // Функция упорядочивания городов - универсальная логика
         function orderCities(citiesArray) {
             if (citiesArray.length <= 1) {
@@ -76,8 +88,8 @@
 
             // Фильтруем города с валидными координатами
             const validCities = citiesArray.filter(city => {
-                const lat = parseFloat(city.lat);
-                const lng = parseFloat(city.lng);
+                const lat = parseCoordinate(city.lat);
+                const lng = parseCoordinate(city.lng);
                 return !isNaN(lat) && !isNaN(lng) && 
                        lat >= -90 && lat <= 90 && 
                        lng >= -180 && lng <= 180;
@@ -130,8 +142,8 @@
                     // Создаем маркеры для городов
                     cities.forEach((city, index) => {
                         // Проверяем валидность координат
-                        const lat = parseFloat(city.lat);
-                        const lng = parseFloat(city.lng);
+                        const lat = parseCoordinate(city.lat);
+                        const lng = parseCoordinate(city.lng);
                         
                         if (isNaN(lat) || isNaN(lng)) {
                             console.warn(`Город "${city.name}" имеет невалидные координаты:`, city);
@@ -174,18 +186,18 @@
                         if (adminCurrentCityIndex !== -1) {
                             // В админке выбран текущий город — фургон стартует именно отсюда
                             const c = orderedCities[adminCurrentCityIndex];
-                            startPosition = [parseFloat(c.lat), parseFloat(c.lng)];
+                            startPosition = [parseCoordinate(c.lat), parseCoordinate(c.lng)];
                         } else if (orderedCities.length >= 2) {
                             // Иначе — по умолчанию: ближе к первому городу маршрута
                             const firstCity = orderedCities[0];
                             startPosition = [
-                                parseFloat(firstCity.lat),
-                                parseFloat(firstCity.lng)
+                                parseCoordinate(firstCity.lat),
+                                parseCoordinate(firstCity.lng)
                             ];
                         } else {
                             startPosition = [
-                                parseFloat(orderedCities[0].lat),
-                                parseFloat(orderedCities[0].lng)
+                                parseCoordinate(orderedCities[0].lat),
+                                parseCoordinate(orderedCities[0].lng)
                             ];
                         }
 
@@ -249,7 +261,7 @@
 
             const orderedCities = orderCities(cities);
             const routePoints = orderedCities
-                .map(city => [parseFloat(city.lat), parseFloat(city.lng)])
+                .map(city => [parseCoordinate(city.lat), parseCoordinate(city.lng)])
                 .filter(point => !isNaN(point[0]) && !isNaN(point[1]));
 
             if (routePoints.length < 2) {
