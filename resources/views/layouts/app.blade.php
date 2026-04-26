@@ -18,6 +18,7 @@
             <a class="navbar-brand mb-0 me-3" href="/">Кино на колёсах</a>
             <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
                 <a class="btn btn-outline-light btn-sm" href="/movies">Фильмы</a>
+                <a class="btn btn-outline-light btn-sm" href="{{ route('afisha.index') }}">Афиша</a>
                 <a class="btn btn-outline-light btn-sm" href="/map">Где мы?</a>
                 @auth
                     <a class="btn btn-outline-light btn-sm" href="{{ route('profile.edit') }}">Профиль</a>

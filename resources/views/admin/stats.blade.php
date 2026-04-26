@@ -45,6 +45,30 @@
 
         <div class="stat-card">
             <div class="stat-content">
+                <h5>Куплено билетов</h5>
+                <h3>{{ $ticketsPurchased }}</h3>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <h5>Загрузка мест</h5>
+                <h3>{{ $overallLoadPercent }}%</h3>
+                <div class="kpi-progress mt-2">
+                    <div class="kpi-progress-bar" style="width: {{ $overallLoadPercent }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <h5>Текущий город тура</h5>
+                <p>{{ $currentCityName ?? 'Не выбран' }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
                 <h5>Топ-фильм</h5>
                 <p>{{ $topMovie?->title ?? '—' }}</p>
                 @if($topMovie)
@@ -84,6 +108,15 @@
                         <option value="{{ $city->id }}" {{ $currentCityId == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
                     @endforeach
                 </select>
+            </div>
+            <div class="mb-0">
+                <label class="form-label small">Дедлайн голосования</label>
+                <input type="datetime-local" name="voting_deadline" class="form-control"
+                    value="{{ $votingDeadline ? \Illuminate\Support\Carbon::parse($votingDeadline)->format('Y-m-d\TH:i') : '' }}">
+            </div>
+            <div class="mb-0">
+                <label class="form-label small">Цена билета (₽)</label>
+                <input type="number" name="ticket_price" class="form-control" min="100" max="5000" value="{{ $ticketPrice }}">
             </div>
             <button type="submit" class="btn btn-primary">Сохранить</button>
         </form>
@@ -164,6 +197,20 @@
                                     <span class="value">{{ $movie->venue }}</span>
                                 </div>
                             @endif
+
+                            @if($movie->show_time)
+                                <div class="detail-row">
+                                    <span class="label">Время:</span>
+                                    <span class="value">{{ \Illuminate\Support\Carbon::parse($movie->show_time)->format('d.m.Y H:i') }}</span>
+                                </div>
+                            @endif
+
+                            @if($movie->venue_capacity)
+                                <div class="detail-row">
+                                    <span class="label">Вместимость:</span>
+                                    <span class="value">{{ $movie->venue_capacity }} чел.</span>
+                                </div>
+                            @endif
                             
                             @if($movie->expected_attendees)
                                 <div class="detail-row highlight">
@@ -199,27 +246,35 @@
     <!-- Статистика по городам -->
     <div class="admin-section">
         <h3 class="section-title"> Статистика по городам</h3>
-        <div class="cities-stats-grid">
-            @foreach($cityStats as $stat)
-                <div class="city-stat-card">
-                    <h4>{{ $stat['city']->name }}</h4>
-                    <div class="city-stats-details">
-                        <div class="stat-item">
-                            <span class="stat-label">Фильмов:</span>
-                            <span class="stat-value">{{ $stat['movies_count'] }}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Голосов:</span>
-                            <span class="stat-value">{{ $stat['total_votes'] }}</span>
-                        </div>
-                        <div class="stat-item {{ $stat['total_expected'] > 0 ? 'highlight' : '' }}">
-                            <span class="stat-label"> Ожидается зрителей:</span>
-                            <span class="stat-value">{{ $stat['total_expected'] }}</span>
+        @if($cityStats->isEmpty())
+            <div class="empty-state">
+                <div class="empty-state-icon">🏙️</div>
+                <h4>Нет данных по городам</h4>
+                <p>Добавьте города и голоса, чтобы увидеть аналитику тура.</p>
+            </div>
+        @else
+            <div class="cities-stats-grid">
+                @foreach($cityStats as $stat)
+                    <div class="city-stat-card">
+                        <h4>{{ $stat['city']->name }}</h4>
+                        <div class="city-stats-details">
+                            <div class="stat-item">
+                                <span class="stat-label">Фильмов:</span>
+                                <span class="stat-value">{{ $stat['movies_count'] }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Голосов:</span>
+                                <span class="stat-value">{{ $stat['total_votes'] }}</span>
+                            </div>
+                            <div class="stat-item {{ $stat['total_expected'] > 0 ? 'highlight' : '' }}">
+                                <span class="stat-label"> Ожидается зрителей:</span>
+                                <span class="stat-value">{{ $stat['total_expected'] }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
 @endsection

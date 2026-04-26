@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Movie;
 use App\Models\Vote;
 use App\Models\City;
+use App\Models\Setting;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -20,7 +22,26 @@ class MovieController extends Controller
         }
 
         $movies = $query->orderByDesc('votes_count')->get();
+        $soldTicketsByMovie = Ticket::query()
+            ->selectRaw('movie_id, SUM(quantity) as sold_total')
+            ->where('status', 'purchased')
+            ->groupBy('movie_id')
+            ->pluck('sold_total', 'movie_id');
+
+        $movies->each(function ($movie) use ($soldTicketsByMovie) {
+            $soldTickets = (int) ($soldTicketsByMovie[$movie->id] ?? 0);
+            $capacity = (int) ($movie->venue_capacity ?? 0);
+            $movie->sold_tickets = $soldTickets;
+            $movie->fill_percentage = $capacity > 0
+                ? min(100, (int) round(($soldTickets / $capacity) * 100))
+                : 0;
+        });
+
         $cities = City::orderBy('name')->get();
+        $settings = Setting::first();
+        $votingDeadline = $settings?->voting_deadline;
+        $ticketPrice = $settings?->ticket_price ?? 350;
+        $votingClosed = $votingDeadline && now()->greaterThan($votingDeadline);
 
         $userCityStats = null;
         if (auth()->check() && auth()->user()->city_id) {
@@ -32,7 +53,12 @@ class MovieController extends Controller
             ];
         }
 
-        return view('movies.index', compact('movies', 'cities', 'userCityStats'));
+        return view('movies.index', compact('movies', 'cities', 'userCityStats', 'votingDeadline', 'votingClosed', 'ticketPrice'));
+    }
+
+    public function show(Movie $movie)
+    {
+        return view('movies.show', compact('movie'));
     }
 
     public function create()
@@ -51,6 +77,8 @@ class MovieController extends Controller
             'poster' => 'nullable|string',
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
+            'show_time' => 'nullable|date',
+            'venue_capacity' => 'nullable|integer|min:1',
             'expected_attendees' => 'nullable|integer|min:0',
         ]);
 
@@ -76,6 +104,8 @@ class MovieController extends Controller
             'poster' => 'nullable|string',
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
+            'show_time' => 'nullable|date',
+            'venue_capacity' => 'nullable|integer|min:1',
             'expected_attendees' => 'nullable|integer|min:0',
         ]);
 

@@ -11,8 +11,9 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
         $cities = City::orderBy('name')->get();
+        $tickets = $user->tickets()->with(['city', 'movie'])->latest()->get();
 
-        return view('profile.edit', compact('user', 'cities'));
+        return view('profile.edit', compact('user', 'cities', 'tickets'));
     }
 
     public function update(Request $request)

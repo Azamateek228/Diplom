@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class City extends Model
 {
-    protected $fillable = ['name', 'lat', 'lng'];
+    protected $fillable = ['name', 'lat', 'lng', 'population'];
 
      public function votes()
     {

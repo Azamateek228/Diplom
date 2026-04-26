@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AfishaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -8,8 +9,14 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\TwoFactorController;
+use App\Models\City;
+use App\Models\Movie;
+use App\Models\Setting;
+use App\Models\Ticket;
+use App\Models\Vote;
 
 // Маршруты аутентификации
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -55,11 +62,26 @@ Route::delete('/cities/{city}', [CityController::class, 'destroy'])->middleware(
 
 // Главная страница
 Route::get('/', function () {
-    return view('home');
+    $currentCityId = Setting::first()?->current_city_id;
+    $currentCity = $currentCityId ? City::find($currentCityId) : null;
+    $totalCapacity = (int) Movie::whereNotNull('venue_capacity')->sum('venue_capacity');
+    $purchasedTickets = (int) Ticket::where('status', 'purchased')->sum('quantity');
+    $loadPercentage = $totalCapacity > 0 ? min(100, (int) round(($purchasedTickets / $totalCapacity) * 100)) : 0;
+
+    return view('home', [
+        'kpis' => [
+            'votes' => Vote::count(),
+            'tickets' => $purchasedTickets,
+            'load_percentage' => $loadPercentage,
+            'current_city' => $currentCity?->name,
+        ],
+    ]);
 });
 
 // Карта
 Route::get('/map', [MapController::class, 'index']);
+Route::get('/afisha', [AfishaController::class, 'index'])->name('afisha.index');
+Route::get('/movies/{movie}', [MovieController::class, 'show'])->name('movies.show');
 
 // Защищённые маршруты (требуется аутентификация)
 Route::middleware('auth')->group(function () {
@@ -70,6 +92,9 @@ Route::middleware('auth')->group(function () {
     // Профиль
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
+    Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
+    Route::post('/tickets/{ticket}/refund', [TicketController::class, 'refund'])->name('tickets.refund');
     
     // Двухфакторная аутентификация (настройки)
     Route::get('/two-factor/settings', [TwoFactorController::class, 'showSettings'])
@@ -88,5 +113,3 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.stats');
 });
 
-// Ресурсный маршрут для фильмов (дублирование, можно удалить)
-Route::resource('movies', MovieController::class);

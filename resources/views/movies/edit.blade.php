@@ -74,6 +74,18 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="show_time">Время показа</label>
+                    <input type="datetime-local" id="show_time" name="show_time" class="form-control"
+                        value="{{ old('show_time', $movie->show_time ? \Illuminate\Support\Carbon::parse($movie->show_time)->format('Y-m-d\TH:i') : '') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="venue_capacity">Вместимость площадки</label>
+                    <input type="number" id="venue_capacity" name="venue_capacity" class="form-control"
+                        placeholder="150" value="{{ old('venue_capacity', $movie->venue_capacity) }}" min="1">
+                </div>
+
+                <div class="form-group">
                     <label for="expected_attendees">Ожидаемое количество зрителей</label>
                     <input type="number" id="expected_attendees" name="expected_attendees" class="form-control"
                         placeholder="100" value="{{ old('expected_attendees', $movie->expected_attendees) }}"

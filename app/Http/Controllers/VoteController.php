@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Movie;
 use App\Models\City;
+use App\Models\Setting;
 use App\Models\Vote;
 
 class VoteController extends Controller
@@ -19,6 +20,11 @@ class VoteController extends Controller
 
     public function store(Request $request)
     {
+        $votingDeadline = Setting::first()?->voting_deadline;
+        if ($votingDeadline && now()->greaterThan($votingDeadline)) {
+            return redirect()->back()->with('error', 'Голосование завершено: дедлайн был ' . $votingDeadline->format('d.m.Y H:i'));
+        }
+
         $user = auth()->user();
         $movie = Movie::findOrFail($request->movie_id);
         

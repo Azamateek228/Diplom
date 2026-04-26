@@ -7,6 +7,7 @@ use App\Models\Vote;
 use App\Models\Movie;
 use App\Models\City;
 use App\Models\Setting;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -15,6 +16,11 @@ class AdminController extends Controller
     {
         $usersCount = User::count();
         $votesCount = Vote::count();
+        $ticketsPurchased = (int) Ticket::where('status', 'purchased')->sum('quantity');
+        $totalCapacity = (int) Movie::whereNotNull('venue_capacity')->sum('venue_capacity');
+        $overallLoadPercent = $totalCapacity > 0
+            ? min(100, (int) round(($ticketsPurchased / $totalCapacity) * 100))
+            : 0;
 
         $topMovie = Movie::withCount('votes')
             ->orderByDesc('votes_count')
@@ -53,6 +59,12 @@ class AdminController extends Controller
 
         // Установка текущего города кинотеатра
         if ($request->isMethod('post')) {
+            $validated = $request->validate([
+                'current_city_id' => 'nullable|exists:cities,id',
+                'voting_deadline' => 'nullable|date',
+                'ticket_price' => 'nullable|integer|min:100|max:5000',
+            ]);
+
             if ($request->has('auto_city')) {
                 $topByAttendees = $cityStats->sortByDesc('total_expected')->first();
                 if ($topByAttendees && $topByAttendees['total_expected'] > 0) {
@@ -63,22 +75,35 @@ class AdminController extends Controller
                 return redirect()->route('admin.stats')->with('error', 'Нет данных по городам для автоматического выбора.');
             }
             $setting = Setting::firstOrCreate([]);
-            $setting->update(['current_city_id' => $request->input('current_city_id') ?: null]);
-            return redirect()->route('admin.stats')->with('success', 'Текущий город обновлён.');
+            $setting->update([
+                'current_city_id' => $validated['current_city_id'] ?? null,
+                'voting_deadline' => $validated['voting_deadline'] ?? $setting->voting_deadline,
+                'ticket_price' => $validated['ticket_price'] ?? $setting->ticket_price,
+            ]);
+            return redirect()->route('admin.stats')->with('success', 'Настройки обновлены.');
         }
 
-        $currentCityId = Setting::first()?->current_city_id;
+        $settings = Setting::first();
+        $currentCityId = $settings?->current_city_id;
+        $votingDeadline = $settings?->voting_deadline;
+        $ticketPrice = $settings?->ticket_price ?? 350;
+        $currentCityName = $currentCityId ? $cities->firstWhere('id', $currentCityId)?->name : null;
 
         return view('admin.stats', compact(
             'usersCount',
             'votesCount',
+            'ticketsPurchased',
+            'overallLoadPercent',
             'topMovie',
             'topCity',
             'cities',
             'movies',
             'selectedCityId',
             'cityStats',
-            'currentCityId'
+            'currentCityId',
+            'currentCityName',
+            'votingDeadline',
+            'ticketPrice'
         ));
     }
 }

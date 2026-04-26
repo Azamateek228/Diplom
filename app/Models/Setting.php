@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    protected $fillable = ['current_city_id'];
+    protected $fillable = ['current_city_id', 'voting_deadline', 'ticket_price'];
+
+    protected $casts = [
+        'voting_deadline' => 'datetime',
+    ];
 
     public function currentCity()
     {

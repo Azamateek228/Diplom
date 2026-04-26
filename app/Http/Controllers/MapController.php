@@ -13,6 +13,7 @@ class MapController extends Controller
         // Получаем города с координатами, отсортированные по количеству голосов
         $cities = City::withCount('votes')
             ->orderByDesc('votes_count')
+            ->limit(10)
             ->get()
             ->filter(function($city) {
                 // Фильтруем только города с координатами

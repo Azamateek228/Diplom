@@ -16,7 +16,13 @@ class Movie extends Model
         'description',
         'city_id',
         'venue',
+        'show_time',
+        'venue_capacity',
         'expected_attendees',
+    ];
+
+    protected $casts = [
+        'show_time' => 'datetime',
     ];
 
     public function votes()

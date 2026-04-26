@@ -286,6 +286,12 @@ nav a:hover {
     transform: scale(1.02);
 }
 
+.vote-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .vote-form {
     display: flex;
     flex-direction: column;
@@ -1017,6 +1023,44 @@ footer {
     border-bottom: 1px solid rgba(255, 193, 7, 0.3);
 }
 
+/* Афиша */
+.afisha-page .card {
+    background: #1c1c2b;
+    border: 1px solid #333;
+    border-radius: 14px;
+    color: #fff;
+}
+
+.afisha-page .card-title {
+    color: #ffcc00;
+}
+
+.afisha-card {
+    transition: 0.25s ease;
+}
+
+.afisha-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 140, 0, 0.8);
+    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.16);
+}
+
+.afisha-poster {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #3a3a4b;
+}
+
+.afisha-page .btn {
+    border-radius: 10px;
+}
+
+.movie-card .vote-form .vote-btn {
+    margin-top: 4px;
+}
+
 /* ============================================
    Страницы аутентификации (вход, регистрация)
    ============================================ */
@@ -1540,4 +1584,306 @@ footer {
     .auth-btn-sm {
         width: 100%;
     }
+}
+
+/* Visual upgrade: dashboard, timeline, tickets, empty states */
+.fade-in-up {
+    animation: fadeInUp 0.45s ease both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-state {
+    text-align: center;
+    background: #1c1c2b;
+    border: 1px dashed #3d3d57;
+    border-radius: 16px;
+    padding: 30px 20px;
+}
+
+.empty-state-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+}
+
+.empty-state h4 {
+    color: #ffcc00;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #9da1b4;
+    margin-bottom: 16px;
+}
+
+.dashboard-hero {
+    border-radius: 18px;
+    height: auto;
+    min-height: 56vh;
+}
+
+.home-kpi-section {
+    margin-top: -40px;
+    position: relative;
+    z-index: 2;
+}
+
+.home-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.home-kpi-card {
+    background: rgba(28, 28, 43, 0.95);
+    border: 1px solid #32324a;
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.home-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(255, 204, 0, 0.15);
+}
+
+.home-kpi-label {
+    color: #a9adbc;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.home-kpi-value {
+    color: #fff;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.home-kpi-city {
+    font-size: 20px;
+}
+
+.kpi-progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.kpi-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffcc00, #ff9f43);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+    transition: width 0.3s ease;
+}
+
+.movie-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.movie-rating-badge {
+    background: rgba(255, 204, 0, 0.18);
+    color: #ffd86b;
+    border: 1px solid rgba(255, 204, 0, 0.35);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.movie-session-kpi {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.session-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #cfd3e2;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.route-timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.route-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #10101a;
+    border: 1px solid #33374a;
+    border-radius: 30px;
+    padding: 6px 12px;
+}
+
+.route-step-index {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ffcc00;
+    color: #1a1a1a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.route-step-name {
+    color: #f0f2f7;
+    font-size: 14px;
+}
+
+.ticket-cards-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.ticket-card {
+    background: linear-gradient(145deg, #181827, #222238);
+    border: 1px solid #353553;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.ticket-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.ticket-movie-title {
+    margin: 0;
+    color: #ffcc00;
+    font-weight: 700;
+}
+
+.ticket-city {
+    margin: 0;
+    color: #b9bed0;
+    font-size: 13px;
+}
+
+.ticket-status {
+    border-radius: 999px;
+    font-size: 12px;
+    padding: 5px 10px;
+    height: fit-content;
+}
+
+.status-paid {
+    background: rgba(40, 167, 69, 0.2);
+    color: #4dd17a;
+    border: 1px solid rgba(77, 209, 122, 0.35);
+}
+
+.status-refunded {
+    background: rgba(220, 53, 69, 0.18);
+    color: #ff7f8a;
+    border: 1px solid rgba(255, 127, 138, 0.35);
+}
+
+.ticket-meta {
+    color: #dde1ef;
+    font-size: 14px;
+}
+
+.ticket-qr-wrap {
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+
+.ticket-qr-wrap img {
+    border-radius: 10px;
+    border: 1px solid #3f3f5d;
+    background: #fff;
+    padding: 6px;
+}
+
+.qr-fallback {
+    border: 1px dashed #4b4f67;
+    border-radius: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #e8ebf8;
+}
+
+.qr-fallback code {
+    color: #ffcc00;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+/* Stabilize map controls regardless of global .btn rules */
+.map-page .map-controls {
+    align-items: center;
+}
+
+.map-page .route-info {
+    min-width: 280px;
+}
+
+.map-page .admin-controls .btn {
+    border-radius: 10px;
+    padding: 8px 16px;
+    line-height: 1.2;
+}
+
+/* Restore stable Bootstrap-like button sizing on core pages */
+.movies .btn,
+.afisha-page .btn,
+.map-page .btn,
+.profile-page .btn,
+.admin-page .btn,
+.navbar .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    line-height: 1.5;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.movies .btn.btn-sm,
+.afisha-page .btn.btn-sm,
+.map-page .btn.btn-sm,
+.profile-page .btn.btn-sm,
+.admin-page .btn.btn-sm,
+.navbar .btn.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.hero .btn.btn-main,
+.empty-state .btn.btn-main,
+.home-kpi-section .btn.btn-main {
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 700;
 }

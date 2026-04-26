@@ -21,11 +21,18 @@
                 <h5 class="mb-2">📍 Ваш город: {{ $userCityStats['city']->name }}</h5>
                 <div class="d-flex gap-4">
                     <span>Голосов: <strong>{{ $userCityStats['votes_count'] }}</strong></span>
-                    <span>Ожидаемых зрителей: <strong>{{ $userCityStats['expected_attendees'] }}</strong></span>
                 </div>
             </div>
         @endif
     @endauth
+    @if (!empty($votingDeadline))
+        <div class="alert {{ $votingClosed ? 'alert-danger' : 'alert-info' }} mb-3">
+            Дедлайн голосования: {{ $votingDeadline->format('d.m.Y H:i') }}
+            @if ($votingClosed)
+                — голосование закрыто.
+            @endif
+        </div>
+    @endif
 
     <div class="movies">
         <div class="movies-header">
@@ -44,19 +51,25 @@
         </div>
 
         @if ($movies->isEmpty())
-            <div class="no-movies">
-                <p>Фильмы не найдены</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">🎬</div>
+                <h4>Пока нет фильмов в подборке</h4>
+                <p>Попробуйте изменить фильтр по городу или зайдите позже.</p>
+                <a href="{{ route('afisha.index') }}" class="btn btn-main btn-sm">Открыть афишу</a>
             </div>
         @else
             <div class="movie-grid">
                 @foreach ($movies as $movie)
-                    <div class="movie-card">
+                    <div class="movie-card fade-in-up">
                         <img class="movie-poster"
                             src="{{ $movie->poster ? asset($movie->poster) : asset('images/poster-placeholder.jpg') }}"
                             alt="{{ $movie->title }}">
 
                         <div class="info">
-                            <h4>{{ $movie->title }}</h4>
+                            <div class="movie-card-header">
+                                <h4>{{ $movie->title }}</h4>
+                                <span class="movie-rating-badge">⭐ {{ number_format(min(5, max(1, ($movie->votes_count ?? 0) / 4 + 1)), 1) }}</span>
+                            </div>
 
                             <div class="movie-details">
                                 @if ($movie->genre)
@@ -84,6 +97,20 @@
                                     <div class="detail-item">
                                         <span class="detail-label">Площадка:</span>
                                         <span class="detail-value">{{ $movie->venue }}</span>
+                                    </div>
+                                @endif
+
+                                @if ($movie->show_time)
+                                    <div class="detail-item">
+                                        <span class="detail-label">Время:</span>
+                                        <span class="detail-value">{{ \Illuminate\Support\Carbon::parse($movie->show_time)->format('d.m.Y H:i') }}</span>
+                                    </div>
+                                @endif
+
+                                @if ($movie->venue_capacity)
+                                    <div class="detail-item">
+                                        <span class="detail-label">Вместимость:</span>
+                                        <span class="detail-value">{{ $movie->venue_capacity }} чел.</span>
                                     </div>
                                 @endif
 
@@ -116,6 +143,16 @@
                             <div class="votes-count">
                                 <span>🗳️ Голосов: {{ $movie->votes_count ?? 0 }}</span>
                             </div>
+                            <div class="movie-session-kpi">
+                                <div class="session-meta">
+                                    <span>Цена: <strong>{{ $ticketPrice }} ₽</strong></span>
+                                    <span>Мест занято: <strong>{{ $movie->sold_tickets ?? 0 }}</strong></span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: {{ $movie->fill_percentage ?? 0 }}%"></div>
+                                </div>
+                                <small class="d-block mt-2 text-muted">Заполняемость сеанса: {{ $movie->fill_percentage ?? 0 }}%</small>
+                            </div>
 
                             @auth
                                 <form method="POST" action="{{ route('votes.store') }}" class="vote-form">
@@ -133,15 +170,9 @@
                                             </select>
                                         </div>
                                     @endif
-                                    <div class="mb-2">
-                                        <label for="expected_{{ $movie->id }}">Сколько человек придёт?</label>
-                                        <select name="expected_attendees" id="expected_{{ $movie->id }}" class="form-select">
-                                            @for ($i = 1; $i <= 10; $i++)
-                                                <option value="{{ $i }}" {{ $i == 1 ? 'selected' : '' }}>{{ $i }}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                    <button class="vote-btn">Голосовать</button>
+                                    <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>
+                                        {{ $votingClosed ? 'Голосование закрыто' : 'Голосовать' }}
+                                    </button>
                                 </form>
                             @endauth
                         </div>

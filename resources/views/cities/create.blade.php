@@ -32,6 +32,13 @@
                        step="any" min="-180" max="180">
                 <small class="form-text">От -180 до 180 (например, для Москвы: 37.6173)</small>
             </div>
+            <div class="form-group">
+                <label for="population">Население города</label>
+                <input type="number" id="population" name="population" class="form-control"
+                       placeholder="40000"
+                       value="{{ old('population', 40000) }}" min="1000">
+                <small class="form-text">Влияет на количество билетов в расписании</small>
+            </div>
         </div>
 
         <div class="form-actions">

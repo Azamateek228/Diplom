@@ -89,5 +89,59 @@
             </div>
         </div>
     </div>
+
+    <div class="profile-section mt-4">
+        <div class="profile-card">
+            <h5 class="profile-card-title">Мои билеты и QR</h5>
+            @if (isset($tickets) && $tickets->count())
+                <div class="ticket-cards-grid">
+                    @foreach ($tickets as $ticket)
+                        <div class="ticket-card fade-in-up">
+                            <div class="ticket-card-top">
+                                <div>
+                                    <p class="ticket-movie-title">{{ $ticket->movie->title ?? 'Фильм' }}</p>
+                                    <p class="ticket-city">{{ $ticket->city->name ?? 'Город' }}</p>
+                                </div>
+                                <span class="ticket-status {{ $ticket->status === 'refunded' ? 'status-refunded' : 'status-paid' }}">
+                                    {{ $ticket->status === 'refunded' ? 'Возвращён' : 'Оплачен' }}
+                                </span>
+                            </div>
+                            <div class="ticket-meta">
+                                <p class="mb-1">Дата: {{ $ticket->show_date?->format('d.m.Y') }} {{ $ticket->show_time }}</p>
+                                <p class="mb-1">Билетов: {{ $ticket->quantity }}</p>
+                                <p class="mb-0">Сумма: {{ $ticket->total_price }} ₽</p>
+                            </div>
+
+                            @if ($ticket->status === 'purchased')
+                                <div class="ticket-qr-wrap">
+                                    <img
+                                        src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ urlencode($ticket->qr_token) }}"
+                                        alt="QR Ticket"
+                                        loading="lazy"
+                                        onerror="this.style.display='none'; this.parentElement.querySelector('.qr-fallback').style.display='block';"
+                                    >
+                                    <div class="qr-fallback" style="display:none;">
+                                        <p class="mb-1"><strong>QR временно недоступен</strong></p>
+                                        <p class="mb-0 small">Код билета: <code>{{ $ticket->qr_token }}</code></p>
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ route('tickets.refund', $ticket) }}" class="mt-2">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Оформить возврат</button>
+                                </form>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎟️</div>
+                    <h4>Билетов пока нет</h4>
+                    <p>Выберите фильм в афише и оформите первую покупку.</p>
+                    <a href="{{ route('afisha.index') }}" class="btn btn-main btn-sm">Перейти в афишу</a>
+                </div>
+            @endif
+        </div>
+    </div>
 </div>
 @endsection

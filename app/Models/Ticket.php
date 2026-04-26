@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Ticket extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'city_id',
+        'movie_id',
+        'show_date',
+        'show_time',
+        'quantity',
+        'unit_price',
+        'total_price',
+        'status',
+        'payment_method',
+        'payment_reference',
+        'qr_token',
+        'refunded_at',
+    ];
+
+    protected $casts = [
+        'show_date' => 'date',
+        'refunded_at' => 'datetime',
+    ];
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function movie()
+    {
+        return $this->belongsTo(Movie::class);
+    }
+}
