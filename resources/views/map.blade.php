@@ -52,11 +52,11 @@
     <script>
         let map;
         let routePolyline;
-        let routeMultiRoute;
         let movingMarker;
         let cityMarkers = [];
         let isAnimating = false;
         let roadPathCoordinates = [];
+        let roadRouteBuildFailed = false;
         let animationFrameId = null;
 
         // Данные городов из PHP
@@ -68,6 +68,18 @@
         console.log('Cities data:', cities);
         console.log('Default center:', defaultCenter);
 
+        function parseCoordinate(value) {
+            if (typeof value === 'number') {
+                return value;
+            }
+
+            if (typeof value === 'string') {
+                return parseFloat(value.replace(',', '.').trim());
+            }
+
+            return NaN;
+        }
+
         // Функция упорядочивания городов - универсальная логика
         function orderCities(citiesArray) {
             if (citiesArray.length <= 1) {
@@ -76,8 +88,8 @@
 
             // Фильтруем города с валидными координатами
             const validCities = citiesArray.filter(city => {
-                const lat = parseFloat(city.lat);
-                const lng = parseFloat(city.lng);
+                const lat = parseCoordinate(city.lat);
+                const lng = parseCoordinate(city.lng);
                 return !isNaN(lat) && !isNaN(lng) && 
                        lat >= -90 && lat <= 90 && 
                        lng >= -180 && lng <= 180;
@@ -130,8 +142,8 @@
                     // Создаем маркеры для городов
                     cities.forEach((city, index) => {
                         // Проверяем валидность координат
-                        const lat = parseFloat(city.lat);
-                        const lng = parseFloat(city.lng);
+                        const lat = parseCoordinate(city.lat);
+                        const lng = parseCoordinate(city.lng);
                         
                         if (isNaN(lat) || isNaN(lng)) {
                             console.warn(`Город "${city.name}" имеет невалидные координаты:`, city);
@@ -174,18 +186,18 @@
                         if (adminCurrentCityIndex !== -1) {
                             // В админке выбран текущий город — фургон стартует именно отсюда
                             const c = orderedCities[adminCurrentCityIndex];
-                            startPosition = [parseFloat(c.lat), parseFloat(c.lng)];
+                            startPosition = [parseCoordinate(c.lat), parseCoordinate(c.lng)];
                         } else if (orderedCities.length >= 2) {
                             // Иначе — по умолчанию: ближе к первому городу маршрута
                             const firstCity = orderedCities[0];
                             startPosition = [
-                                parseFloat(firstCity.lat),
-                                parseFloat(firstCity.lng)
+                                parseCoordinate(firstCity.lat),
+                                parseCoordinate(firstCity.lng)
                             ];
                         } else {
                             startPosition = [
-                                parseFloat(orderedCities[0].lat),
-                                parseFloat(orderedCities[0].lng)
+                                parseCoordinate(orderedCities[0].lat),
+                                parseCoordinate(orderedCities[0].lng)
                             ];
                         }
 
@@ -242,15 +254,11 @@
                 routePolyline = null;
             }
 
-            if (routeMultiRoute) {
-                map.geoObjects.remove(routeMultiRoute);
-                routeMultiRoute = null;
-            }
-
             const orderedCities = orderCities(cities);
             const routePoints = orderedCities
-                .map(city => [parseFloat(city.lat), parseFloat(city.lng)])
+                .map(city => [parseCoordinate(city.lat), parseCoordinate(city.lng)])
                 .filter(point => !isNaN(point[0]) && !isNaN(point[1]));
+            roadRouteBuildFailed = false;
 
             if (routePoints.length < 2) {
                 console.warn('Недостаточно точек для построения дорожного маршрута');
@@ -294,77 +302,70 @@
                 })
                 .catch((error) => {
                     console.warn('Маршрут по дорогам не построен:', error);
-                    roadPathCoordinates = routePoints;
-
-                    routePolyline = new ymaps.Polyline(
-                        roadPathCoordinates, {}, {
-                            strokeColor: '#ff8c00',
-                            strokeWidth: 5,
-                            strokeOpacity: 0.9,
-                            strokeStyle: 'shortdash'
-                        }
-                    );
-                    map.geoObjects.add(routePolyline);
+                    roadPathCoordinates = [];
+                    roadRouteBuildFailed = true;
                 });
         }
 
         function buildRoadPath(points) {
-            return new Promise((resolve, reject) => {
-                routeMultiRoute = new ymaps.multiRouter.MultiRoute({
-                    referencePoints: points,
-                    params: {
-                        routingMode: 'auto',
-                        results: 1
-                    }
-                }, {
-                    wayPointVisible: false,
-                    viaPointVisible: false,
-                    routeActiveStrokeColor: '#ff8c00',
-                    routeActiveStrokeWidth: 0,
-                    routeActiveStrokeOpacity: 0,
-                    boundsAutoApply: false
-                });
+            let chain = Promise.resolve();
+            let fullPath = [];
 
-                routeMultiRoute.model.events.once('requestsuccess', () => {
-                    const activeRoute = routeMultiRoute.getActiveRoute();
-                    if (!activeRoute) {
-                        reject(new Error('Активный маршрут не найден'));
-                        return;
-                    }
+            for (let i = 0; i < points.length - 1; i++) {
+                const fromPoint = points[i];
+                const toPoint = points[i + 1];
 
-                    const paths = activeRoute.getPaths();
-                    let fullPath = [];
-
-                    paths.each((path, idx) => {
-                        const segmentCoords = path.geometry.getCoordinates();
-                        if (!Array.isArray(segmentCoords) || segmentCoords.length === 0) {
-                            return;
+                chain = chain.then(() => buildRoadSegment(fromPoint, toPoint, i))
+                    .then((segmentCoords) => {
+                        if (!segmentCoords || segmentCoords.length < 2) {
+                            throw new Error('Пустой сегмент маршрута #' + (i + 1));
                         }
-                        if (idx > 0) {
+
+                        if (i > 0) {
                             segmentCoords.shift();
                         }
+
                         fullPath = fullPath.concat(segmentCoords);
                     });
+            }
 
-                    if (fullPath.length < 2) {
-                        reject(new Error('Пустая геометрия дорожного маршрута'));
-                        return;
+            return chain.then(() => {
+                if (fullPath.length < 2) {
+                    throw new Error('Пустая геометрия дорожного маршрута');
+                }
+
+                return fullPath;
+            });
+        }
+
+        function buildRoadSegment(fromPoint, toPoint, segmentIndex) {
+            return ymaps.route([fromPoint, toPoint], {
+                routingMode: 'auto'
+            }).then((route) => {
+                const paths = route.getPaths();
+                let coords = [];
+
+                paths.each((path) => {
+                    const pathCoords = path.geometry.getCoordinates();
+                    if (Array.isArray(pathCoords) && pathCoords.length > 0) {
+                        coords = coords.concat(pathCoords);
                     }
-
-                    resolve(fullPath);
                 });
 
-                routeMultiRoute.model.events.once('requestfail', (event) => {
-                    reject(new Error('Ошибка запроса маршрута: ' + (event.get('error') || 'unknown')));
-                });
+                if (coords.length < 2) {
+                    throw new Error('Сегмент #' + (segmentIndex + 1) + ' не содержит геометрию');
+                }
 
-                map.geoObjects.add(routeMultiRoute);
+                return coords;
+            }, (error) => {
+                throw new Error('Сегмент #' + (segmentIndex + 1) + ' не построен: ' + (error?.message || error || 'unknown'));
             });
         }
 
         // Функция анимации движения фургончика
         function animateVan() {
             if (cities.length < 2 || isAnimating) return;
+            if (roadRouteBuildFailed) return;
 
             // Если дорожная геометрия еще не готова, пробуем позже.
             if (!roadPathCoordinates || roadPathCoordinates.length < 2) {
