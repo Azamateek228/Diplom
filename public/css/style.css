@@ -1483,6 +1483,46 @@ footer {
     text-align: center;
 }
 
+.profile-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.profile-sidebar {
+    position: sticky;
+    top: 90px;
+}
+
+.profile-content {
+    min-width: 0;
+}
+
+.profile-menu-link {
+    display: block;
+    color: #dde1ef;
+    text-decoration: none;
+    border: 1px solid #33374a;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    transition: 0.2s ease;
+}
+
+.profile-menu-link:hover {
+    border-color: #ffcc00;
+    color: #fff;
+    background: rgba(255, 204, 0, 0.08);
+}
+
+.profile-menu-link.active {
+    border-color: #ffcc00;
+    background: rgba(255, 204, 0, 0.16);
+    color: #ffdd73;
+    font-weight: 600;
+}
+
 .profile-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -1567,6 +1607,14 @@ footer {
 
 /* Адаптив для профиля */
 @media (max-width: 768px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-sidebar {
+        position: static;
+    }
+
     .profile-grid {
         grid-template-columns: 1fr;
     }
