@@ -67,19 +67,6 @@
         console.log('Cities data:', cities);
         console.log('Default center:', defaultCenter);
 
-        // Функция расчета расстояния между двумя точками (в км) - должна быть определена до использования
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Радиус Земли в км
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-
         // Функция упорядочивания городов - универсальная логика
         function orderCities(citiesArray) {
             if (citiesArray.length <= 1) {
@@ -99,83 +86,8 @@
                 console.warn('Нет городов с валидными координатами');
                 return citiesArray;
             }
-
-            // Пытаемся найти Калугу и Воркуту для специального маршрута
-            const kalugaIndex = validCities.findIndex(c =>
-                c.name.toLowerCase().includes('калуг') ||
-                c.name.toLowerCase().includes('kaluga')
-            );
-            const vorkutaIndex = validCities.findIndex(c =>
-                c.name.toLowerCase().includes('воркут') ||
-                c.name.toLowerCase().includes('vorkuta')
-            );
-
-            if (kalugaIndex !== -1 && vorkutaIndex !== -1) {
-                // Если найдены оба города, упорядочиваем от Калуги к Воркуте
-                const orderedCities = [...validCities];
-                const kaluga = orderedCities[kalugaIndex];
-                const vorkuta = orderedCities[vorkutaIndex];
-
-                // Удаляем Калугу и Воркуту из массива
-                orderedCities.splice(Math.max(kalugaIndex, vorkutaIndex), 1);
-                orderedCities.splice(Math.min(kalugaIndex, vorkutaIndex), 1);
-
-                // Сортируем остальные города по расстоянию от Калуги
-                orderedCities.sort((a, b) => {
-                    const distA = calculateDistance(
-                        parseFloat(kaluga.lat), parseFloat(kaluga.lng),
-                        parseFloat(a.lat), parseFloat(a.lng)
-                    );
-                    const distB = calculateDistance(
-                        parseFloat(kaluga.lat), parseFloat(kaluga.lng),
-                        parseFloat(b.lat), parseFloat(b.lng)
-                    );
-                    return distA - distB;
-                });
-
-                // Формируем финальный маршрут: Калуга -> остальные города -> Воркута
-                return [kaluga, ...orderedCities, vorkuta];
-            }
-
-            // Если специальные города не найдены, используем алгоритм ближайшего соседа
-            // Начинаем с первого города (или текущего, если он есть)
-            const orderedCities = [];
-            const remainingCities = [...validCities];
-            
-            // Если есть текущий город, начинаем с него
-            let startIndex = 0;
-            if (currentCityId) {
-                const currentIndex = remainingCities.findIndex(c => c.id === currentCityId);
-                if (currentIndex !== -1) {
-                    startIndex = currentIndex;
-                }
-            }
-            
-            let currentCity = remainingCities.splice(startIndex, 1)[0];
-            orderedCities.push(currentCity);
-
-            // Находим ближайший город к текущему, пока не закончатся города
-            while (remainingCities.length > 0) {
-                let nearestIndex = 0;
-                let minDistance = Infinity;
-
-                remainingCities.forEach((city, idx) => {
-                    const dist = calculateDistance(
-                        parseFloat(currentCity.lat), parseFloat(currentCity.lng),
-                        parseFloat(city.lat), parseFloat(city.lng)
-                    );
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        nearestIndex = idx;
-                    }
-                });
-
-                currentCity = remainingCities.splice(nearestIndex, 1)[0];
-                orderedCities.push(currentCity);
-            }
-
-            console.log('Упорядоченные города:', orderedCities.map(c => c.name));
-            return orderedCities;
+            console.log('Упорядоченные города:', validCities.map(c => c.name));
+            return validCities;
         }
 
         // Инициализация карты - ждем загрузки API
@@ -371,7 +283,17 @@
                 })
                 .catch((error) => {
                     console.warn('Маршрут по дорогам не построен:', error);
-                    roadPathCoordinates = [];
+                    roadPathCoordinates = routePoints;
+
+                    routePolyline = new ymaps.Polyline(
+                        roadPathCoordinates, {}, {
+                            strokeColor: '#ff8c00',
+                            strokeWidth: 5,
+                            strokeOpacity: 0.9,
+                            strokeStyle: 'shortdash'
+                        }
+                    );
+                    map.geoObjects.add(routePolyline);
                 });
         }
 

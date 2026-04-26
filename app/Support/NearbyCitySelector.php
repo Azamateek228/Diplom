@@ -7,6 +7,11 @@ use Illuminate\Support\Collection;
 
 class NearbyCitySelector
 {
+    public static function mapCities(int $limit = 10, ?int $ensureCityId = null): Collection
+    {
+        return self::naberezhnyeChelnyWithNearest($limit, $ensureCityId);
+    }
+
     public static function naberezhnyeChelnyWithNearest(int $nearest = 10, ?int $ensureCityId = null): Collection
     {
         $allCities = City::query()
@@ -42,6 +47,53 @@ class NearbyCitySelector
             ->values();
 
         return self::appendEnsuredCity($cities, $ensureCityId);
+    }
+
+    public static function orderedRoute(Collection $cities, ?int $currentCityId = null): Collection
+    {
+        if ($cities->isEmpty()) {
+            return collect();
+        }
+
+        $remaining = $cities->values()->all();
+        $ordered = [];
+        $startIndex = 0;
+
+        if ($currentCityId) {
+            foreach ($remaining as $idx => $city) {
+                if ((int) $city->id === (int) $currentCityId) {
+                    $startIndex = $idx;
+                    break;
+                }
+            }
+        }
+
+        $current = array_splice($remaining, $startIndex, 1)[0];
+        $ordered[] = $current;
+
+        while (!empty($remaining)) {
+            $nearestIndex = 0;
+            $nearestDistance = INF;
+
+            foreach ($remaining as $idx => $candidate) {
+                $distance = self::distanceInKm(
+                    (float) $current->lat,
+                    (float) $current->lng,
+                    (float) $candidate->lat,
+                    (float) $candidate->lng
+                );
+
+                if ($distance < $nearestDistance) {
+                    $nearestDistance = $distance;
+                    $nearestIndex = $idx;
+                }
+            }
+
+            $current = array_splice($remaining, $nearestIndex, 1)[0];
+            $ordered[] = $current;
+        }
+
+        return collect($ordered)->values();
     }
 
     private static function appendEnsuredCity(Collection $cities, ?int $ensureCityId): Collection
