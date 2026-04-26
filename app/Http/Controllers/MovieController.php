@@ -7,6 +7,7 @@ use App\Models\Vote;
 use App\Models\City;
 use App\Models\Setting;
 use App\Models\Ticket;
+use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -37,7 +38,7 @@ class MovieController extends Controller
                 : 0;
         });
 
-        $cities = City::orderBy('name')->get();
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, auth()->user()?->city_id);
         $settings = Setting::first();
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
@@ -63,7 +64,8 @@ class MovieController extends Controller
 
     public function create()
     {
-        return view('movies.create');
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10);
+        return view('movies.create', compact('cities'));
     }
 
     public function store(Request $request)
@@ -89,7 +91,7 @@ class MovieController extends Controller
 
     public function edit(Movie $movie)
     {
-        $cities = City::orderBy('name')->get();
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $movie->city_id);
         return view('movies.edit', compact('movie', 'cities'));
     }
 

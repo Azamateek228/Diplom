@@ -8,6 +8,7 @@ use App\Models\Movie;
 use App\Models\City;
 use App\Models\Setting;
 use App\Models\Ticket;
+use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -30,9 +31,6 @@ class AdminController extends Controller
             ->orderByDesc('votes_count')
             ->first();
 
-        // Получаем все города для фильтра
-        $cities = City::orderBy('name')->get();
-        
         // Фильтр по городу
         $selectedCityId = $request->get('city_id');
         $moviesQuery = Movie::with(['city', 'votes'])->withCount('votes');
@@ -85,6 +83,8 @@ class AdminController extends Controller
 
         $settings = Setting::first();
         $currentCityId = $settings?->current_city_id;
+        $ensureCityId = $selectedCityId ?: $currentCityId;
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $ensureCityId ? (int) $ensureCityId : null);
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
         $currentCityName = $currentCityId ? $cities->firstWhere('id', $currentCityId)?->name : null;

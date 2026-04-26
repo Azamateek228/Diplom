@@ -43,7 +43,7 @@
                 <label for="city_id">Город</label>
                 <select id="city_id" name="city_id" class="form-control">
                     <option value="">Выберите город</option>
-                    @foreach (\App\Models\City::orderBy('name')->get() as $city)
+                    @foreach ($cities as $city)
                         <option value="{{ $city->id }}">{{ $city->name }}</option>
                     @endforeach
                 </select>

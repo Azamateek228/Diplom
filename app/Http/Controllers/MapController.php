@@ -2,52 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\City;
 use App\Models\Setting;
+use App\Support\NearbyCitySelector;
 
 class MapController extends Controller
 {
     public function index()
     {
-        $allCities = City::withCount('votes')
-            ->get()
-            ->filter(function ($city) {
-                return $city->lat && $city->lng;
-            })
-            ->values();
+        $settings = Setting::first();
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $settings?->current_city_id);
 
-        $baseCity = $allCities->first(function ($city) {
-            $name = mb_strtolower(trim((string) $city->name));
-            return str_contains($name, 'набережные челны')
-                || str_contains($name, 'наб челны')
-                || str_contains($name, 'naberezhnye chelny');
-        });
-
-        if ($baseCity) {
-            $nearestCities = $allCities
-                ->reject(fn ($city) => (int) $city->id === (int) $baseCity->id)
-                ->sortBy(fn ($city) => $this->distanceInKm(
-                    (float) $baseCity->lat,
-                    (float) $baseCity->lng,
-                    (float) $city->lat,
-                    (float) $city->lng
-                ))
-                ->take(10)
-                ->values();
-
-            $cities = collect([$baseCity])
-                ->concat($nearestCities)
-                ->values();
-        } else {
-            $cities = $allCities
-                ->sortByDesc('votes_count')
-                ->take(11)
-                ->values();
-        }
-
-        $settingsCurrentCity = Setting::first()?->currentCity;
+        $settingsCurrentCity = $settings?->currentCity;
         $currentCity = $cities->firstWhere('id', $settingsCurrentCity?->id)
-            ?? $baseCity
+            ?? $cities->first(function ($city) {
+                $name = mb_strtolower(trim((string) $city->name));
+                return str_contains($name, 'набережные челны') || str_contains($name, 'naberezhnye chelny');
+            })
             ?? $cities->first();
         
         // Подготавливаем данные городов для JavaScript
