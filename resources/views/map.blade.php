@@ -302,9 +302,63 @@
                 })
                 .catch((error) => {
                     console.warn('Маршрут по дорогам не построен:', error);
-                    roadPathCoordinates = [];
                     roadRouteBuildFailed = true;
+                    roadPathCoordinates = buildFallbackPath(routePoints);
+
+                    if (!roadPathCoordinates || roadPathCoordinates.length < 2) {
+                        return;
+                    }
+
+                    routePolyline = new ymaps.Polyline(
+                        roadPathCoordinates, {}, {
+                            strokeColor: '#f5c542',
+                            strokeWidth: 5,
+                            strokeOpacity: 0.85
+                        }
+                    );
+
+                    map.geoObjects.add(routePolyline);
+                    map.setBounds(routePolyline.geometry.getBounds(), {
+                        checkZoomRange: true,
+                        duration: 400
+                    });
+
+                    if (movingMarker) {
+                        movingMarker.geometry.setCoordinates(roadPathCoordinates[0]);
+                    }
+
+                    if (!isAnimating) {
+                        animateVan();
+                    }
                 });
+        }
+
+        function buildFallbackPath(points) {
+            if (!Array.isArray(points) || points.length < 2) {
+                return [];
+            }
+
+            const fallbackPath = [];
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const fromPoint = points[i];
+                const toPoint = points[i + 1];
+                const steps = 40;
+
+                for (let step = 0; step <= steps; step++) {
+                    const ratio = step / steps;
+                    const lat = fromPoint[0] + (toPoint[0] - fromPoint[0]) * ratio;
+                    const lng = fromPoint[1] + (toPoint[1] - fromPoint[1]) * ratio;
+
+                    if (i > 0 && step === 0) {
+                        continue;
+                    }
+
+                    fallbackPath.push([lat, lng]);
+                }
+            }
+
+            return fallbackPath;
         }
 
         function buildRoadPath(points) {
@@ -365,7 +419,6 @@
         // Функция анимации движения фургончика
         function animateVan() {
             if (cities.length < 2 || isAnimating) return;
-            if (roadRouteBuildFailed) return;
 
             // Если дорожная геометрия еще не готова, пробуем позже.
             if (!roadPathCoordinates || roadPathCoordinates.length < 2) {
