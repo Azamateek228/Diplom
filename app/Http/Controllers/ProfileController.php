@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\City;
+use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
 
 class ProfileController extends Controller
@@ -15,7 +15,7 @@ class ProfileController extends Controller
         }
 
         $user = auth()->user();
-        $cities = City::orderBy('name')->get();
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $user->city_id);
         $tickets = $user->tickets()->with(['city', 'movie'])->latest()->get();
 
         return view('profile.edit', compact('user', 'cities', 'tickets', 'tab'));

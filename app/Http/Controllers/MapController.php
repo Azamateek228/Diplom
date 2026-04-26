@@ -2,26 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\City;
 use App\Models\Setting;
-use Illuminate\Http\Request;
+use App\Support\NearbyCitySelector;
 
 class MapController extends Controller
 {
     public function index()
     {
-        // Получаем города с координатами, отсортированные по количеству голосов
-        $cities = City::withCount('votes')
-            ->orderByDesc('votes_count')
-            ->limit(10)
-            ->get()
-            ->filter(function($city) {
-                // Фильтруем только города с координатами
-                return $city->lat && $city->lng;
+        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10);
+
+        $settingsCurrentCity = Setting::first()?->currentCity;
+        $currentCity = $cities->firstWhere('id', $settingsCurrentCity?->id)
+            ?? $cities->first(function ($city) {
+                $name = mb_strtolower(trim((string) $city->name));
+                return str_contains($name, 'набережные челны') || str_contains($name, 'naberezhnye chelny');
             })
-            ->values(); // Переиндексируем массив
-        
-        $currentCity = Setting::first()?->currentCity;
+            ?? $cities->first();
         
         // Подготавливаем данные городов для JavaScript
         $citiesData = $cities->map(function($city) {
