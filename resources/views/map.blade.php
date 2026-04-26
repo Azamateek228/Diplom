@@ -52,6 +52,7 @@
     <script>
         let map;
         let routePolyline;
+        let routeMultiRoute;
         let movingMarker;
         let cityMarkers = [];
         let isAnimating = false;
@@ -66,19 +67,6 @@
 
         console.log('Cities data:', cities);
         console.log('Default center:', defaultCenter);
-
-        // Функция расчета расстояния между двумя точками (в км) - должна быть определена до использования
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Радиус Земли в км
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
 
         // Функция упорядочивания городов - универсальная логика
         function orderCities(citiesArray) {
@@ -99,83 +87,8 @@
                 console.warn('Нет городов с валидными координатами');
                 return citiesArray;
             }
-
-            // Пытаемся найти Калугу и Воркуту для специального маршрута
-            const kalugaIndex = validCities.findIndex(c =>
-                c.name.toLowerCase().includes('калуг') ||
-                c.name.toLowerCase().includes('kaluga')
-            );
-            const vorkutaIndex = validCities.findIndex(c =>
-                c.name.toLowerCase().includes('воркут') ||
-                c.name.toLowerCase().includes('vorkuta')
-            );
-
-            if (kalugaIndex !== -1 && vorkutaIndex !== -1) {
-                // Если найдены оба города, упорядочиваем от Калуги к Воркуте
-                const orderedCities = [...validCities];
-                const kaluga = orderedCities[kalugaIndex];
-                const vorkuta = orderedCities[vorkutaIndex];
-
-                // Удаляем Калугу и Воркуту из массива
-                orderedCities.splice(Math.max(kalugaIndex, vorkutaIndex), 1);
-                orderedCities.splice(Math.min(kalugaIndex, vorkutaIndex), 1);
-
-                // Сортируем остальные города по расстоянию от Калуги
-                orderedCities.sort((a, b) => {
-                    const distA = calculateDistance(
-                        parseFloat(kaluga.lat), parseFloat(kaluga.lng),
-                        parseFloat(a.lat), parseFloat(a.lng)
-                    );
-                    const distB = calculateDistance(
-                        parseFloat(kaluga.lat), parseFloat(kaluga.lng),
-                        parseFloat(b.lat), parseFloat(b.lng)
-                    );
-                    return distA - distB;
-                });
-
-                // Формируем финальный маршрут: Калуга -> остальные города -> Воркута
-                return [kaluga, ...orderedCities, vorkuta];
-            }
-
-            // Если специальные города не найдены, используем алгоритм ближайшего соседа
-            // Начинаем с первого города (или текущего, если он есть)
-            const orderedCities = [];
-            const remainingCities = [...validCities];
-            
-            // Если есть текущий город, начинаем с него
-            let startIndex = 0;
-            if (currentCityId) {
-                const currentIndex = remainingCities.findIndex(c => c.id === currentCityId);
-                if (currentIndex !== -1) {
-                    startIndex = currentIndex;
-                }
-            }
-            
-            let currentCity = remainingCities.splice(startIndex, 1)[0];
-            orderedCities.push(currentCity);
-
-            // Находим ближайший город к текущему, пока не закончатся города
-            while (remainingCities.length > 0) {
-                let nearestIndex = 0;
-                let minDistance = Infinity;
-
-                remainingCities.forEach((city, idx) => {
-                    const dist = calculateDistance(
-                        parseFloat(currentCity.lat), parseFloat(currentCity.lng),
-                        parseFloat(city.lat), parseFloat(city.lng)
-                    );
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        nearestIndex = idx;
-                    }
-                });
-
-                currentCity = remainingCities.splice(nearestIndex, 1)[0];
-                orderedCities.push(currentCity);
-            }
-
-            console.log('Упорядоченные города:', orderedCities.map(c => c.name));
-            return orderedCities;
+            console.log('Упорядоченные города:', validCities.map(c => c.name));
+            return validCities;
         }
 
         // Инициализация карты - ждем загрузки API
@@ -329,6 +242,11 @@
                 routePolyline = null;
             }
 
+            if (routeMultiRoute) {
+                map.geoObjects.remove(routeMultiRoute);
+                routeMultiRoute = null;
+            }
+
             const orderedCities = orderCities(cities);
             const routePoints = orderedCities
                 .map(city => [parseFloat(city.lat), parseFloat(city.lng)])
@@ -348,6 +266,10 @@
 
                     roadPathCoordinates = fullRoadPath;
 
+                    if (routePolyline) {
+                        map.geoObjects.remove(routePolyline);
+                    }
+
                     routePolyline = new ymaps.Polyline(
                         roadPathCoordinates, {}, {
                             strokeColor: '#ff8c00',
@@ -355,6 +277,7 @@
                             strokeOpacity: 0.95
                         }
                     );
+
                     map.geoObjects.add(routePolyline);
                     map.setBounds(routePolyline.geometry.getBounds(), {
                         checkZoomRange: true,
@@ -377,45 +300,55 @@
 
         function buildRoadPath(points) {
             return new Promise((resolve, reject) => {
-                const result = [];
+                routeMultiRoute = new ymaps.multiRouter.MultiRoute({
+                    referencePoints: points,
+                    params: {
+                        routingMode: 'auto',
+                        results: 1
+                    }
+                }, {
+                    wayPointVisible: false,
+                    viaPointVisible: false,
+                    routeActiveStrokeColor: '#ff8c00',
+                    routeActiveStrokeWidth: 0,
+                    routeActiveStrokeOpacity: 0,
+                    boundsAutoApply: false
+                });
 
-                function loadSegment(index) {
-                    if (index >= points.length - 1) {
-                        resolve(result);
+                routeMultiRoute.model.events.once('requestsuccess', () => {
+                    const activeRoute = routeMultiRoute.getActiveRoute();
+                    if (!activeRoute) {
+                        reject(new Error('Активный маршрут не найден'));
                         return;
                     }
 
-                    ymaps.route([points[index], points[index + 1]], {
-                            routingMode: 'auto',
-                            mapStateAutoApply: false
-                        })
-                        .then((route) => {
-                            const paths = route.getPaths();
-                            let segmentCoords = [];
+                    const paths = activeRoute.getPaths();
+                    let fullPath = [];
 
-                            paths.each((path) => {
-                                const coords = path.geometry.getCoordinates();
-                                if (Array.isArray(coords) && coords.length) {
-                                    segmentCoords = segmentCoords.concat(coords);
-                                }
-                            });
+                    paths.each((path, idx) => {
+                        const segmentCoords = path.geometry.getCoordinates();
+                        if (!Array.isArray(segmentCoords) || segmentCoords.length === 0) {
+                            return;
+                        }
+                        if (idx > 0) {
+                            segmentCoords.shift();
+                        }
+                        fullPath = fullPath.concat(segmentCoords);
+                    });
 
-                            if (!segmentCoords.length) {
-                                reject(new Error('Пустой сегмент маршрута'));
-                                return;
-                            }
+                    if (fullPath.length < 2) {
+                        reject(new Error('Пустая геометрия дорожного маршрута'));
+                        return;
+                    }
 
-                            if (result.length > 0) {
-                                segmentCoords.shift();
-                            }
+                    resolve(fullPath);
+                });
 
-                            result.push(...segmentCoords);
-                            loadSegment(index + 1);
-                        })
-                        .catch(reject);
-                }
+                routeMultiRoute.model.events.once('requestfail', (event) => {
+                    reject(new Error('Ошибка запроса маршрута: ' + (event.get('error') || 'unknown')));
+                });
 
-                loadSegment(0);
+                map.geoObjects.add(routeMultiRoute);
             });
         }
 
@@ -441,6 +374,7 @@
             }
 
             const speedPointsPerFrame = 1;
+            const frameIntervalMs = 120;
             const routeInfo = document.getElementById('routeInfo');
             const currentCityNameEl = document.getElementById('currentCityName');
             const nextCityNameEl = document.getElementById('nextCityName');
@@ -453,21 +387,32 @@
             }
 
             let pointIndex = startIndex;
+            let lastTick = null;
 
-            function animate() {
+            function animate(timestamp) {
                 if (!isAnimating || !movingMarker) {
                     return;
                 }
 
-                pointIndex += speedPointsPerFrame;
-                if (pointIndex >= roadPathCoordinates.length) {
-                    pointIndex = 0;
+                if (!lastTick) {
+                    lastTick = timestamp;
                 }
-                movingMarker.geometry.setCoordinates(roadPathCoordinates[Math.floor(pointIndex)]);
 
-                if (progressBar) {
-                    const progress = (pointIndex / roadPathCoordinates.length) * 100;
-                    progressBar.style.width = progress + '%';
+                const elapsed = timestamp - lastTick;
+                if (elapsed >= frameIntervalMs) {
+                    pointIndex += speedPointsPerFrame;
+                    if (pointIndex >= roadPathCoordinates.length) {
+                        pointIndex = 0;
+                    }
+
+                    movingMarker.geometry.setCoordinates(roadPathCoordinates[Math.floor(pointIndex)]);
+
+                    if (progressBar) {
+                        const progress = (pointIndex / roadPathCoordinates.length) * 100;
+                        progressBar.style.width = progress + '%';
+                    }
+
+                    lastTick = timestamp;
                 }
 
                 animationFrameId = requestAnimationFrame(animate);

@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
+use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
 
 class CityController extends Controller
 {
     public function index()
     {
-        $cities = City::all();
+        $cities = NearbyCitySelector::mapCities(10);
         return view('cities.index', compact('cities'));
     }
 
