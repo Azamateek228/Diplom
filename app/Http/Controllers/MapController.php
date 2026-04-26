@@ -4,24 +4,51 @@ namespace App\Http\Controllers;
 
 use App\Models\City;
 use App\Models\Setting;
-use Illuminate\Http\Request;
 
 class MapController extends Controller
 {
     public function index()
     {
-        // Получаем города с координатами, отсортированные по количеству голосов
-        $cities = City::withCount('votes')
-            ->orderByDesc('votes_count')
-            ->limit(10)
+        $allCities = City::withCount('votes')
             ->get()
-            ->filter(function($city) {
-                // Фильтруем только города с координатами
+            ->filter(function ($city) {
                 return $city->lat && $city->lng;
             })
-            ->values(); // Переиндексируем массив
-        
-        $currentCity = Setting::first()?->currentCity;
+            ->values();
+
+        $baseCity = $allCities->first(function ($city) {
+            $name = mb_strtolower(trim((string) $city->name));
+            return str_contains($name, 'набережные челны')
+                || str_contains($name, 'наб челны')
+                || str_contains($name, 'naberezhnye chelny');
+        });
+
+        if ($baseCity) {
+            $nearestCities = $allCities
+                ->reject(fn ($city) => (int) $city->id === (int) $baseCity->id)
+                ->sortBy(fn ($city) => $this->distanceInKm(
+                    (float) $baseCity->lat,
+                    (float) $baseCity->lng,
+                    (float) $city->lat,
+                    (float) $city->lng
+                ))
+                ->take(10)
+                ->values();
+
+            $cities = collect([$baseCity])
+                ->concat($nearestCities)
+                ->values();
+        } else {
+            $cities = $allCities
+                ->sortByDesc('votes_count')
+                ->take(11)
+                ->values();
+        }
+
+        $settingsCurrentCity = Setting::first()?->currentCity;
+        $currentCity = $cities->firstWhere('id', $settingsCurrentCity?->id)
+            ?? $baseCity
+            ?? $cities->first();
         
         // Подготавливаем данные городов для JavaScript
         $citiesData = $cities->map(function($city) {
@@ -48,5 +75,21 @@ class MapController extends Controller
         }
 
         return view('map', compact('cities', 'citiesData', 'currentCity', 'defaultCenter'));
+    }
+
+    private function distanceInKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadiusKm = 6371;
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2)
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2))
+            * sin($dLng / 2) * sin($dLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadiusKm * $c;
     }
 }
