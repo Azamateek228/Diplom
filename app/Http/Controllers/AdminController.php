@@ -15,8 +15,15 @@ class AdminController extends Controller
 {
     public function stats(Request $request)
     {
+        $settings = Setting::first();
+        $currentCityId = $settings?->current_city_id;
+        $selectedCityId = $request->get('city_id');
+        $ensureCityId = $selectedCityId ?: $currentCityId;
+        $cities = NearbyCitySelector::mapCities(10, $ensureCityId ? (int) $ensureCityId : null);
+        $cityIds = $cities->pluck('id')->all();
+
         $usersCount = User::count();
-        $votesCount = Vote::count();
+        $votesCount = Vote::whereIn('city_id', $cityIds)->count();
         $ticketsPurchased = (int) Ticket::where('status', 'purchased')->sum('quantity');
         $totalCapacity = (int) Movie::whereNotNull('venue_capacity')->sum('venue_capacity');
         $overallLoadPercent = $totalCapacity > 0
@@ -28,21 +35,22 @@ class AdminController extends Controller
             ->first();
 
         $topCity = City::withCount('votes')
+            ->whereIn('id', $cityIds)
             ->orderByDesc('votes_count')
             ->first();
 
-        // Фильтр по городу
-        $selectedCityId = $request->get('city_id');
         $moviesQuery = Movie::with(['city', 'votes'])->withCount('votes');
         
         if ($selectedCityId) {
             $moviesQuery->where('city_id', $selectedCityId);
+        } else {
+            $moviesQuery->whereIn('city_id', $cityIds);
         }
         
         $movies = $moviesQuery->orderByDesc('votes_count')->get();
         
         // Подсчет по городам: голоса и ожидаемые зрители из таблицы votes
-        $cityStats = City::all()->map(function ($city) {
+        $cityStats = $cities->map(function ($city) {
             $cityMovies = Movie::where('city_id', $city->id)->get();
             $totalVotes = Vote::where('city_id', $city->id)->count();
             $totalExpected = Vote::where('city_id', $city->id)->sum('expected_attendees');
@@ -81,10 +89,6 @@ class AdminController extends Controller
             return redirect()->route('admin.stats')->with('success', 'Настройки обновлены.');
         }
 
-        $settings = Setting::first();
-        $currentCityId = $settings?->current_city_id;
-        $ensureCityId = $selectedCityId ?: $currentCityId;
-        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $ensureCityId ? (int) $ensureCityId : null);
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
         $currentCityName = $currentCityId ? $cities->firstWhere('id', $currentCityId)?->name : null;

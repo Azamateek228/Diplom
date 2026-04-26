@@ -38,7 +38,7 @@ class MovieController extends Controller
                 : 0;
         });
 
-        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, auth()->user()?->city_id);
+        $cities = NearbyCitySelector::mapCities(10, auth()->user()?->city_id);
         $settings = Setting::first();
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
@@ -64,7 +64,7 @@ class MovieController extends Controller
 
     public function create()
     {
-        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10);
+        $cities = NearbyCitySelector::mapCities(10);
         return view('movies.create', compact('cities'));
     }
 
@@ -91,7 +91,7 @@ class MovieController extends Controller
 
     public function edit(Movie $movie)
     {
-        $cities = NearbyCitySelector::naberezhnyeChelnyWithNearest(10, $movie->city_id);
+        $cities = NearbyCitySelector::mapCities(10, $movie->city_id);
         return view('movies.edit', compact('movie', 'cities'));
     }
 

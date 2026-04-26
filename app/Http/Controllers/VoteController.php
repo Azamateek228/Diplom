@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Movie;
-use App\Models\City;
 use App\Models\Setting;
 use App\Models\Vote;
+use App\Support\NearbyCitySelector;
 
 class VoteController extends Controller
 {
     public function index()
     {
-        $cities = City::all();
+        $cities = NearbyCitySelector::mapCities(10, auth()->user()?->city_id);
         $movies = Movie::withCount('votes')->get();
 
         return view('votes.index', compact('cities', 'movies'));
@@ -70,4 +70,3 @@ class VoteController extends Controller
         return redirect()->back()->with('success', 'Голос учтён!');
     }
 }
-
