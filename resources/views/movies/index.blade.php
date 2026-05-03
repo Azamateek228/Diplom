@@ -62,7 +62,7 @@
                 @foreach ($movies as $movie)
                     <div class="movie-card fade-in-up">
                         <img class="movie-poster"
-                            src="{{ $movie->poster ? asset($movie->poster) : asset('images/poster-placeholder.jpg') }}"
+                            src="{{ $movie->poster_url }}"
                             alt="{{ $movie->title }}">
 
                         <div class="info">

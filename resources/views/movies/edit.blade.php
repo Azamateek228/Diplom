@@ -7,12 +7,12 @@
         @if ($movie->poster)
             <div class="current-poster mb-4">
                 <label>Текущий постер:</label>
-                <img src="{{ $movie->poster }}" alt="{{ $movie->title }}"
+                <img src="{{ $movie->poster_url }}" alt="{{ $movie->title }}"
                     style="max-width: 200px; border-radius: 10px; margin-top: 10px;">
             </div>
         @endif
 
-        <form method="POST" action="{{ route('movies.update', $movie) }}" class="movie-form">
+        <form method="POST" action="{{ route('movies.update', $movie) }}" class="movie-form" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -94,10 +94,9 @@
             </div>
 
             <div class="form-group">
-                <label for="poster">URL постера</label>
-                <input type="text" id="poster" name="poster" class="form-control"
-                    placeholder="https://example.com/poster.jpg" value="{{ old('poster', $movie->poster) }}">
-                <small class="form-text text-muted">Введите URL изображения для обновления постера</small>
+                <label for="poster">Постер фильма</label>
+                <input type="file" id="poster_file" name="poster_file" class="form-control" accept="image/*">
+                <small class="form-text text-muted">Загрузите изображение с компьютера (до 4 МБ)</small>
             </div>
 
             <div class="form-group">

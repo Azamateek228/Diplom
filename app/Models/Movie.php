@@ -25,6 +25,19 @@ class Movie extends Model
         'show_time' => 'datetime',
     ];
 
+    protected $appends = ['poster_url'];
+
+    public function getPosterUrlAttribute(): string
+    {
+        if (! $this->poster) {
+            return asset('images/poster-placeholder.jpg');
+        }
+
+        return str_starts_with($this->poster, 'images/')
+            ? asset($this->poster)
+            : asset('storage/' . $this->poster);
+    }
+
     public function votes()
     {
         return $this->hasMany(Vote::class);

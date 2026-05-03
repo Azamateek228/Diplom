@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\Ticket;
 use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MovieController extends Controller
 {
@@ -17,7 +18,6 @@ class MovieController extends Controller
         $query = Movie::with(['city', 'votes'])
             ->withCount('votes');
 
-        // Фильтр по городу
         if ($request->has('city_id') && $request->city_id) {
             $query->where('city_id', $request->city_id);
         }
@@ -76,7 +76,7 @@ class MovieController extends Controller
             'duration' => 'required|integer|min:1',
             'age_rating' => 'required|string',
             'description' => 'nullable|string',
-            'poster' => 'nullable|string',
+            'poster_file' => 'nullable|image|max:4096',
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
             'show_time' => 'nullable|date',
@@ -84,6 +84,11 @@ class MovieController extends Controller
             'expected_attendees' => 'nullable|integer|min:0',
         ]);
 
+        if ($request->hasFile('poster_file')) {
+            $validated['poster'] = $request->file('poster_file')->store('posters', 'public');
+        }
+
+        unset($validated['poster_file']);
         Movie::create($validated);
 
         return redirect()->route('admin.stats')->with('success', 'Фильм успешно добавлен!');
@@ -103,7 +108,7 @@ class MovieController extends Controller
             'duration' => 'required|integer|min:1',
             'age_rating' => 'required|string',
             'description' => 'nullable|string',
-            'poster' => 'nullable|string',
+            'poster_file' => 'nullable|image|max:4096',
             'city_id' => 'nullable|exists:cities,id',
             'venue' => 'nullable|string|max:255',
             'show_time' => 'nullable|date',
@@ -111,6 +116,15 @@ class MovieController extends Controller
             'expected_attendees' => 'nullable|integer|min:0',
         ]);
 
+        if ($request->hasFile('poster_file')) {
+            if ($movie->poster) {
+                Storage::disk('public')->delete($movie->poster);
+            }
+
+            $validated['poster'] = $request->file('poster_file')->store('posters', 'public');
+        }
+
+        unset($validated['poster_file']);
         $movie->update($validated);
 
         return redirect()->route('admin.stats')->with('success', 'Фильм успешно обновлен!');
@@ -141,6 +155,10 @@ class MovieController extends Controller
 
     public function destroy(Movie $movie)
     {
+        if ($movie->poster) {
+            Storage::disk('public')->delete($movie->poster);
+        }
+
         $movie->delete();
 
         return redirect()->route('admin.stats')->with('success', 'Фильм успешно удален!');

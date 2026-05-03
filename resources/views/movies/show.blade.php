@@ -6,7 +6,7 @@
         <div class="card">
             <div class="row g-0">
                 <div class="col-md-4">
-                    <img src="{{ $movie->poster ? asset($movie->poster) : asset('images/poster-placeholder.jpg') }}"
+                    <img src="{{ $movie->poster_url }}"
                         alt="{{ $movie->title }}" class="img-fluid rounded-start">
                 </div>
                 <div class="col-md-8">

@@ -3,13 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\City;
+use App\Models\Movie;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $routeCities = [
@@ -26,8 +24,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Мензелинск', 'lat' => 55.7271, 'lng' => 53.1026, 'population' => 16948],
         ];
 
-
-        // Заменяем Агрыз на более близкий к Набережным Челнам город для логичного маршрута.
         City::query()
             ->whereRaw('LOWER(TRIM(name)) = ?', ['агрыз'])
             ->orWhereRaw('LOWER(TRIM(name)) = ?', ['agryz'])
@@ -42,6 +38,30 @@ class DatabaseSeeder extends Seeder
                     'population' => $city['population'],
                 ]
             );
+        }
+
+        Movie::query()->delete();
+
+        $movieTemplates = [
+            ['title' => 'Дорога света', 'genre' => 'Драма', 'duration' => 112, 'age_rating' => '12', 'poster' => 'images/film1.jpg'],
+            ['title' => 'Тайна фургона', 'genre' => 'Приключения', 'duration' => 98, 'age_rating' => '6', 'poster' => 'images/film2.jpg'],
+            ['title' => 'Ночное небо', 'genre' => 'Фантастика', 'duration' => 124, 'age_rating' => '16', 'poster' => 'images/film3.jpg'],
+            ['title' => 'Городской ритм', 'genre' => 'Комедия', 'duration' => 106, 'age_rating' => '12', 'poster' => 'images/film4.jpg'],
+            ['title' => 'Перед рассветом', 'genre' => 'Триллер', 'duration' => 118, 'age_rating' => '18', 'poster' => 'images/film5.jpg'],
+        ];
+
+        $cities = City::query()->take(5)->get();
+        foreach ($movieTemplates as $idx => $movieData) {
+            $city = $cities[$idx % max(1, $cities->count())] ?? null;
+            Movie::create([
+                ...$movieData,
+                'description' => 'Фильм для выездного кинотеатра с атмосферой большого экрана и живого общения.',
+                'city_id' => $city?->id,
+                'venue' => 'Центральная площадь',
+                'show_time' => now()->addDays($idx + 1)->setTime(20, 0),
+                'venue_capacity' => 150 + ($idx * 10),
+                'expected_attendees' => 90 + ($idx * 8),
+            ]);
         }
     }
 }
