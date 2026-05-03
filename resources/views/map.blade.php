@@ -73,11 +73,44 @@
         }
 
         function orderCities(citiesArray) {
-            return citiesArray.filter(city => {
+            const valid = citiesArray.filter(city => {
                 const lat = parseCoordinate(city.lat);
                 const lng = parseCoordinate(city.lng);
                 return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
             });
+
+            if (valid.length <= 2) return valid;
+
+            const remaining = [...valid];
+            const startIndex = currentCityId
+                ? Math.max(remaining.findIndex(c => c.id === currentCityId), 0)
+                : 0;
+
+            const ordered = [remaining.splice(startIndex, 1)[0]];
+
+            while (remaining.length > 0) {
+                const current = ordered[ordered.length - 1];
+                const currentLat = parseCoordinate(current.lat);
+                const currentLng = parseCoordinate(current.lng);
+
+                let nearestIndex = 0;
+                let nearestDistance = Infinity;
+
+                for (let i = 0; i < remaining.length; i++) {
+                    const candidateLat = parseCoordinate(remaining[i].lat);
+                    const candidateLng = parseCoordinate(remaining[i].lng);
+                    const distance = map.distance([currentLat, currentLng], [candidateLat, candidateLng]);
+
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestIndex = i;
+                    }
+                }
+
+                ordered.push(remaining.splice(nearestIndex, 1)[0]);
+            }
+
+            return ordered;
         }
 
         function initMap() {

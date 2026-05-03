@@ -42,8 +42,7 @@ class NearbyCitySelector
                         (float) $city->lng
                     ))
                     ->take($nearest)
-            )
-            ->sortBy('name')
+)
             ->values();
 
         return self::appendEnsuredCity($cities, $ensureCityId);
@@ -109,7 +108,6 @@ class NearbyCitySelector
 
         return $cities
             ->push($ensuredCity)
-            ->sortBy('name')
             ->values();
     }
 
