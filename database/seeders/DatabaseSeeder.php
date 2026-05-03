@@ -42,26 +42,6 @@ class DatabaseSeeder extends Seeder
 
         Movie::query()->delete();
 
-        $movieTemplates = [
-            ['title' => 'Дорога света', 'genre' => 'Драма', 'duration' => 112, 'age_rating' => '12', 'poster' => 'images/film1.jpg'],
-            ['title' => 'Тайна фургона', 'genre' => 'Приключения', 'duration' => 98, 'age_rating' => '6', 'poster' => 'images/film2.jpg'],
-            ['title' => 'Ночное небо', 'genre' => 'Фантастика', 'duration' => 124, 'age_rating' => '16', 'poster' => 'images/film3.jpg'],
-            ['title' => 'Городской ритм', 'genre' => 'Комедия', 'duration' => 106, 'age_rating' => '12', 'poster' => 'images/film4.jpg'],
-            ['title' => 'Перед рассветом', 'genre' => 'Триллер', 'duration' => 118, 'age_rating' => '18', 'poster' => 'images/film5.jpg'],
-        ];
 
-        $cities = City::query()->take(5)->get();
-        foreach ($movieTemplates as $idx => $movieData) {
-            $city = $cities[$idx % max(1, $cities->count())] ?? null;
-            Movie::create([
-                ...$movieData,
-                'description' => 'Фильм для выездного кинотеатра с атмосферой большого экрана и живого общения.',
-                'city_id' => $city?->id,
-                'venue' => 'Центральная площадь',
-                'show_time' => now()->addDays($idx + 1)->setTime(20, 0),
-                'venue_capacity' => 150 + ($idx * 10),
-                'expected_attendees' => 90 + ($idx * 8),
-            ]);
-        }
     }
 }
