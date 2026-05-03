@@ -1997,3 +1997,55 @@ footer {
     .movies { padding: 24px 8px; }
     .quick-showtime-form { grid-template-columns: 1fr; }
 }
+
+:root {
+    --bg: #0b1020;
+    --card: #121a2c;
+    --card-2: #1a2440;
+    --accent: #ffcc00;
+    --text: #edf2ff;
+}
+
+.navbar { box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+.navbar-brand { font-weight: 700; letter-spacing: .3px; }
+
+.admin-form-container, .card, .home-kpi-card {
+    background: linear-gradient(180deg, var(--card), var(--card-2));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    color: var(--text);
+}
+
+.form-control, .form-select {
+    background: rgba(255,255,255,.06) !important;
+    border: 1px solid rgba(255,255,255,.14) !important;
+    color: var(--text) !important;
+}
+
+.form-control::placeholder { color: rgba(237,242,255,.55); }
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 .2rem rgba(255,204,0,.2) !important;
+}
+
+.movie-card { border: 1px solid rgba(255,255,255,.08); }
+.movie-poster { background: #0f1324; }
+.movie-card-header { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.movie-rating-badge { background: rgba(255,204,0,.14); color: #ffdc4e; padding: 4px 10px; border-radius: 999px; font-size: 13px; }
+
+.empty-state {
+    text-align: center;
+    padding: 50px 24px;
+    background: rgba(255,255,255,.03);
+    border: 1px dashed rgba(255,255,255,.2);
+    border-radius: 14px;
+}
+
+.progress-bar-container { height: 8px; background: rgba(255,255,255,.14); border-radius: 30px; overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #36d399, #60a5fa); }
+
+@media (max-width: 992px) {
+    .movies { padding: 30px 12px; }
+    .hero { padding: 30px 16px; height: auto; min-height: 60vh; }
+    .hero h2, .dashboard-hero h1 { font-size: 34px; }
+}

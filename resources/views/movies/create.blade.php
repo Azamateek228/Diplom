@@ -4,7 +4,7 @@
     <div class="admin-form-container">
         <h2 class="mb-4">Добавить фильм</h2>
 
-        <form method="POST" action="{{ route('movies.store') }}" class="movie-form">
+        <form method="POST" action="{{ route('movies.store') }}" class="movie-form" enctype="multipart/form-data">
             @csrf
 
             <div class="form-group">
@@ -75,9 +75,8 @@
             </div>
 
             <div class="form-group">
-                <label for="poster">URL постера</label>
-                <input type="text" id="poster" name="poster" class="form-control"
-                    placeholder="https://example.com/poster.jpg">
+                <label for="poster">Постер фильма</label>
+                <input type="file" id="poster_file" name="poster_file" class="form-control" accept="image/*">
             </div>
 
             <div class="form-group">
