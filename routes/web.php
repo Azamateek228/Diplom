@@ -50,6 +50,8 @@ Route::get('/movies/create', [MovieController::class, 'create'])->middleware('ad
 Route::post('/movies', [MovieController::class, 'store'])->middleware('admin')->name('movies.store');
 Route::get('/movies/{movie}/edit', [MovieController::class, 'edit'])->middleware('admin')->name('movies.edit');
 Route::put('/movies/{movie}', [MovieController::class, 'update'])->middleware('admin')->name('movies.update');
+Route::patch('/movies/{movie}/show-time', [MovieController::class, 'updateShowTime'])->middleware('admin')->name('movies.update-show-time');
+Route::post('/movies/{movie}/duplicate', [MovieController::class, 'duplicate'])->middleware('admin')->name('movies.duplicate');
 Route::delete('/movies/{movie}', [MovieController::class, 'destroy'])->middleware('admin')->name('movies.destroy');
 
 // Маршруты для городов
@@ -112,4 +114,3 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['get', 'post'], '/admin/stats', [AdminController::class, 'stats'])
         ->name('admin.stats');
 });
-

@@ -116,6 +116,29 @@ class MovieController extends Controller
         return redirect()->route('admin.stats')->with('success', 'Фильм успешно обновлен!');
     }
 
+    public function updateShowTime(Request $request, Movie $movie)
+    {
+        $validated = $request->validate([
+            'show_time' => 'required|date',
+        ]);
+
+        $movie->update([
+            'show_time' => $validated['show_time'],
+        ]);
+
+        return redirect()->route('admin.stats')->with('success', 'Дата показа обновлена.');
+    }
+
+    public function duplicate(Movie $movie)
+    {
+        $clone = $movie->replicate();
+        $clone->title = $movie->title . ' (копия)';
+        $clone->show_time = now()->addWeek();
+        $clone->save();
+
+        return redirect()->route('movies.edit', $clone)->with('success', 'Фильм продублирован. Проверьте данные и сохраните.');
+    }
+
     public function destroy(Movie $movie)
     {
         $movie->delete();

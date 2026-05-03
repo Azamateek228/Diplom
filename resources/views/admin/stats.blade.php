@@ -155,7 +155,7 @@
         @else
             <div class="movies-admin-grid">
                 @foreach($movies as $movie)
-                    <div class="movie-admin-card">
+                    <div class="movie-admin-card {{ $movie->show_time && \Illuminate\Support\Carbon::parse($movie->show_time)->isPast() ? 'is-past' : 'is-upcoming' }}">
                         @if($movie->poster)
                             <div class="movie-poster-preview">
                                 <img src="{{ $movie->poster }}" alt="{{ $movie->title }}">
@@ -226,6 +226,17 @@
                         </div>
                         
                         <div class="movie-admin-actions">
+                            <form method="POST" action="{{ route('movies.update-show-time', $movie) }}" class="quick-showtime-form">
+                                @csrf
+                                @method('PATCH')
+                                <input type="datetime-local" name="show_time" class="form-control form-control-sm"
+                                    value="{{ $movie->show_time ? \Illuminate\Support\Carbon::parse($movie->show_time)->format('Y-m-d\TH:i') : now()->addDay()->format('Y-m-d\TH:i') }}" required>
+                                <button type="submit" class="btn btn-sm btn-warning">Обновить дату</button>
+                            </form>
+                            <form method="POST" action="{{ route('movies.duplicate', $movie) }}" class="duplicate-form">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-info">Дублировать</button>
+                            </form>
                             <a href="{{ route('movies.edit', $movie) }}" class="btn-edit">
                                  Редактировать
                             </a>
