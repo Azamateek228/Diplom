@@ -22,8 +22,13 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Азнакаево', 'lat' => 54.8579, 'lng' => 53.0698, 'population' => 32926],
             ['name' => 'Заинск', 'lat' => 55.3207, 'lng' => 52.0669, 'population' => 41498],
             ['name' => 'Менделеевск', 'lat' => 55.8952, 'lng' => 52.3144, 'population' => 22442],
+            ['name' => 'Мамадыш', 'lat' => 55.7149, 'lng' => 51.4070, 'population' => 15752],
             ['name' => 'Мензелинск', 'lat' => 55.7271, 'lng' => 53.1026, 'population' => 16948],
         ];
+
+
+        // Заменяем Агрыз на более близкий к Набережным Челнам город для логичного маршрута.
+        City::where('name', 'Агрыз')->delete();
 
         foreach ($routeCities as $city) {
             City::updateOrCreate(
