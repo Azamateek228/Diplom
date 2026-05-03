@@ -1935,3 +1935,65 @@ footer {
     border-radius: 999px;
     font-weight: 700;
 }
+
+/* --- Admin polish --- */
+.admin-page {
+    background: radial-gradient(circle at top, rgba(255, 204, 0, 0.08), transparent 45%);
+}
+
+.admin-section, .stat-card {
+    background: rgba(18, 18, 30, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+}
+
+.movies-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 18px;
+}
+
+.movie-admin-card {
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(150deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    padding: 14px;
+}
+
+.movie-admin-card.is-past {
+    border-left: 4px solid #ff6b6b;
+}
+
+.movie-admin-card.is-upcoming {
+    border-left: 4px solid #51cf66;
+}
+
+.movie-admin-actions {
+    display: grid;
+    gap: 8px;
+}
+
+.quick-showtime-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-edit, .btn-delete {
+    text-align: center;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.btn-edit { background: #2f9e44; color: #fff; }
+.btn-delete { background: #e03131; color: #fff; border: none; width: 100%; }
+
+@media (max-width: 768px) {
+    .movies { padding: 24px 8px; }
+    .quick-showtime-form { grid-template-columns: 1fr; }
+}
