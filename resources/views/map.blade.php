@@ -48,7 +48,11 @@
         @endif
     </div>
 
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script>
         let map;
         let routePolyline;
@@ -56,389 +60,167 @@
         let cityMarkers = [];
         let isAnimating = false;
         let roadPathCoordinates = [];
-        let roadRouteBuildFailed = false;
         let animationFrameId = null;
 
-        // Данные городов из PHP
         const cities = @json($citiesData ?? []);
-
         const currentCityId = @json($currentCity?->id ?? null);
         const defaultCenter = @json($defaultCenter ?? [55.7558, 37.6173]);
 
-        console.log('Cities data:', cities);
-        console.log('Default center:', defaultCenter);
-
         function parseCoordinate(value) {
-            if (typeof value === 'number') {
-                return value;
-            }
-
-            if (typeof value === 'string') {
-                return parseFloat(value.replace(',', '.').trim());
-            }
-
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') return parseFloat(value.replace(',', '.').trim());
             return NaN;
         }
 
-        // Функция упорядочивания городов - универсальная логика
         function orderCities(citiesArray) {
-            if (citiesArray.length <= 1) {
-                return citiesArray;
-            }
-
-            // Фильтруем города с валидными координатами
-            const validCities = citiesArray.filter(city => {
+            const valid = citiesArray.filter(city => {
                 const lat = parseCoordinate(city.lat);
                 const lng = parseCoordinate(city.lng);
-                return !isNaN(lat) && !isNaN(lng) && 
-                       lat >= -90 && lat <= 90 && 
-                       lng >= -180 && lng <= 180;
+                return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
             });
 
-            if (validCities.length === 0) {
-                console.warn('Нет городов с валидными координатами');
-                return citiesArray;
-            }
-            console.log('Упорядоченные города:', validCities.map(c => c.name));
-            return validCities;
-        }
+            if (valid.length <= 2) return valid;
 
-        // Инициализация карты - ждем загрузки API
-        function initMap() {
-            if (typeof ymaps === 'undefined') {
-                console.log('Ожидание загрузки Yandex Maps API...');
-                setTimeout(initMap, 100);
-                return;
-            }
+            const remaining = [...valid];
+            const startIndex = currentCityId
+                ? Math.max(remaining.findIndex(c => c.id === currentCityId), 0)
+                : 0;
 
-            ymaps.ready(function() {
-                try {
-                    // Очищаем контейнер карты
-                    const mapContainer = document.getElementById('map');
-                    mapContainer.innerHTML = '';
+            const ordered = [remaining.splice(startIndex, 1)[0]];
 
-                    // Создаем карту
-                    map = new ymaps.Map('map', {
-                        center: defaultCenter,
-                        zoom: cities.length > 0 ? 6 : 4,
-                        controls: ['zoomControl', 'fullscreenControl', 'typeSelector']
-                    });
+            while (remaining.length > 0) {
+                const current = ordered[ordered.length - 1];
+                const currentLat = parseCoordinate(current.lat);
+                const currentLng = parseCoordinate(current.lng);
 
-                    console.log('Карта создана успешно');
+                let nearestIndex = 0;
+                let nearestDistance = Infinity;
 
-                    if (cities.length === 0) {
-                        // Если нет городов, показываем сообщение
-                        const noCitiesMarker = new ymaps.Placemark(
-                            defaultCenter, {
-                                balloonContent: 'Добавьте города с координатами для отображения маршрута'
-                            }, {
-                                preset: 'islands#redIcon'
-                            }
-                        );
-                        map.geoObjects.add(noCitiesMarker);
-                        return;
+                for (let i = 0; i < remaining.length; i++) {
+                    const candidateLat = parseCoordinate(remaining[i].lat);
+                    const candidateLng = parseCoordinate(remaining[i].lng);
+                    const distance = map.distance([currentLat, currentLng], [candidateLat, candidateLng]);
+
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestIndex = i;
                     }
-
-                    // Создаем маркеры для городов
-                    cities.forEach((city, index) => {
-                        // Проверяем валидность координат
-                        const lat = parseCoordinate(city.lat);
-                        const lng = parseCoordinate(city.lng);
-                        
-                        if (isNaN(lat) || isNaN(lng)) {
-                            console.warn(`Город "${city.name}" имеет невалидные координаты:`, city);
-                            return;
-                        }
-
-                        const marker = new ymaps.Placemark(
-                            [lat, lng], {
-                                balloonContent: `
-                                    <div style="padding: 10px;">
-                                        <h4>${city.name}</h4>
-                                        <p>🗳️ Голосов: ${city.votes_count || 0}</p>
-                                        ${currentCityId === city.id ? '<p style="color: #ffcc00; font-weight: bold;">📍 Текущее местоположение</p>' : ''}
-                                    </div>
-                                `,
-                                iconCaption: city.name
-                            }, {
-                                preset: currentCityId === city.id ? 'islands#redDotIcon' :
-                                    'islands#blueCircleDotIcon',
-                                iconColor: currentCityId === city.id ? '#ff0000' : '#1e98ff'
-                            }
-                        );
-
-                        cityMarkers.push(marker);
-                        map.geoObjects.add(marker);
-                    });
-
-                    // Создаем маркер фургончика
-                    if (cities.length > 0) {
-                        // Упорядочиваем города
-                        const orderedCities = orderCities(cities);
-
-                        // Начальная позиция: из админки (текущий город кинотеатра) или по умолчанию
-                        let startPosition;
-
-                        const adminCurrentCityIndex = currentCityId
-                            ? orderedCities.findIndex(c => c.id === currentCityId)
-                            : -1;
-
-                        if (adminCurrentCityIndex !== -1) {
-                            // В админке выбран текущий город — фургон стартует именно отсюда
-                            const c = orderedCities[adminCurrentCityIndex];
-                            startPosition = [parseCoordinate(c.lat), parseCoordinate(c.lng)];
-                        } else if (orderedCities.length >= 2) {
-                            // Иначе — по умолчанию: ближе к первому городу маршрута
-                            const firstCity = orderedCities[0];
-                            startPosition = [
-                                parseCoordinate(firstCity.lat),
-                                parseCoordinate(firstCity.lng)
-                            ];
-                        } else {
-                            startPosition = [
-                                parseCoordinate(orderedCities[0].lat),
-                                parseCoordinate(orderedCities[0].lng)
-                            ];
-                        }
-
-                        movingMarker = new ymaps.Placemark(
-                            startPosition, {
-                                balloonContent: '<strong>Кинотеатр на колёсах</strong><br>Маркер маршрута'
-                            }, {
-                                preset: 'islands#violetCircleDotIcon',
-                                iconColor: '#7e57c2'
-                            }
-                        );
-                        map.geoObjects.add(movingMarker);
-
-                        // Обновляем массив cities для анимации (упорядоченный)
-                        cities.length = 0;
-                        cities.push(...orderedCities);
-
-                    }
-
-                    // Строим маршрут между городами
-                    if (cities.length > 1) {
-                        buildRoute();
-
-                        const routeInfo = document.getElementById('routeInfo');
-                        if (routeInfo) {
-                            routeInfo.style.display = 'none';
-                        }
-
-                        // Автостарт движения маркера после построения карты.
-                        setTimeout(function() {
-                            if (movingMarker && !isAnimating) {
-                                animateVan();
-                            }
-                        }, 1000);
-                    }
-                } catch (error) {
-                    console.error('Ошибка при создании карты:', error);
-                    document.getElementById('map').innerHTML =
-                        '<div style="padding: 20px; text-align: center; color: #fff;"><p>Ошибка загрузки карты. Проверьте консоль браузера.</p><p style="font-size: 12px; color: #888;">' +
-                        error.message + '</p></div>';
                 }
-            });
+
+                ordered.push(remaining.splice(nearestIndex, 1)[0]);
+            }
+
+            return ordered;
         }
 
-        // Запускаем инициализацию карты
-        initMap();
+        function initMap() {
+            const mapContainer = document.getElementById('map');
+            mapContainer.innerHTML = '';
 
-        // Функция построения маршрута по реальным дорогам.
-        function buildRoute() {
-            if (cities.length < 2) return;
+            map = L.map('map').setView(defaultCenter, cities.length > 0 ? 6 : 4);
 
-            if (routePolyline) {
-                map.geoObjects.remove(routePolyline);
-                routePolyline = null;
-            }
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
 
             const orderedCities = orderCities(cities);
-            const routePoints = orderedCities
-                .map(city => [parseCoordinate(city.lat), parseCoordinate(city.lng)])
-                .filter(point => !isNaN(point[0]) && !isNaN(point[1]));
-            roadRouteBuildFailed = false;
-
-            if (routePoints.length < 2) {
-                console.warn('Недостаточно точек для построения дорожного маршрута');
+            if (orderedCities.length === 0) {
+                L.marker(defaultCenter).addTo(map).bindPopup('Добавьте города с координатами для отображения маршрута');
                 return;
             }
 
-            buildRoadPath(routePoints)
-                .then((fullRoadPath) => {
-                    if (!fullRoadPath || fullRoadPath.length < 2) {
-                        roadPathCoordinates = [];
-                        return;
-                    }
+            orderedCities.forEach((city) => {
+                const lat = parseCoordinate(city.lat);
+                const lng = parseCoordinate(city.lng);
+                const isCurrent = currentCityId === city.id;
 
-                    roadPathCoordinates = fullRoadPath;
+                const marker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    color: isCurrent ? '#ff0000' : '#1e98ff',
+                    fillColor: isCurrent ? '#ff0000' : '#1e98ff',
+                    fillOpacity: 0.9
+                }).addTo(map).bindPopup(`
+                    <div style="padding: 8px;">
+                        <h4>${city.name}</h4>
+                        <p>🗳️ Голосов: ${city.votes_count || 0}</p>
+                        ${isCurrent ? '<p style="color: #ffcc00; font-weight: bold;">📍 Текущее местоположение</p>' : ''}
+                    </div>
+                `);
 
-                    if (routePolyline) {
-                        map.geoObjects.remove(routePolyline);
-                    }
-
-                    routePolyline = new ymaps.Polyline(
-                        roadPathCoordinates, {}, {
-                            strokeColor: '#ff8c00',
-                            strokeWidth: 6,
-                            strokeOpacity: 0.95
-                        }
-                    );
-
-                    map.geoObjects.add(routePolyline);
-                    map.setBounds(routePolyline.geometry.getBounds(), {
-                        checkZoomRange: true,
-                        duration: 400
-                    });
-
-                    if (movingMarker) {
-                        movingMarker.geometry.setCoordinates(roadPathCoordinates[0]);
-                    }
-
-                    if (!isAnimating) {
-                        animateVan();
-                    }
-                })
-                .catch((error) => {
-                    console.warn('Маршрут по дорогам не построен:', error);
-                    roadRouteBuildFailed = true;
-                    roadPathCoordinates = buildFallbackPath(routePoints);
-
-                    if (!roadPathCoordinates || roadPathCoordinates.length < 2) {
-                        return;
-                    }
-
-                    routePolyline = new ymaps.Polyline(
-                        roadPathCoordinates, {}, {
-                            strokeColor: '#f5c542',
-                            strokeWidth: 5,
-                            strokeOpacity: 0.85
-                        }
-                    );
-
-                    map.geoObjects.add(routePolyline);
-                    map.setBounds(routePolyline.geometry.getBounds(), {
-                        checkZoomRange: true,
-                        duration: 400
-                    });
-
-                    if (movingMarker) {
-                        movingMarker.geometry.setCoordinates(roadPathCoordinates[0]);
-                    }
-
-                    if (!isAnimating) {
-                        animateVan();
-                    }
-                });
-        }
-
-        function buildFallbackPath(points) {
-            if (!Array.isArray(points) || points.length < 2) {
-                return [];
-            }
-
-            const fallbackPath = [];
-
-            for (let i = 0; i < points.length - 1; i++) {
-                const fromPoint = points[i];
-                const toPoint = points[i + 1];
-                const steps = 40;
-
-                for (let step = 0; step <= steps; step++) {
-                    const ratio = step / steps;
-                    const lat = fromPoint[0] + (toPoint[0] - fromPoint[0]) * ratio;
-                    const lng = fromPoint[1] + (toPoint[1] - fromPoint[1]) * ratio;
-
-                    if (i > 0 && step === 0) {
-                        continue;
-                    }
-
-                    fallbackPath.push([lat, lng]);
-                }
-            }
-
-            return fallbackPath;
-        }
-
-        function buildRoadPath(points) {
-            let chain = Promise.resolve();
-            let fullPath = [];
-
-            for (let i = 0; i < points.length - 1; i++) {
-                const fromPoint = points[i];
-                const toPoint = points[i + 1];
-
-                chain = chain.then(() => buildRoadSegment(fromPoint, toPoint, i))
-                    .then((segmentCoords) => {
-                        if (!segmentCoords || segmentCoords.length < 2) {
-                            throw new Error('Пустой сегмент маршрута #' + (i + 1));
-                        }
-
-                        if (i > 0) {
-                            segmentCoords.shift();
-                        }
-
-                        fullPath = fullPath.concat(segmentCoords);
-                    });
-            }
-
-            return chain.then(() => {
-                if (fullPath.length < 2) {
-                    throw new Error('Пустая геометрия дорожного маршрута');
-                }
-
-                return fullPath;
+                cityMarkers.push(marker);
             });
+
+            const startCity = currentCityId
+                ? orderedCities.find(c => c.id === currentCityId) || orderedCities[0]
+                : orderedCities[0];
+
+            movingMarker = L.marker([parseCoordinate(startCity.lat), parseCoordinate(startCity.lng)]).addTo(map)
+                .bindPopup('<strong>Кинотеатр на колёсах</strong><br>Маркер маршрута');
+
+            cities.length = 0;
+            cities.push(...orderedCities);
+
+            if (cities.length > 1) {
+                buildRoute();
+            }
         }
 
-        function buildRoadSegment(fromPoint, toPoint, segmentIndex) {
-            return ymaps.route([fromPoint, toPoint], {
-                routingMode: 'auto'
-            }).then((route) => {
-                const paths = route.getPaths();
-                let coords = [];
+        async function buildRoute() {
+            const points = cities.map(city => [parseCoordinate(city.lat), parseCoordinate(city.lng)]);
+            roadPathCoordinates = await buildRoadPath(points);
 
-                paths.each((path) => {
-                    const pathCoords = path.geometry.getCoordinates();
-                    if (Array.isArray(pathCoords) && pathCoords.length > 0) {
-                        coords = coords.concat(pathCoords);
-                    }
-                });
-
-                if (coords.length < 2) {
-                    throw new Error('Сегмент #' + (segmentIndex + 1) + ' не содержит геометрию');
-                }
-
-                return coords;
-            }, (error) => {
-                throw new Error('Сегмент #' + (segmentIndex + 1) + ' не построен: ' + (error?.message || error || 'unknown'));
-            });
-        }
-
-        // Функция анимации движения фургончика
-        function animateVan() {
-            if (cities.length < 2 || isAnimating) return;
-
-            // Если дорожная геометрия еще не готова, пробуем позже.
             if (!roadPathCoordinates || roadPathCoordinates.length < 2) {
-                setTimeout(animateVan, 1200);
                 return;
             }
+
+            if (routePolyline) {
+                map.removeLayer(routePolyline);
+            }
+
+            routePolyline = L.polyline(roadPathCoordinates, {
+                color: '#ff8c00',
+                weight: 6,
+                opacity: 0.95
+            }).addTo(map);
+
+            map.fitBounds(routePolyline.getBounds(), { padding: [25, 25] });
+
+            movingMarker.setLatLng(roadPathCoordinates[0]);
+
+            if (!isAnimating) {
+                animateVan();
+            }
+        }
+
+        async function buildRoadPath(points) {
+            const chunks = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const from = points[i];
+                const to = points[i + 1];
+                const segment = await buildRoadSegment(from, to);
+                if (i > 0) segment.shift();
+                chunks.push(...segment);
+            }
+            return chunks;
+        }
+
+        async function buildRoadSegment(fromPoint, toPoint) {
+            const coordinates = `${fromPoint[1]},${fromPoint[0]};${toPoint[1]},${toPoint[0]}`;
+            const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`);
+            const data = await response.json();
+
+            if (!data.routes || data.routes.length === 0) {
+                throw new Error('Маршрут не построен');
+            }
+
+            return data.routes[0].geometry.coordinates.map(point => [point[1], point[0]]);
+        }
+
+        function animateVan() {
+            if (isAnimating || !roadPathCoordinates.length) return;
 
             isAnimating = true;
-            animateAlongRoadPath(0);
-        }
-
-        // Движение по точкам дорожной геометрии маршрута.
-        function animateAlongRoadPath(startIndex) {
-            if (!isAnimating || !movingMarker || !roadPathCoordinates || roadPathCoordinates.length < 2) {
-                isAnimating = false;
-                return;
-            }
-
-            const speedPointsPerFrame = 1;
-            const frameIntervalMs = 120;
             const routeInfo = document.getElementById('routeInfo');
             const currentCityNameEl = document.getElementById('currentCityName');
             const nextCityNameEl = document.getElementById('nextCityName');
@@ -450,52 +232,33 @@
                 routeInfo.style.display = 'block';
             }
 
-            let pointIndex = startIndex;
-            let lastTick = null;
+            let pointIndex = 0;
+            let lastTick = 0;
+            const frameIntervalMs = 120;
 
             function animate(timestamp) {
-                if (!isAnimating || !movingMarker) {
-                    return;
-                }
+                if (!isAnimating || !movingMarker) return;
 
-                if (!lastTick) {
-                    lastTick = timestamp;
-                }
-
-                const elapsed = timestamp - lastTick;
-                if (elapsed >= frameIntervalMs) {
-                    pointIndex += speedPointsPerFrame;
-                    if (pointIndex >= roadPathCoordinates.length) {
-                        pointIndex = 0;
-                    }
-
-                    movingMarker.geometry.setCoordinates(roadPathCoordinates[Math.floor(pointIndex)]);
-
-                    if (progressBar) {
-                        const progress = (pointIndex / roadPathCoordinates.length) * 100;
-                        progressBar.style.width = progress + '%';
-                    }
-
+                if (timestamp - lastTick >= frameIntervalMs) {
+                    pointIndex = (pointIndex + 1) % roadPathCoordinates.length;
+                    movingMarker.setLatLng(roadPathCoordinates[pointIndex]);
+                    if (progressBar) progressBar.style.width = `${(pointIndex / roadPathCoordinates.length) * 100}%`;
                     lastTick = timestamp;
                 }
 
                 animationFrameId = requestAnimationFrame(animate);
             }
 
-            animate();
+            animationFrameId = requestAnimationFrame(animate);
         }
 
-        // Обработчики кнопок
         const stopBtn = document.getElementById('stopAnimation');
         const resetBtn = document.getElementById('resetAnimation');
 
         if (stopBtn) {
             stopBtn.addEventListener('click', function() {
                 isAnimating = false;
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
                 const routeInfo = document.getElementById('routeInfo');
                 if (routeInfo) routeInfo.style.display = 'none';
             });
@@ -504,55 +267,15 @@
         if (resetBtn) {
             resetBtn.addEventListener('click', function() {
                 isAnimating = false;
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-                if (cities.length > 1) {
-                    buildRoute();
-                }
-
-                // Вычисляем начальную позицию заново - начинаем с первого города
-                let startPosition;
-                let nearestIndex = 0;
-                
-                if (cities.length > 0) {
-                    // Если есть текущий город, начинаем с него, иначе с первого
-                    if (currentCityId) {
-                        const currentIndex = cities.findIndex(c => c.id === currentCityId);
-                        if (currentIndex !== -1) {
-                            nearestIndex = currentIndex;
-                            startPosition = [
-                                parseFloat(cities[currentIndex].lat),
-                                parseFloat(cities[currentIndex].lng)
-                            ];
-                        } else {
-                            startPosition = [
-                                parseFloat(cities[0].lat),
-                                parseFloat(cities[0].lng)
-                            ];
-                        }
-                    } else {
-                        startPosition = [
-                            parseFloat(cities[0].lat),
-                            parseFloat(cities[0].lng)
-                        ];
-                    }
-                }
-
-                const routeInfo = document.getElementById('routeInfo');
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
                 const progressBar = document.getElementById('routeProgress');
-                if (routeInfo) routeInfo.style.display = 'none';
                 if (progressBar) progressBar.style.width = '0%';
-                if (cities.length > 0 && movingMarker && startPosition) {
-                    movingMarker.geometry.setCoordinates(startPosition);
-                }
-                setTimeout(function() {
-                    if (movingMarker && !isAnimating) {
-                        animateVan();
-                    }
-                }, 800);
+                if (movingMarker && roadPathCoordinates.length > 0) movingMarker.setLatLng(roadPathCoordinates[0]);
+                setTimeout(() => animateVan(), 500);
             });
         }
+
+        initMap();
     </script>
+
 @endsection
