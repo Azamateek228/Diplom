@@ -158,7 +158,7 @@
                     <div class="movie-admin-card {{ $movie->show_time && \Illuminate\Support\Carbon::parse($movie->show_time)->isPast() ? 'is-past' : 'is-upcoming' }}">
                         @if($movie->poster)
                             <div class="movie-poster-preview">
-                                <img src="{{ $movie->poster }}" alt="{{ $movie->title }}">
+                                <img src="{{ $movie->poster_url }}" alt="{{ $movie->title }}">
                             </div>
                         @endif
                         
