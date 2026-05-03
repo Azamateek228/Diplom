@@ -17,7 +17,12 @@ class NearbyCitySelector
         $allCities = City::query()
             ->whereNotNull('lat')
             ->whereNotNull('lng')
-            ->get();
+            ->get()
+            ->reject(function ($city) {
+                $name = mb_strtolower(trim((string) $city->name));
+                return $name === 'агрыз' || str_contains($name, 'agryz');
+            })
+            ->values();
 
         $baseCity = $allCities->first(function ($city) {
             $name = mb_strtolower(trim((string) $city->name));

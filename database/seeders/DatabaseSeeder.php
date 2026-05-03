@@ -28,7 +28,10 @@ class DatabaseSeeder extends Seeder
 
 
         // Заменяем Агрыз на более близкий к Набережным Челнам город для логичного маршрута.
-        City::where('name', 'Агрыз')->delete();
+        City::query()
+            ->whereRaw('LOWER(TRIM(name)) = ?', ['агрыз'])
+            ->orWhereRaw('LOWER(TRIM(name)) = ?', ['agryz'])
+            ->delete();
 
         foreach ($routeCities as $city) {
             City::updateOrCreate(
