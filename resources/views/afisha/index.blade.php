@@ -54,7 +54,7 @@
                                     <span class="badge {{ $availabilityClass }}">{{ $availabilityLabel }}</span>
                                 </div>
                                 @if (!empty($day['movie']) && $day['movie']->poster)
-                                    <img class="afisha-poster mb-2" src="{{ asset($day['movie']->poster) }}" alt="{{ $day['movie']->title }}">
+                                    <img class="afisha-poster mb-2" src="{{ $day['movie']->poster_url }}" alt="{{ $day['movie']->title }}">
                                 @endif
                                 <p class="mb-1"><strong>Фильм:</strong> {{ $day['movie']->title ?? 'Пока не назначен' }}</p>
                                 <p class="mb-1"><strong>Время:</strong> {{ $day['show_time'] }}</p>
