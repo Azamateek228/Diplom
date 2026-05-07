@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\City;
 use App\Models\Movie;
+use App\Support\NearbyCitySelector;
 
 class HomeController extends Controller
 {
@@ -16,7 +16,7 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-        $routeCities = City::orderBy('id')->take(11)->get();
+        $routeCities = NearbyCitySelector::mapCities(10);
 
         return view('home', compact('upcomingMovies', 'routeCities'));
     }

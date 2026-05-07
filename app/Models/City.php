@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class City extends Model
 {
-    protected $fillable = ['name', 'lat', 'lng', 'population'];
+    protected $fillable = ['name', 'lat', 'lng', 'population', 'route_order'];
 
     public function movies()
     {

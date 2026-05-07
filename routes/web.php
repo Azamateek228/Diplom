@@ -60,7 +60,6 @@ Route::delete('/cities/{city}', [CityController::class, 'destroy'])->middleware(
 
 // Главная страница
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::view('/about', 'about')->name('about');
 
 // Карта
 Route::get('/map', [MapController::class, 'index']);
