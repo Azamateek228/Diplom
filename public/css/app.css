@@ -1,3 +1,16 @@
+:root {
+    --bg: #0f1020;
+    --bg-soft: #141421;
+    --card: #1c1c2b;
+    --card-border: rgba(245, 179, 1, 0.18);
+    --text: #f7f7fb;
+    --muted: #b9bdca;
+    --accent: #f5b301;
+    --accent-hover: #ffb703;
+    --danger: #ef4444;
+    --success: #22c55e;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -23,7 +36,7 @@ header {
 }
 
 header h1 {
-    color: #ffcc00;
+    color: var(--accent);
     font-size: 26px;
     letter-spacing: 2px;
 }
@@ -37,7 +50,7 @@ nav a {
 }
 
 nav a:hover {
-    color: #ffcc00;
+    color: var(--accent);
 }
 
 /* главная */
@@ -86,7 +99,7 @@ nav a:hover {
 .btn {
     display: inline-block;
     padding: 14px 30px;
-    background: #ffcc00;
+    background: var(--accent);
     color: #000;
     font-weight: 700;
     border-radius: 40px;
@@ -101,7 +114,7 @@ nav a:hover {
 }
 
 .btn-main {
-    background: #ffcc00;
+    background: var(--accent);
     color: #000;
     border: none;
 }
@@ -150,12 +163,12 @@ nav a:hover {
 }
 
 .city-filter .form-select:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
 }
 
 .city-filter .form-select:focus {
     outline: none;
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
@@ -198,7 +211,7 @@ nav a:hover {
 .movie-card h4 {
     margin-bottom: 15px;
     font-size: 20px;
-    color: #ffcc00;
+    color: var(--accent);
 }
 
 .movie-details {
@@ -230,7 +243,7 @@ nav a:hover {
 .toggle-description-btn {
     background: transparent;
     border: none;
-    color: #ffcc00;
+    color: var(--accent);
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
@@ -322,12 +335,12 @@ nav a:hover {
 }
 
 .vote-city-select .form-select:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
 }
 
 .vote-city-select .form-select:focus {
     outline: none;
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 0 8px rgba(255, 204, 0, 0.2);
 }
 
@@ -403,7 +416,7 @@ footer {
 
 .admin-header h2 {
     margin: 0;
-    color: #ffcc00;
+    color: var(--accent);
 }
 
 .stats-grid {
@@ -442,7 +455,7 @@ footer {
 }
 
 .stat-content h3 {
-    color: #ffcc00;
+    color: var(--accent);
     font-size: 32px;
     margin: 0;
 }
@@ -466,7 +479,7 @@ footer {
 }
 
 .section-title {
-    color: #ffcc00;
+    color: var(--accent);
     font-size: 24px;
     margin-bottom: 20px;
     padding-bottom: 15px;
@@ -490,12 +503,12 @@ footer {
 }
 
 .city-filter-form .form-select:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
 }
 
 .city-filter-form .form-select:focus {
     outline: none;
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
@@ -534,7 +547,7 @@ footer {
 }
 
 .movie-admin-card:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 4px 15px rgba(255, 204, 0, 0.1);
 }
 
@@ -548,14 +561,14 @@ footer {
 }
 
 .movie-admin-header h4 {
-    color: #ffcc00;
+    color: var(--accent);
     margin: 0;
     font-size: 20px;
 }
 
 .city-badge {
     background: rgba(255, 204, 0, 0.2);
-    color: #ffcc00;
+    color: var(--accent);
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -593,7 +606,7 @@ footer {
 }
 
 .btn-edit {
-    background: #ffcc00;
+    background: var(--accent);
     color: #000;
 }
 
@@ -658,12 +671,12 @@ footer {
 }
 
 .city-stat-card:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
     transform: translateY(-3px);
 }
 
 .city-stat-card h4 {
-    color: #ffcc00;
+    color: var(--accent);
     margin-bottom: 15px;
     font-size: 20px;
 }
@@ -707,7 +720,7 @@ footer {
 }
 
 .admin-form-container h2 {
-    color: #ffcc00;
+    color: var(--accent);
     margin-bottom: 30px;
 }
 
@@ -741,7 +754,7 @@ footer {
 
 .form-group .form-control:focus {
     outline: none;
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
@@ -775,7 +788,7 @@ footer {
 }
 
 .btn-primary {
-    background: #ffcc00;
+    background: var(--accent);
     color: #000;
 }
 
@@ -883,7 +896,7 @@ footer {
 }
 
 .city-admin-card:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 4px 15px rgba(255, 204, 0, 0.1);
     transform: translateY(-3px);
 }
@@ -900,7 +913,7 @@ footer {
 }
 
 .city-admin-header h4 {
-    color: #ffcc00;
+    color: var(--accent);
     margin: 0;
     font-size: 20px;
     flex: 1;
@@ -926,7 +939,7 @@ footer {
 
 .badge-warning {
     background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
+    color: var(--accent);
 }
 
 .badge-info {
@@ -993,7 +1006,7 @@ footer {
 
 .route-info span {
     font-weight: 600;
-    color: #ffcc00;
+    color: var(--accent);
 }
 
 .progress-bar-container {
@@ -1007,7 +1020,7 @@ footer {
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ffcc00, #ffd633);
+    background: linear-gradient(90deg, var(--accent), #ffd633);
     border-radius: 4px;
     transition: width 0.3s ease;
     width: 0%;
@@ -1017,7 +1030,7 @@ footer {
 /* Полоса "Кинотеатр в вашем городе" — под навбаром, не ломает кнопки */
 .cinema-in-your-city-bar {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.25), rgba(255, 193, 7, 0.15));
-    color: #ffc107;
+    color: var(--accent);
     font-weight: 600;
     font-size: 0.95rem;
     border-bottom: 1px solid rgba(255, 193, 7, 0.3);
@@ -1032,7 +1045,7 @@ footer {
 }
 
 .afisha-page .card-title {
-    color: #ffcc00;
+    color: var(--accent);
 }
 
 .afisha-card {
@@ -1093,7 +1106,7 @@ footer {
 }
 
 .auth-header {
-    background: linear-gradient(135deg, #ffcc00, #ffd633);
+    background: linear-gradient(135deg, var(--accent), #ffd633);
     padding: 25px;
     text-align: center;
 }
@@ -1107,7 +1120,7 @@ footer {
 }
 
 .auth-header-warning {
-    background: linear-gradient(135deg, #ffc107, #ffca2c);
+    background: linear-gradient(135deg, var(--accent), #ffca2c);
 }
 
 .auth-header-info {
@@ -1158,7 +1171,7 @@ footer {
 
 .auth-input:focus {
     outline: none;
-    border-color: #ffcc00;
+    border-color: var(--accent);
     box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
 }
 
@@ -1242,7 +1255,7 @@ footer {
     height: 18px;
     margin-top: 2px;
     cursor: pointer;
-    accent-color: #ffcc00;
+    accent-color: var(--accent);
 }
 
 .auth-checkbox-label {
@@ -1253,7 +1266,7 @@ footer {
 }
 
 .auth-link {
-    color: #ffcc00;
+    color: var(--accent);
     text-decoration: none;
     transition: 0.3s;
 }
@@ -1279,7 +1292,7 @@ footer {
 }
 
 .auth-btn-primary {
-    background: linear-gradient(135deg, #ffcc00, #ffd633);
+    background: linear-gradient(135deg, var(--accent), #ffd633);
     color: #0b0b0f;
 }
 
@@ -1291,7 +1304,7 @@ footer {
 }
 
 .auth-btn-warning {
-    background: linear-gradient(135deg, #ffc107, #ffca2c);
+    background: linear-gradient(135deg, var(--accent), #ffca2c);
     color: #0b0b0f;
 }
 
@@ -1422,8 +1435,8 @@ footer {
 
 .auth-alert-warning {
     background: rgba(255, 193, 7, 0.15);
-    color: #ffc107;
-    border-left-color: #ffc107;
+    color: var(--accent);
+    border-left-color: var(--accent);
 }
 
 .auth-alert-info {
@@ -1437,7 +1450,7 @@ footer {
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 16px;
-    color: #ffcc00;
+    color: var(--accent);
 }
 
 /* Секция повторной отправки кода */
@@ -1461,7 +1474,7 @@ footer {
 }
 
 .resend-timer #countdown {
-    color: #ffcc00;
+    color: var(--accent);
     font-weight: 700;
 }
 
@@ -1476,7 +1489,7 @@ footer {
 }
 
 .profile-title {
-    color: #ffcc00;
+    color: var(--accent);
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 30px;
@@ -1511,13 +1524,13 @@ footer {
 }
 
 .profile-menu-link:hover {
-    border-color: #ffcc00;
+    border-color: var(--accent);
     color: #fff;
     background: rgba(255, 204, 0, 0.08);
 }
 
 .profile-menu-link.active {
-    border-color: #ffcc00;
+    border-color: var(--accent);
     background: rgba(255, 204, 0, 0.16);
     color: #ffdd73;
     font-weight: 600;
@@ -1547,7 +1560,7 @@ footer {
 }
 
 .profile-card-title {
-    color: #ffcc00;
+    color: var(--accent);
     font-size: 20px;
     font-weight: 700;
     margin-bottom: 25px;
@@ -1594,12 +1607,12 @@ footer {
 
 .auth-btn-outline {
     background: transparent;
-    border: 2px solid #ffcc00;
-    color: #ffcc00;
+    border: 2px solid var(--accent);
+    color: var(--accent);
 }
 
 .auth-btn-outline:hover {
-    background: #ffcc00;
+    background: var(--accent);
     color: #0b0b0f;
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
@@ -1664,7 +1677,7 @@ footer {
 }
 
 .empty-state h4 {
-    color: #ffcc00;
+    color: var(--accent);
     margin-bottom: 8px;
 }
 
@@ -1731,7 +1744,7 @@ footer {
 
 .kpi-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ffcc00, #ff9f43);
+    background: linear-gradient(90deg, var(--accent), #ff9f43);
     box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
     transition: width 0.3s ease;
 }
@@ -1789,7 +1802,7 @@ footer {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #ffcc00;
+    background: var(--accent);
     color: #1a1a1a;
     display: inline-flex;
     align-items: center;
@@ -1824,7 +1837,7 @@ footer {
 
 .ticket-movie-title {
     margin: 0;
-    color: #ffcc00;
+    color: var(--accent);
     font-weight: 700;
 }
 
@@ -1879,7 +1892,7 @@ footer {
 }
 
 .qr-fallback code {
-    color: #ffcc00;
+    color: var(--accent);
     background: rgba(0, 0, 0, 0.3);
     padding: 2px 6px;
     border-radius: 6px;
@@ -2002,7 +2015,7 @@ footer {
     --bg: #0b1020;
     --card: #121a2c;
     --card-2: #1a2440;
-    --accent: #ffcc00;
+    --accent: #f5b301;
     --text: #edf2ff;
 }
 
@@ -2065,7 +2078,7 @@ footer {
 :root {
     --cinema-dark: #11111f;
     --cinema-card: #1c1c2b;
-    --cinema-yellow: #ffcc00;
+    --cinema-yellow: var(--accent);
     --cinema-orange: #ff8a00;
     --cinema-muted: #6c7280;
 }
@@ -2192,4 +2205,424 @@ a { text-decoration: none; }
     .landing-movie-card { grid-template-columns: 1fr; }
     .vote-form { grid-template-columns: 1fr; }
     .navbar .container { flex-wrap: wrap; }
+}
+
+/* Final diploma demo theme override: dark cinema palette and readable contrast */
+:root {
+    --bg: #0f1020;
+    --bg-soft: #141421;
+    --card: #1c1c2b;
+    --card-border: rgba(245, 179, 1, 0.18);
+    --text: #f7f7fb;
+    --muted: #b9bdca;
+    --accent: #f5b301;
+    --accent-hover: #ffb703;
+    --danger: #ef4444;
+    --success: #22c55e;
+}
+
+html,
+body,
+.app-body,
+body.bg-light {
+    min-height: 100%;
+    background:
+        radial-gradient(circle at top left, rgba(245, 179, 1, 0.12), transparent 34rem),
+        radial-gradient(circle at 85% 10%, rgba(255, 183, 3, 0.08), transparent 28rem),
+        linear-gradient(135deg, var(--bg), var(--bg-soft) 52%, #090a14) !important;
+    color: var(--text) !important;
+}
+
+main.container {
+    padding-bottom: 48px;
+}
+
+h1, h2, h3, h4, h5, h6,
+.section-title,
+.admin-header h2,
+.card-title,
+.auth-header h4,
+.profile-card-title,
+.city-admin-header h4,
+.movie-admin-header h4,
+.movie-show-info h1,
+.movies-header h3,
+.landing-section h2,
+.landing-section h3 {
+    color: var(--text) !important;
+}
+
+p,
+small,
+label,
+.form-label,
+.detail-value,
+.detail-row .value,
+.stat-label,
+.profile-menu-link,
+.card-body,
+.movie-details,
+.city-stats-details,
+.ticket-info,
+.auth-body,
+.auth-link,
+.text-muted {
+    color: var(--muted) !important;
+}
+
+strong,
+.detail-value strong,
+.session-meta strong,
+.stat-value,
+.movie-stats-row,
+.stat-content h3,
+.city-stat-card .stat-value {
+    color: var(--text) !important;
+}
+
+.eyebrow,
+.section-title,
+.movie-card h4,
+.profile-card-title,
+.card-title,
+.text-warning {
+    color: var(--accent) !important;
+}
+
+.navbar,
+.bg-dark {
+    background: rgba(10, 11, 22, 0.96) !important;
+    border-bottom: 1px solid var(--card-border);
+    backdrop-filter: blur(12px);
+}
+
+.navbar-brand {
+    color: var(--text) !important;
+}
+
+.card,
+.card-body,
+.admin-section,
+.movies,
+.empty-state,
+.step-card,
+.benefits-grid > div,
+.stat-card,
+.landing-movie-card,
+.city-stat-card,
+.movie-card,
+.movie-show-card,
+.movie-admin-card,
+.city-admin-card,
+.afisha-card,
+.auth-card,
+.profile-card,
+.ticket-card,
+.admin-form-container,
+.login-callout,
+.user-city-panel,
+.map-controls,
+.admin-controls,
+.route-info,
+.home-kpi-card,
+.list-group-item,
+.dropdown-menu {
+    background: linear-gradient(180deg, rgba(28, 28, 43, 0.98), rgba(20, 20, 33, 0.98)) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text) !important;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28) !important;
+}
+
+.demo-hero,
+.page-hero,
+.route-section,
+.auth-header,
+.auth-header-warning,
+.auth-header-info,
+.auth-header-success {
+    background:
+        radial-gradient(circle at top right, rgba(245, 179, 1, 0.20), transparent 28rem),
+        linear-gradient(135deg, #111220, #1c1c2b 62%, #090a14) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--card-border);
+}
+
+.route-ticket {
+    background: rgba(15, 16, 32, 0.94) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--card-border);
+}
+
+.route-ticket span,
+.movie-rating-badge,
+.city-badge,
+.badge-warning,
+.bg-warning,
+.badge.bg-warning,
+.alert-warning strong {
+    color: #111 !important;
+}
+
+.movie-rating-badge,
+.city-badge,
+.badge-warning,
+.bg-warning,
+.badge.bg-warning {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+    border: 0 !important;
+}
+
+.poster-fallback,
+.movie-poster.poster-fallback,
+.poster-fallback--large {
+    background: linear-gradient(135deg, #20223a, #10111f) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--card-border);
+}
+
+.movie-description,
+.detail-label,
+.show-meta-grid span,
+.lead-text,
+.section-note,
+.auth-subtitle,
+.auth-help,
+.profile-card p,
+.ticket-card p,
+.city-admin-details,
+.movie-admin-details,
+.alert p {
+    color: var(--muted) !important;
+}
+
+.show-meta-grid div,
+.movie-session-kpi,
+.show-kpi,
+.detail-item,
+.detail-row,
+.city-stat-card .stat-item,
+.profile-menu-link.active,
+.auth-alert,
+.alert {
+    background: rgba(255, 255, 255, 0.045) !important;
+    border-color: rgba(245, 179, 1, 0.14) !important;
+    color: var(--text) !important;
+}
+
+.progress-bar-container,
+.kpi-progress {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.progress-bar,
+.kpi-progress-bar {
+    background: linear-gradient(90deg, var(--success), var(--accent)) !important;
+}
+
+.btn,
+.auth-btn,
+.vote-btn,
+button {
+    color: var(--text);
+}
+
+.btn-main,
+.btn-primary,
+.btn-warning,
+.auth-btn-primary,
+.auth-btn-warning,
+.vote-btn,
+.hero .btn.btn-main,
+.empty-state .btn.btn-main,
+.home-kpi-section .btn.btn-main {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+    border: 1px solid rgba(255, 183, 3, 0.55) !important;
+    color: #111 !important;
+    box-shadow: 0 10px 24px rgba(245, 179, 1, 0.22);
+}
+
+.btn-main:hover,
+.btn-primary:hover,
+.btn-warning:hover,
+.auth-btn-primary:hover,
+.auth-btn-warning:hover,
+.vote-btn:hover {
+    background: linear-gradient(135deg, var(--accent-hover), #ffc43d) !important;
+    color: #111 !important;
+    filter: none !important;
+}
+
+.btn-outline-light,
+.btn-outline-dark,
+.btn-outline-secondary,
+.auth-btn-outline,
+.map-page .btn,
+.admin-page .btn.btn-secondary {
+    background: rgba(255, 255, 255, 0.045) !important;
+    border: 1px solid rgba(247, 247, 251, 0.30) !important;
+    color: var(--text) !important;
+}
+
+.btn-outline-light:hover,
+.btn-outline-dark:hover,
+.btn-outline-secondary:hover,
+.auth-btn-outline:hover,
+.map-page .btn:hover,
+.admin-page .btn.btn-secondary:hover {
+    background: rgba(245, 179, 1, 0.14) !important;
+    border-color: var(--accent) !important;
+    color: var(--text) !important;
+}
+
+.btn-success,
+.auth-btn-success {
+    background: var(--success) !important;
+    border-color: var(--success) !important;
+    color: #07120a !important;
+}
+
+.btn-success:hover,
+.auth-btn-success:hover {
+    background: #34d399 !important;
+    color: #07120a !important;
+}
+
+.btn-danger,
+.btn-delete,
+.auth-btn-danger {
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    color: #fff !important;
+}
+
+.btn-danger:hover,
+.btn-delete:hover,
+.auth-btn-danger:hover {
+    background: #f87171 !important;
+    color: #111 !important;
+}
+
+.btn-info,
+.auth-btn-info {
+    background: #60a5fa !important;
+    border-color: #60a5fa !important;
+    color: #06111f !important;
+}
+
+.alert-success,
+.auth-alert-success {
+    background: rgba(34, 197, 94, 0.14) !important;
+    border-color: rgba(34, 197, 94, 0.38) !important;
+    color: #d8ffe5 !important;
+}
+
+.alert-danger,
+.auth-alert-danger,
+.invalid-feedback,
+.text-danger {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    color: #fecaca !important;
+}
+
+.alert-info,
+.auth-alert-info {
+    background: rgba(96, 165, 250, 0.13) !important;
+    border-color: rgba(96, 165, 250, 0.34) !important;
+    color: #dbeafe !important;
+}
+
+.alert-warning,
+.auth-alert-warning {
+    background: rgba(245, 179, 1, 0.13) !important;
+    border-color: rgba(245, 179, 1, 0.40) !important;
+    color: #ffe8a3 !important;
+}
+
+.form-control,
+.form-select,
+textarea,
+input,
+select {
+    background: rgba(255, 255, 255, 0.065) !important;
+    border: 1px solid rgba(247, 247, 251, 0.18) !important;
+    color: var(--text) !important;
+    caret-color: var(--accent);
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus,
+input:focus,
+select:focus {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 0.18rem rgba(245, 179, 1, 0.18) !important;
+    color: var(--text) !important;
+}
+
+.form-control::placeholder,
+textarea::placeholder,
+input::placeholder {
+    color: rgba(247, 247, 251, 0.48) !important;
+}
+
+select option,
+.form-select option {
+    background: #1c1c2b !important;
+    color: var(--text) !important;
+}
+
+.table,
+.table td,
+.table th {
+    color: var(--text) !important;
+    border-color: rgba(245, 179, 1, 0.14) !important;
+}
+
+.bg-white,
+.bg-light,
+.no-data,
+.afisha-page .card,
+.tickets-page .card {
+    background: var(--card) !important;
+    color: var(--text) !important;
+}
+
+.text-dark {
+    color: #111 !important;
+}
+
+.badge:not(.bg-warning):not(.badge-warning) {
+    color: var(--text);
+}
+
+.detail-item,
+.detail-row {
+    border-bottom-color: rgba(245, 179, 1, 0.12) !important;
+}
+
+.card a:not(.btn),
+.auth-link,
+.profile-menu-link:hover,
+.vote-login-link {
+    color: var(--accent) !important;
+}
+
+.card a:not(.btn):hover,
+.auth-link:hover,
+.vote-login-link:hover {
+    color: var(--accent-hover) !important;
+}
+
+/* Leaflet map is intentionally light because tiles are external images; keep controls readable. */
+.leaflet-container,
+#map {
+    color: #111 !important;
+}
+
+@media (max-width: 820px) {
+    main.container {
+        width: min(100% - 20px, 1180px);
+    }
 }

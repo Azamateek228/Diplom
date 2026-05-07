@@ -17,7 +17,7 @@
     @endif
 </head>
 
-<body class="bg-light">
+<body class="app-body">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container d-flex flex-nowrap justify-content-between align-items-center">
             <a class="navbar-brand mb-0 me-3" href="{{ url('/') }}">Кино на колёсах</a>
