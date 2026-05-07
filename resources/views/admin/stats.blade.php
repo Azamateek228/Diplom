@@ -31,28 +31,28 @@
     <div class="stats-grid mb-5">
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">👥</span><h5>Пользователи</h5><small>зарегистрированные зрители</small>
+                <span class="kpi-icon">👥</span><h5>Зрители в системе</h5><small>все зарегистрированные аккаунты</small>
                 <h3>{{ $usersCount }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">🗳️</span><h5>Голосов</h5><small>спрос на фильмы</small>
+                <span class="kpi-icon">🗳️</span><h5>Голоса за фильмы</h5><small>учтённый спрос выбранных городов</small>
                 <h3>{{ $votesCount }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">🎟️</span><h5>Куплено билетов</h5><small>проданные места</small>
+                <span class="kpi-icon">🎟️</span><h5>Проданные билеты</h5><small>только активные оплаченные места</small>
                 <h3>{{ $ticketsPurchased }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">📊</span><h5>Загрузка мест</h5><small>по всем площадкам</small>
+                <span class="kpi-icon">📊</span><h5>Средняя загрузка</h5><small>продажи относительно вместимости площадок</small>
                 <h3>{{ $overallLoadPercent }}%</h3>
                 <div class="kpi-progress mt-2">
                     <div class="kpi-progress-bar" style="width: {{ $overallLoadPercent }}%"></div>
@@ -86,6 +86,39 @@
                 @endif
             </div>
         </div>
+    </div>
+
+
+    <div class="admin-dashboard-grid mb-5">
+        <section class="admin-section quick-actions-card">
+            <h3 class="section-title">Быстрые действия</h3>
+            <div class="quick-actions-grid">
+                <a href="{{ route('movies.create') }}" class="quick-action">🎬 Добавить фильм</a>
+                <a href="{{ route('cities.create') }}" class="quick-action">🏙️ Добавить город</a>
+                <a href="{{ route('cities.index') }}" class="quick-action">🗺️ Управлять маршрутом</a>
+                <a href="{{ route('movies.index') }}" class="quick-action">👀 Открыть витрину</a>
+            </div>
+        </section>
+
+        <section class="admin-section upcoming-sessions-card">
+            <h3 class="section-title">Ближайшие сеансы</h3>
+            @if($upcomingSessions->isEmpty())
+                <div class="empty-state compact-empty">
+                    <div class="empty-state-icon">📅</div>
+                    <h4>Сеансов пока нет</h4>
+                    <p>Укажите дату показа у фильма, чтобы он появился в расписании.</p>
+                </div>
+            @else
+                <div class="upcoming-sessions-list">
+                    @foreach($upcomingSessions as $session)
+                        <a href="{{ route('movies.edit', $session) }}" class="upcoming-session-item">
+                            <strong>{{ $session->title }}</strong>
+                            <span>{{ $session->city?->name ?? 'Город уточняется' }} • {{ $session->show_time?->format('d.m.Y H:i') }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+        </section>
     </div>
 
     <!-- Текущий город кинотеатра -->
@@ -167,6 +200,7 @@
                             @if($movie->city)
                                 <span class="city-badge">{{ $movie->city->name }}</span>
                             @endif
+                            <span class="movie-status-badge {{ $movie->session_status_class }}">{{ $movie->session_status_label }}</span>
                         </div>
                         
                         <div class="movie-admin-details">
