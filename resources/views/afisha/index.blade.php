@@ -10,7 +10,6 @@
 
         @if (empty($weeklySchedule))
             <div class="empty-state">
-                <div class="empty-state-icon">🗺️</div>
                 <h4>Маршрут пока не сформирован</h4>
                 <p>Добавьте города с координатами и фильмы, чтобы построить тур на неделю.</p>
                 <a href="{{ route('movies.index') }}" class="btn btn-main btn-sm">Перейти к фильмам</a>
@@ -66,12 +65,10 @@
                                     <img class="schedule-poster" src="{{ $day['movie']->poster_url }}" alt="{{ $day['movie']->title }}">
                                 @elseif (!empty($day['movie']))
                                     <div class="schedule-poster-fallback">
-                                        <span>🎬</span>
                                         <strong>{{ $day['movie']->title }}</strong>
                                     </div>
                                 @else
                                     <div class="schedule-poster-fallback schedule-poster-fallback--empty">
-                                        <span>📽️</span>
                                         <strong>Фильм скоро появится</strong>
                                     </div>
                                 @endif
@@ -83,18 +80,18 @@
                                 @if (!empty($day['movie']))
                                     <h4 class="schedule-movie">{{ $day['movie']->title }}</h4>
                                     <div class="schedule-meta">
-                                        <span>🕒 {{ $day['show_time'] }}</span>
-                                        <span>📍 {{ $day['movie']->venue ?? 'Площадка уточняется' }}</span>
-                                        <span>💳 {{ $ticketPrice }} ₽</span>
-                                        <span>🎟️ Свободно {{ $availableTickets }} из {{ $day['capacity'] }}</span>
+                                        <span>Время: {{ $day['show_time'] }}</span>
+                                        <span>Площадка: {{ $day['movie']->venue ?? 'Площадка уточняется' }}</span>
+                                        <span>Цена билета: {{ $ticketPrice }} ₽</span>
+                                        <span>Свободно мест: {{ $availableTickets }} из {{ $day['capacity'] }}</span>
                                     </div>
                                 @else
                                     <div class="schedule-movie schedule-movie--empty">Фильм пока не назначен</div>
                                     <div class="schedule-meta">
-                                        <span>🕒 {{ $day['show_time'] }}</span>
-                                        <span>📍 Площадка уточняется</span>
-                                        <span>💳 {{ $ticketPrice }} ₽</span>
-                                        <span>🎟️ Свободно {{ $availableTickets }} из {{ $day['capacity'] }}</span>
+                                        <span>Время: {{ $day['show_time'] }}</span>
+                                        <span>Площадка: уточняется</span>
+                                        <span>Цена билета: {{ $ticketPrice }} ₽</span>
+                                        <span>Свободно мест: {{ $availableTickets }} из {{ $day['capacity'] }}</span>
                                     </div>
                                 @endif
 

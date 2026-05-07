@@ -18,7 +18,7 @@
     @auth
         @if(isset($userCityStats) && $userCityStats && $userCityStats['city'])
             <div class="user-city-panel">
-                <div><strong>📍 Ваш город:</strong> {{ $userCityStats['city']->name }}</div>
+                <div><strong>Ваш город:</strong> {{ $userCityStats['city']->name }}</div>
                 <div>Голосов в городе: <strong>{{ $userCityStats['votes_count'] }}</strong></div>
                 <div>Ожидается зрителей: <strong>{{ $userCityStats['expected_attendees'] }}</strong></div>
             </div>
@@ -75,7 +75,6 @@
 
         @if ($movies->isEmpty())
             <div class="empty-state">
-                <div class="empty-state-icon">🎬</div>
                 <h4>Фильмы не найдены</h4>
                 <p>По выбранным параметрам ничего не найдено. Измените название, жанр, возрастной рейтинг или город.</p>
                 <div class="empty-state-actions">
@@ -90,7 +89,7 @@
                         @if($movie->poster)
                             <img class="movie-poster" src="{{ $movie->poster_url }}" alt="{{ $movie->title }}">
                         @else
-                            <div class="movie-poster poster-fallback"><span>🎥</span><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
+                            <div class="movie-poster poster-fallback"><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
                         @endif
 
                         <div class="info">
