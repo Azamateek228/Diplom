@@ -89,8 +89,8 @@ class TicketController extends Controller
             'qr_token' => Str::uuid()->toString(),
         ]);
 
-        return redirect()->route('tickets.index')
-            ->with('success', 'Оплата прошла успешно. Билет добавлен в раздел "Мои билеты" (QR-код).');
+        return redirect()->route('profile.edit', ['tab' => 'tickets'])
+            ->with('success', 'Оплата прошла успешно. Билет добавлен в профиль, раздел "Мои билеты" (QR-код).');
     }
 
     public function refund(Ticket $ticket)

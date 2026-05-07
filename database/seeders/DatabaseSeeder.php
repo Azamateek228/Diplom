@@ -17,17 +17,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $routeCities = [
-            ['name' => 'Набережные Челны', 'lat' => 55.7436, 'lng' => 52.3958, 'population' => 548434],
-            ['name' => 'Елабуга', 'lat' => 55.7567, 'lng' => 52.0544, 'population' => 74390],
-            ['name' => 'Нижнекамск', 'lat' => 55.6361, 'lng' => 51.8245, 'population' => 241329],
-            ['name' => 'Альметьевск', 'lat' => 54.9014, 'lng' => 52.2971, 'population' => 152580],
-            ['name' => 'Лениногорск', 'lat' => 54.6020, 'lng' => 52.4609, 'population' => 60878],
-            ['name' => 'Бугульма', 'lat' => 54.5364, 'lng' => 52.7895, 'population' => 81744],
-            ['name' => 'Азнакаево', 'lat' => 54.8579, 'lng' => 53.0698, 'population' => 32926],
-            ['name' => 'Заинск', 'lat' => 55.3207, 'lng' => 52.0669, 'population' => 41498],
-            ['name' => 'Менделеевск', 'lat' => 55.8952, 'lng' => 52.3144, 'population' => 22442],
-            ['name' => 'Мамадыш', 'lat' => 55.7149, 'lng' => 51.4070, 'population' => 15752],
-            ['name' => 'Мензелинск', 'lat' => 55.7271, 'lng' => 53.1026, 'population' => 16948],
+            ['name' => 'Набережные Челны', 'lat' => 55.7436, 'lng' => 52.3958, 'population' => 548434, 'route_order' => 1],
+            ['name' => 'Менделеевск', 'lat' => 55.8952, 'lng' => 52.3144, 'population' => 22442, 'route_order' => 2],
+            ['name' => 'Елабуга', 'lat' => 55.7567, 'lng' => 52.0544, 'population' => 74390, 'route_order' => 3],
+            ['name' => 'Нижнекамск', 'lat' => 55.6361, 'lng' => 51.8245, 'population' => 241329, 'route_order' => 4],
+            ['name' => 'Мамадыш', 'lat' => 55.7149, 'lng' => 51.4070, 'population' => 15752, 'route_order' => 5],
+            ['name' => 'Заинск', 'lat' => 55.3207, 'lng' => 52.0669, 'population' => 41498, 'route_order' => 6],
+            ['name' => 'Альметьевск', 'lat' => 54.9014, 'lng' => 52.2971, 'population' => 152580, 'route_order' => 7],
+            ['name' => 'Лениногорск', 'lat' => 54.6020, 'lng' => 52.4609, 'population' => 60878, 'route_order' => 8],
+            ['name' => 'Бугульма', 'lat' => 54.5364, 'lng' => 52.7895, 'population' => 81744, 'route_order' => 9],
+            ['name' => 'Азнакаево', 'lat' => 54.8579, 'lng' => 53.0698, 'population' => 32926, 'route_order' => 10],
+            ['name' => 'Мензелинск', 'lat' => 55.7271, 'lng' => 53.1026, 'population' => 16948, 'route_order' => 11],
         ];
 
         $cities = collect($routeCities)->mapWithKeys(function (array $city) {
@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
                     'lat' => $city['lat'],
                     'lng' => $city['lng'],
                     'population' => $city['population'],
+                    'route_order' => $city['route_order'],
                 ]
             );
 
