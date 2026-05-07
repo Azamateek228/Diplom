@@ -22,7 +22,7 @@
         @if (isset($citiesData) && count($citiesData) > 1)
             <div class="map-controls mt-3">
                 <div id="routeInfo" class="route-info">
-                    <div><strong>Маршрут:</strong> <span id="routeSummary"></span></div>
+                    <div><strong>Старт:</strong> <span id="startCityName"></span></div>
                     <div><strong>Следующий город:</strong> <span id="nextCityName"></span></div>
                     <div class="progress-bar-container">
                         <div id="routeProgress" class="progress-bar"></div>
@@ -110,7 +110,7 @@
                     <div style="padding: 8px;">
                         <h4>${city.name}</h4>
                         <p>🗳️ Голосов: ${city.votes_count || 0}</p>
-                        ${isCurrent ? '<p style="color: #ffcc00; font-weight: bold;">📍 Текущее местоположение</p>' : ''}
+                        ${isCurrent ? '<p class="current-location-popup">📍 Текущее местоположение</p>' : ''}
                     </div>
                 `);
 
@@ -188,13 +188,12 @@
 
             isAnimating = true;
             const routeInfo = document.getElementById('routeInfo');
-            const routeSummaryEl = document.getElementById('routeSummary');
+            const startCityNameEl = document.getElementById('startCityName');
             const nextCityNameEl = document.getElementById('nextCityName');
             const progressBar = document.getElementById('routeProgress');
 
-            if (routeInfo && routeSummaryEl && nextCityNameEl) {
-                const routeNames = cities.map(city => city.name).join(' → ');
-                routeSummaryEl.textContent = routeNames || 'Маршрут не сформирован';
+            if (routeInfo && startCityNameEl && nextCityNameEl) {
+                startCityNameEl.textContent = cities[0]?.name || 'Маршрут не сформирован';
                 nextCityNameEl.textContent = cities[1]?.name || 'Следующая остановка уточняется';
                 routeInfo.style.display = 'block';
             }
