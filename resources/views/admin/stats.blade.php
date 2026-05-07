@@ -16,7 +16,7 @@
 
 <div class="admin-page">
     <div class="admin-header">
-        <h2 class="mb-4">Панель администратора</h2>
+        <div><span class="eyebrow">Управление маршрутом и показами</span><h2 class="mb-2">Панель администратора</h2><p class="text-muted">Здесь видно спрос по городам, продажи билетов, текущую точку кинофургона и параметры голосования.</p></div>
         <div class="admin-header-actions">
             <a href="{{ route('movies.create') }}" class="btn btn-success">
                 Добавить фильм
@@ -31,28 +31,28 @@
     <div class="stats-grid mb-5">
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Пользователи</h5>
+                <span class="kpi-icon">👥</span><h5>Пользователи</h5><small>зарегистрированные зрители</small>
                 <h3>{{ $usersCount }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Голосов</h5>
+                <span class="kpi-icon">🗳️</span><h5>Голосов</h5><small>спрос на фильмы</small>
                 <h3>{{ $votesCount }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Куплено билетов</h5>
+                <span class="kpi-icon">🎟️</span><h5>Куплено билетов</h5><small>проданные места</small>
                 <h3>{{ $ticketsPurchased }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Загрузка мест</h5>
+                <span class="kpi-icon">📊</span><h5>Загрузка мест</h5><small>по всем площадкам</small>
                 <h3>{{ $overallLoadPercent }}%</h3>
                 <div class="kpi-progress mt-2">
                     <div class="kpi-progress-bar" style="width: {{ $overallLoadPercent }}%"></div>
@@ -62,14 +62,14 @@
 
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Текущий город тура</h5>
+                <span class="kpi-icon">🚐</span><h5>Текущий город тура</h5><small>куда едет кинофургон</small>
                 <p>{{ $currentCityName ?? 'Не выбран' }}</p>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Топ-фильм</h5>
+                <span class="kpi-icon">🏆</span><h5>Топ-фильм</h5><small>лидер голосования</small>
                 <p>{{ $topMovie?->title ?? '—' }}</p>
                 @if($topMovie)
                     <small>Голосов: {{ $topMovie->votes_count }}</small>
@@ -79,7 +79,7 @@
 
         <div class="stat-card">
             <div class="stat-content">
-                <h5>Топ-город</h5>
+                <span class="kpi-icon">📍</span><h5>Топ-город</h5><small>самый активный город</small>
                 <p>{{ $topCity?->name ?? '—' }}</p>
                 @if($topCity)
                     <small>Голосов: {{ $topCity->votes_count }}</small>
@@ -90,10 +90,10 @@
 
     <!-- Текущий город кинотеатра -->
     <div class="admin-section mb-5">
-        <h3 class="section-title">Текущий город кинотеатра</h3>
+        <h3 class="section-title">Текущий город кинотеатра</h3><p class="section-note">Администратор может вручную выбрать город, обновить дедлайн голосования и цену билета для всех будущих сеансов.</p>
         <p class="text-muted mb-2">
             @if($currentCityId)
-                Сейчас: <strong>{{ $cities->find($currentCityId)?->name ?? '—' }}</strong>
+                Сейчас: <strong>{{ $cities->firstWhere('id', $currentCityId)?->name ?? '—' }}</strong>
             @else
                 Не выбран
             @endif
@@ -118,7 +118,7 @@
                 <label class="form-label small">Цена билета (₽)</label>
                 <input type="number" name="ticket_price" class="form-control" min="100" max="5000" value="{{ $ticketPrice }}">
             </div>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="submit" class="btn btn-primary">Сохранить</button><button type="submit" name="auto_city" value="1" class="btn btn-warning">Выбрать по спросу</button>
         </form>
     </div>
 
@@ -142,7 +142,7 @@
         <h3 class="section-title">
             Фильмы 
             @if($selectedCityId)
-                в городе: {{ $cities->find($selectedCityId)?->name }}
+                в городе: {{ $cities->firstWhere('id', $selectedCityId)?->name }}
             @else
                 (все города)
             @endif

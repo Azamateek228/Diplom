@@ -59,7 +59,20 @@ class MovieController extends Controller
 
     public function show(Movie $movie)
     {
-        return view('movies.show', compact('movie'));
+        $movie->load('city')->loadCount('votes');
+
+        $soldTickets = (int) Ticket::where('movie_id', $movie->id)
+            ->where('status', 'purchased')
+            ->sum('quantity');
+        $capacity = (int) ($movie->venue_capacity ?? 0);
+        $fillPercentage = $capacity > 0
+            ? min(100, (int) round(($soldTickets / $capacity) * 100))
+            : 0;
+        $ticketPrice = Setting::first()?->ticket_price ?? 350;
+        $votingDeadline = Setting::first()?->voting_deadline;
+        $votingClosed = $votingDeadline && now()->greaterThan($votingDeadline);
+
+        return view('movies.show', compact('movie', 'soldTickets', 'fillPercentage', 'ticketPrice', 'votingClosed'));
     }
 
     public function create()
