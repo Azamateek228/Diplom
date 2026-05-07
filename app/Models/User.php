@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
         'city_id',
         'two_factor_enabled',
         'two_factor_secret',
