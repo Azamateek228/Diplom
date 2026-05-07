@@ -12,11 +12,6 @@ use App\Http\Controllers\VoteController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\TwoFactorController;
-use App\Models\City;
-use App\Models\Movie;
-use App\Models\Setting;
-use App\Models\Ticket;
-use App\Models\Vote;
 
 // Маршруты аутентификации
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -63,22 +58,7 @@ Route::put('/cities/{city}', [CityController::class, 'update'])->middleware('adm
 Route::delete('/cities/{city}', [CityController::class, 'destroy'])->middleware('admin')->name('cities.destroy');
 
 // Главная страница
-Route::get('/', function () {
-    $currentCityId = Setting::first()?->current_city_id;
-    $currentCity = $currentCityId ? City::find($currentCityId) : null;
-    $totalCapacity = (int) Movie::whereNotNull('venue_capacity')->sum('venue_capacity');
-    $purchasedTickets = (int) Ticket::where('status', 'purchased')->sum('quantity');
-    $loadPercentage = $totalCapacity > 0 ? min(100, (int) round(($purchasedTickets / $totalCapacity) * 100)) : 0;
-
-    return view('home', [
-        'kpis' => [
-            'votes' => Vote::count(),
-            'tickets' => $purchasedTickets,
-            'load_percentage' => $loadPercentage,
-            'current_city' => $currentCity?->name,
-        ],
-    ]);
-});
+Route::view('/', 'home');
 
 // Карта
 Route::get('/map', [MapController::class, 'index']);
