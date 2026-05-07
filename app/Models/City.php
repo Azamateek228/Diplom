@@ -9,8 +9,13 @@ class City extends Model
 {
     protected $fillable = ['name', 'lat', 'lng', 'population'];
 
-     public function votes()
+    public function movies()
     {
-        return $this->hasMany(\App\Models\Vote::class);
+        return $this->hasMany(Movie::class);
+    }
+
+    public function votes()
+    {
+        return $this->hasMany(Vote::class);
     }
 }
