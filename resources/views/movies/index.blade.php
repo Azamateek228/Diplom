@@ -18,7 +18,7 @@
     @auth
         @if(isset($userCityStats) && $userCityStats && $userCityStats['city'])
             <div class="user-city-panel">
-                <div><strong>📍 Ваш город:</strong> {{ $userCityStats['city']->name }}</div>
+                <div><strong>Ваш город:</strong> {{ $userCityStats['city']->name }}</div>
                 <div>Голосов в городе: <strong>{{ $userCityStats['votes_count'] }}</strong></div>
                 <div>Ожидается зрителей: <strong>{{ $userCityStats['expected_attendees'] }}</strong></div>
             </div>
@@ -75,7 +75,6 @@
 
         @if ($movies->isEmpty())
             <div class="empty-state">
-                <div class="empty-state-icon">🎬</div>
                 <h4>Фильмы не найдены</h4>
                 <p>По выбранным параметрам ничего не найдено. Измените название, жанр, возрастной рейтинг или город.</p>
                 <div class="empty-state-actions">
@@ -90,7 +89,7 @@
                         @if($movie->poster)
                             <img class="movie-poster" src="{{ $movie->poster_url }}" alt="{{ $movie->title }}">
                         @else
-                            <div class="movie-poster poster-fallback"><span>🎥</span><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
+                            <div class="movie-poster poster-fallback"><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
                         @endif
 
                         <div class="info">
@@ -110,13 +109,13 @@
                             </div>
 
                             <div class="movie-stats-row">
-                                <span>🗳️ {{ $movie->votes_count ?? 0 }} голосов</span>
-                                <span>🎟️ {{ $movie->sold_tickets ?? 0 }} билетов</span>
+                                <span>Голосов: <strong>{{ $movie->votes_count ?? 0 }}</strong></span>
+                                <span>Куплено билетов: <strong>{{ $movie->sold_tickets ?? 0 }}</strong></span>
                             </div>
                             <div class="movie-session-kpi">
                                 <div class="session-meta">
-                                    <span>Цена: <strong>{{ $ticketPrice }} ₽</strong></span>
-                                    <span>Заполнено: <strong>{{ $movie->fill_percentage ?? 0 }}%</strong></span>
+                                    <span>Цена билета: <strong>{{ $ticketPrice }} ₽</strong></span>
+                                    <span>Заполненность: <strong>{{ $movie->fill_percentage ?? 0 }}%</strong></span>
                                 </div>
                                 <div class="progress-bar-container"><div class="progress-bar" style="width: {{ $movie->fill_percentage ?? 0 }}%"></div></div>
                             </div>
@@ -135,7 +134,6 @@
                                                 @endforeach
                                             </select>
                                         @endif
-                                        <input type="number" name="expected_attendees" class="form-control" min="1" max="10" value="1" title="Сколько зрителей придёт с вами">
                                         <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Закрыто' : 'Голосовать' }}</button>
                                     </form>
                                 @else
