@@ -22,8 +22,9 @@
         @if (isset($citiesData) && count($citiesData) > 1)
             <div class="map-controls mt-3">
                 <div id="routeInfo" class="route-info">
-                    <div><strong>Старт:</strong> <span id="startCityName"></span></div>
-                    <div><strong>Следующий город:</strong> <span id="nextCityName"></span></div>
+                    <div><strong>🎬 Кинофургон:</strong> <span id="currentRouteCityName"></span></div>
+                    <div><strong>Курс:</strong> <span id="nextCityName"></span></div>
+                    <div><strong>Этап:</strong> <span id="routeLegName"></span></div>
                     <div class="progress-bar-container">
                         <div id="routeProgress" class="progress-bar"></div>
                     </div>
@@ -61,6 +62,7 @@
         let cityMarkers = [];
         let isAnimating = false;
         let roadPathCoordinates = [];
+        let routeSegments = [];
         let animationFrameId = null;
 
         const cities = @json($citiesData ?? []);
@@ -133,8 +135,9 @@
         }
 
         async function buildRoute() {
-            const points = cities.map(city => [parseCoordinate(city.lat), parseCoordinate(city.lng)]);
-            roadPathCoordinates = await buildRoadPath(points);
+            const route = await buildRoadPath(cities);
+            roadPathCoordinates = route.coordinates;
+            routeSegments = route.segments;
 
             if (!roadPathCoordinates || roadPathCoordinates.length < 2) {
                 return;
@@ -152,23 +155,42 @@
 
             map.fitBounds(routePolyline.getBounds(), { padding: [25, 25] });
 
-            movingMarker.setLatLng(roadPathCoordinates[0]);
+            const startPointIndex = routeStartPointIndex();
+            movingMarker.setLatLng(roadPathCoordinates[startPointIndex]);
+            updateRouteNavigator(startPointIndex);
 
             if (!isAnimating) {
-                animateVan();
+                animateVan(startPointIndex);
             }
         }
 
-        async function buildRoadPath(points) {
+        async function buildRoadPath(routeCities) {
             const chunks = [];
-            for (let i = 0; i < points.length - 1; i++) {
-                const from = points[i];
-                const to = points[i + 1];
+            const segments = [];
+
+            for (let i = 0; i < routeCities.length - 1; i++) {
+                const fromCity = routeCities[i];
+                const toCity = routeCities[i + 1];
+                const from = [parseCoordinate(fromCity.lat), parseCoordinate(fromCity.lng)];
+                const to = [parseCoordinate(toCity.lat), parseCoordinate(toCity.lng)];
                 const segment = await buildRoadSegment(from, to);
                 if (i > 0) segment.shift();
+
+                const startIndex = chunks.length;
                 chunks.push(...segment);
+                const endIndex = Math.max(startIndex, chunks.length - 1);
+
+                segments.push({
+                    from: fromCity,
+                    to: toCity,
+                    startIndex,
+                    endIndex,
+                    legNumber: i + 1,
+                    totalLegs: routeCities.length - 1,
+                });
             }
-            return chunks;
+
+            return { coordinates: chunks, segments };
         }
 
         async function buildRoadSegment(fromPoint, toPoint) {
@@ -183,24 +205,57 @@
             return data.routes[0].geometry.coordinates.map(point => [point[1], point[0]]);
         }
 
-        function animateVan() {
+        function routeStartPointIndex() {
+            if (!currentCityId || routeSegments.length === 0) {
+                return 0;
+            }
+
+            const fromSegment = routeSegments.find(segment => segment.from.id === currentCityId);
+            if (fromSegment) {
+                return fromSegment.startIndex;
+            }
+
+            const toSegment = routeSegments.find(segment => segment.to.id === currentCityId);
+            return toSegment ? toSegment.endIndex : 0;
+        }
+
+        function routeSegmentForPoint(pointIndex) {
+            return routeSegments.find(segment => pointIndex >= segment.startIndex && pointIndex <= segment.endIndex)
+                || routeSegments[routeSegments.length - 1]
+                || null;
+        }
+
+        function updateRouteNavigator(pointIndex) {
+            const routeInfo = document.getElementById('routeInfo');
+            const currentRouteCityNameEl = document.getElementById('currentRouteCityName');
+            const nextCityNameEl = document.getElementById('nextCityName');
+            const routeLegNameEl = document.getElementById('routeLegName');
+            const segment = routeSegmentForPoint(pointIndex);
+
+            if (!routeInfo || !currentRouteCityNameEl || !nextCityNameEl || !routeLegNameEl || !segment) {
+                return;
+            }
+
+            currentRouteCityNameEl.textContent = segment.from.name;
+            nextCityNameEl.textContent = segment.to.name;
+            routeLegNameEl.textContent = `${segment.legNumber} из ${segment.totalLegs}`;
+            routeInfo.style.display = 'block';
+
+            if (movingMarker) {
+                movingMarker.setPopupContent(`<strong>Кинофургон на маршруте</strong><br>${segment.from.name} → ${segment.to.name}`);
+            }
+        }
+
+        function animateVan(initialPointIndex = 0) {
             if (isAnimating || !roadPathCoordinates.length) return;
 
             isAnimating = true;
-            const routeInfo = document.getElementById('routeInfo');
-            const startCityNameEl = document.getElementById('startCityName');
-            const nextCityNameEl = document.getElementById('nextCityName');
             const progressBar = document.getElementById('routeProgress');
-
-            if (routeInfo && startCityNameEl && nextCityNameEl) {
-                startCityNameEl.textContent = cities[0]?.name || 'Маршрут не сформирован';
-                nextCityNameEl.textContent = cities[1]?.name || 'Следующая остановка уточняется';
-                routeInfo.style.display = 'block';
-            }
-
-            let pointIndex = 0;
+            let pointIndex = initialPointIndex;
             let lastTick = 0;
             const frameIntervalMs = 120;
+
+            updateRouteNavigator(pointIndex);
 
             function animate(timestamp) {
                 if (!isAnimating || !movingMarker) return;
@@ -208,6 +263,7 @@
                 if (timestamp - lastTick >= frameIntervalMs) {
                     pointIndex = (pointIndex + 1) % roadPathCoordinates.length;
                     movingMarker.setLatLng(roadPathCoordinates[pointIndex]);
+                    updateRouteNavigator(pointIndex);
                     if (progressBar) progressBar.style.width = `${(pointIndex / roadPathCoordinates.length) * 100}%`;
                     lastTick = timestamp;
                 }
@@ -235,9 +291,11 @@
                 isAnimating = false;
                 if (animationFrameId) cancelAnimationFrame(animationFrameId);
                 const progressBar = document.getElementById('routeProgress');
-                if (progressBar) progressBar.style.width = '0%';
-                if (movingMarker && roadPathCoordinates.length > 0) movingMarker.setLatLng(roadPathCoordinates[0]);
-                setTimeout(() => animateVan(), 500);
+                const startPointIndex = routeStartPointIndex();
+                if (progressBar) progressBar.style.width = `${(startPointIndex / roadPathCoordinates.length) * 100}%`;
+                if (movingMarker && roadPathCoordinates.length > 0) movingMarker.setLatLng(roadPathCoordinates[startPointIndex]);
+                updateRouteNavigator(startPointIndex);
+                setTimeout(() => animateVan(startPointIndex), 500);
             });
         }
 
