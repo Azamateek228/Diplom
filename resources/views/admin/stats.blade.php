@@ -31,28 +31,28 @@
     <div class="stats-grid mb-5">
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">👥</span><h5>Зрители в системе</h5><small>все зарегистрированные аккаунты</small>
+                <h5>Зрители в системе</h5><small>все зарегистрированные аккаунты</small>
                 <h3>{{ $usersCount }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">🗳️</span><h5>Голоса за фильмы</h5><small>учтённый спрос выбранных городов</small>
+                <h5>Голоса за фильмы</h5><small>учтённый спрос выбранных городов</small>
                 <h3>{{ $votesCount }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">🎟️</span><h5>Проданные билеты</h5><small>только активные оплаченные места</small>
+                <h5>Проданные билеты</h5><small>только активные оплаченные места</small>
                 <h3>{{ $ticketsPurchased }}</h3>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">📊</span><h5>Средняя загрузка</h5><small>продажи относительно вместимости площадок</small>
+                <h5>Средняя загрузка</h5><small>продажи относительно вместимости площадок</small>
                 <h3>{{ $overallLoadPercent }}%</h3>
                 <div class="kpi-progress mt-2">
                     <div class="kpi-progress-bar" style="width: {{ $overallLoadPercent }}%"></div>
@@ -62,14 +62,14 @@
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">🚐</span><h5>Текущий город тура</h5><small>куда едет кинофургон</small>
+                <h5>Текущий город тура</h5><small>куда едет кинофургон</small>
                 <p>{{ $currentCityName ?? 'Не выбран' }}</p>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">🏆</span><h5>Топ-фильм</h5><small>лидер голосования</small>
+                <h5>Топ-фильм</h5><small>лидер голосования</small>
                 <p>{{ $topMovie?->title ?? '—' }}</p>
                 @if($topMovie)
                     <small>Голосов: {{ $topMovie->votes_count }}</small>
@@ -79,7 +79,7 @@
 
         <div class="stat-card">
             <div class="stat-content">
-                <span class="kpi-icon">📍</span><h5>Топ-город</h5><small>самый активный город</small>
+                <h5>Топ-город</h5><small>самый активный город</small>
                 <p>{{ $topCity?->name ?? '—' }}</p>
                 @if($topCity)
                     <small>Голосов: {{ $topCity->votes_count }}</small>
@@ -93,10 +93,10 @@
         <section class="admin-section quick-actions-card">
             <h3 class="section-title">Быстрые действия</h3>
             <div class="quick-actions-grid">
-                <a href="{{ route('movies.create') }}" class="quick-action">🎬 Добавить фильм</a>
-                <a href="{{ route('cities.create') }}" class="quick-action">🏙️ Добавить город</a>
-                <a href="{{ route('cities.index') }}" class="quick-action">🗺️ Управлять маршрутом</a>
-                <a href="{{ route('movies.index') }}" class="quick-action">👀 Открыть витрину</a>
+                <a href="{{ route('movies.create') }}" class="quick-action">Добавить фильм</a>
+                <a href="{{ route('cities.create') }}" class="quick-action">Добавить город</a>
+                <a href="{{ route('cities.index') }}" class="quick-action">Управлять маршрутом</a>
+                <a href="{{ route('movies.index') }}" class="quick-action">Открыть витрину</a>
             </div>
         </section>
 
@@ -104,7 +104,6 @@
             <h3 class="section-title">Ближайшие сеансы</h3>
             @if($upcomingSessions->isEmpty())
                 <div class="empty-state compact-empty">
-                    <div class="empty-state-icon">📅</div>
                     <h4>Сеансов пока нет</h4>
                     <p>Укажите дату показа у фильма, чтобы он появился в расписании.</p>
                 </div>
@@ -248,13 +247,13 @@
                             
                             @if($movie->expected_attendees)
                                 <div class="detail-row highlight">
-                                    <span class="label">👥 Ожидается зрителей:</span>
+                                    <span class="label">Ожидается зрителей:</span>
                                     <span class="value">{{ $movie->expected_attendees }}</span>
                                 </div>
                             @endif
                             
                             <div class="detail-row">
-                                <span class="label"> Голосов:</span>
+                                <span class="label">Голосов:</span>
                                 <span class="value">{{ $movie->votes_count ?? 0 }}</span>
                             </div>
                         </div>
@@ -272,13 +271,13 @@
                                 <button type="submit" class="btn btn-sm btn-info">Дублировать</button>
                             </form>
                             <a href="{{ route('movies.edit', $movie) }}" class="btn-edit">
-                                 Редактировать
+                                Редактировать
                             </a>
                             <form method="POST" action="{{ route('movies.destroy', $movie) }}" class="delete-form" onsubmit="return confirm('Вы уверены, что хотите удалить этот фильм?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn-delete">
-                                     Удалить
+                                    Удалить
                                 </button>
                             </form>
                         </div>
@@ -290,10 +289,9 @@
 
     <!-- Статистика по городам -->
     <div class="admin-section">
-        <h3 class="section-title"> Статистика по городам</h3>
+        <h3 class="section-title">Статистика по городам</h3>
         @if($cityStats->isEmpty())
             <div class="empty-state">
-                <div class="empty-state-icon">🏙️</div>
                 <h4>Нет данных по городам</h4>
                 <p>Добавьте города и голоса, чтобы увидеть аналитику тура.</p>
             </div>
@@ -312,7 +310,7 @@
                                 <span class="stat-value">{{ $stat['total_votes'] }}</span>
                             </div>
                             <div class="stat-item {{ $stat['total_expected'] > 0 ? 'highlight' : '' }}">
-                                <span class="stat-label"> Ожидается зрителей:</span>
+                                <span class="stat-label">Ожидается зрителей:</span>
                                 <span class="stat-value">{{ $stat['total_expected'] }}</span>
                             </div>
                         </div>

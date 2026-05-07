@@ -91,9 +91,18 @@ class AfishaController extends Controller
 
     private function soldTickets(int $cityId, int $movieId, string $showDate): int
     {
-        return (int) Ticket::where('city_id', $cityId)
+        $soldForDate = Ticket::where('city_id', $cityId)
             ->where('movie_id', $movieId)
             ->whereDate('show_date', $showDate)
+            ->where('status', 'purchased')
+            ->sum('quantity');
+
+        if ($soldForDate > 0) {
+            return (int) $soldForDate;
+        }
+
+        return (int) Ticket::where('city_id', $cityId)
+            ->where('movie_id', $movieId)
             ->where('status', 'purchased')
             ->sum('quantity');
     }
