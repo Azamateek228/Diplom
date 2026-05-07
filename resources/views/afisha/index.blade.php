@@ -100,13 +100,13 @@
 
                                 <div class="movie-session-kpi mt-3">
                                     <div class="session-meta">
-                                        <span>Продано: <strong>{{ $day['sold'] }}</strong></span>
-                                        <span>Свободно: <strong>{{ $availableTickets }}</strong></span>
+                                        <span>Продано билетов: <strong>{{ $day['sold'] }}</strong></span>
+                                        <span>Свободно мест: <strong>{{ $availableTickets }}</strong></span>
                                     </div>
                                     <div class="progress-bar-container">
                                         <div class="progress-bar" style="width: {{ $fillPercentage }}%"></div>
                                     </div>
-                                    <small class="d-block mt-2 text-muted">Заполняемость: {{ $fillPercentage }}%</small>
+                                    <small class="d-block mt-2 text-muted">Заполненность: {{ $fillPercentage }}%</small>
                                 </div>
 
                                 @if (!empty($day['movie']))

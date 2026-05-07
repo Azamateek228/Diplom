@@ -44,8 +44,7 @@ class VoteController extends Controller
             return redirect()->back()->with('error', 'Необходимо указать город для голосования. Пожалуйста, выберите город в форме голосования.');
         }
 
-        $expectedAttendees = (int) $request->input('expected_attendees', 1);
-        $expectedAttendees = max(1, min(10, $expectedAttendees));
+        $expectedAttendees = 1;
         
         // Проверяем, не голосовал ли уже пользователь в этом городе
         $existingVote = Vote::where('user_id', $user->id)
