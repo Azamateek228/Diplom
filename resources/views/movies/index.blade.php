@@ -37,24 +37,51 @@
     @endif
 
     <div class="movies">
-        <div class="movies-header">
-            <h3>Сейчас в прокате</h3>
-            <form method="GET" action="{{ route('movies.index') }}" class="city-filter">
-                <select name="city_id" class="form-select" onchange="this.form.submit()">
+        <div class="movies-header movies-header--stacked">
+            <div>
+                <h3>Сейчас в прокате</h3>
+                <p class="text-muted mb-0">Поиск и фильтры помогают быстро найти подходящий сеанс.</p>
+            </div>
+            <form method="GET" action="{{ route('movies.index') }}" class="movie-filter-panel">
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ $filters['search'] ?? '' }}"
+                    class="form-control"
+                    placeholder="Поиск по названию"
+                >
+                <select name="city_id" class="form-select">
                     <option value="">Все города</option>
                     @foreach ($cities as $city)
-                        <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                        <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
                     @endforeach
                 </select>
+                <select name="genre" class="form-select">
+                    <option value="">Все жанры</option>
+                    @foreach ($genres as $genre)
+                        <option value="{{ $genre }}" {{ ($filters['genre'] ?? '') === $genre ? 'selected' : '' }}>{{ $genre }}</option>
+                    @endforeach
+                </select>
+                <select name="age_rating" class="form-select">
+                    <option value="">Все рейтинги</option>
+                    @foreach ($ageRatings as $rating)
+                        <option value="{{ $rating }}" {{ ($filters['age_rating'] ?? '') == $rating ? 'selected' : '' }}>{{ $rating }}+</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="btn btn-main btn-sm">Применить</button>
+                <a href="{{ route('movies.index') }}" class="btn btn-outline-dark btn-sm">Сбросить фильтры</a>
             </form>
         </div>
 
         @if ($movies->isEmpty())
             <div class="empty-state">
                 <div class="empty-state-icon">🎬</div>
-                <h4>Пока нет фильмов в подборке</h4>
-                <p>Попробуйте изменить фильтр по городу или запустите демо-сидер.</p>
-                <a href="{{ route('afisha.index') }}" class="btn btn-main btn-sm">Открыть афишу</a>
+                <h4>Фильмы не найдены</h4>
+                <p>По выбранным параметрам ничего не найдено. Измените название, жанр, возрастной рейтинг или город.</p>
+                <div class="empty-state-actions">
+                    <a href="{{ route('movies.index') }}" class="btn btn-main btn-sm">Сбросить фильтры</a>
+                    <a href="{{ route('afisha.index') }}" class="btn btn-outline-dark btn-sm">Открыть афишу</a>
+                </div>
             </div>
         @else
             <div class="movie-grid">
