@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Мензелинск', 'lat' => 55.7271, 'lng' => 53.1026, 'population' => 16948, 'route_order' => 11],
         ];
 
-        $cities = collect($routeCities)->mapWithKeys(function (array $city) {
+        $cities = collect($routeCities)->mapWithKeys(function (array $city, int $index) {
             $model = City::updateOrCreate(
                 ['name' => $city['name']],
                 [
