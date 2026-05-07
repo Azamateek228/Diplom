@@ -18,11 +18,24 @@ class MovieController extends Controller
         $query = Movie::with(['city', 'votes'])
             ->withCount('votes');
 
-        if ($request->has('city_id') && $request->city_id) {
-            $query->where('city_id', $request->city_id);
+        if ($request->filled('city_id')) {
+            $query->where('city_id', $request->integer('city_id'));
         }
 
-        $movies = $query->orderByDesc('votes_count')->get();
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
+        if ($request->filled('genre')) {
+            $query->where('genre', $request->input('genre'));
+        }
+
+        if ($request->filled('age_rating')) {
+            $query->where('age_rating', $request->input('age_rating'));
+        }
+
+        $movies = $query->orderByDesc('votes_count')->orderBy('title')->get();
         $soldTicketsByMovie = Ticket::query()
             ->selectRaw('movie_id, SUM(quantity) as sold_total')
             ->where('status', 'purchased')
@@ -39,6 +52,9 @@ class MovieController extends Controller
         });
 
         $cities = NearbyCitySelector::mapCities(10, auth()->user()?->city_id);
+        $genres = Movie::query()->whereNotNull('genre')->distinct()->orderBy('genre')->pluck('genre');
+        $ageRatings = Movie::query()->whereNotNull('age_rating')->distinct()->orderBy('age_rating')->pluck('age_rating');
+        $filters = $request->only(['city_id', 'search', 'genre', 'age_rating']);
         $settings = Setting::first();
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
@@ -54,7 +70,7 @@ class MovieController extends Controller
             ];
         }
 
-        return view('movies.index', compact('movies', 'cities', 'userCityStats', 'votingDeadline', 'votingClosed', 'ticketPrice'));
+        return view('movies.index', compact('movies', 'cities', 'genres', 'ageRatings', 'filters', 'userCityStats', 'votingDeadline', 'votingClosed', 'ticketPrice'));
     }
 
     public function show(Movie $movie)

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AfishaController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -58,7 +59,8 @@ Route::put('/cities/{city}', [CityController::class, 'update'])->middleware('adm
 Route::delete('/cities/{city}', [CityController::class, 'destroy'])->middleware('admin')->name('cities.destroy');
 
 // Главная страница
-Route::view('/', 'home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::view('/about', 'about')->name('about');
 
 // Карта
 Route::get('/map', [MapController::class, 'index']);
@@ -74,6 +76,7 @@ Route::middleware('auth')->group(function () {
     // Профиль
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');
     Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
     Route::post('/tickets/{ticket}/refund', [TicketController::class, 'refund'])->name('tickets.refund');
@@ -90,7 +93,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Админ-панель
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::match(['get', 'post'], '/admin/stats', [AdminController::class, 'stats'])
         ->name('admin.stats');
 });

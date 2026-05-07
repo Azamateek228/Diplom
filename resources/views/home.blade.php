@@ -1,11 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-    @php
-        $upcomingMovies = \App\Models\Movie::with('city')->withCount('votes')->whereNotNull('show_time')->orderBy('show_time')->take(4)->get();
-        $routeCities = \App\Models\City::orderBy('id')->take(11)->get();
-    @endphp
-
     <section class="demo-hero">
         <div class="demo-hero__content">
             <span class="eyebrow">Выездной кинотеатр по Татарстану</span>
