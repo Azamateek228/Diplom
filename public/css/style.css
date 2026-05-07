@@ -2020,6 +2020,17 @@ footer {
     background: rgba(255,255,255,.06) !important;
     border: 1px solid rgba(255,255,255,.14) !important;
     color: var(--text) !important;
+    color-scheme: dark;
+}
+
+.form-control option, .form-select option, .auth-input option {
+    background: var(--card);
+    color: var(--text);
+}
+
+.form-control option:checked, .form-select option:checked, .auth-input option:checked {
+    background: var(--accent);
+    color: #0b1020;
 }
 
 .form-control::placeholder { color: rgba(237,242,255,.55); }
