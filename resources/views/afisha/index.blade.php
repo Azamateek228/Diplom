@@ -2,7 +2,11 @@
 
 @section('content')
     <div class="afisha-page">
-        <h2 class="mb-4">Афиша на неделю</h2>
+        <section class="afisha-hero page-hero fade-in-up">
+            <span class="hero-kicker">Передвижной кинотеатр</span>
+            <h2>Афиша тура</h2>
+            <p>Расписание ближайших выездных кинопоказов по городам маршрута</p>
+        </section>
 
         @if (empty($weeklySchedule))
             <div class="empty-state">
@@ -12,62 +16,88 @@
                 <a href="{{ route('movies.index') }}" class="btn btn-main btn-sm">Перейти к фильмам</a>
             </div>
         @else
-            <div class="alert alert-info mb-4">
-                Маршрут формируется автоматически по ближайшим городам, а фильм в городе выбирается по результатам голосования.
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="mb-3">Порядок маршрута</h5>
-                    <div class="route-timeline">
-                        @foreach ($routeCities as $idx => $city)
-                            <div class="route-step">
-                                <span class="route-step-index">{{ $idx + 1 }}</span>
-                                <span class="route-step-name">{{ $city->name }}</span>
-                            </div>
-                        @endforeach
+            <section class="route-panel fade-in-up">
+                <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-3">
+                    <div>
+                        <span class="section-kicker">Маршрут недели</span>
+                        <h5 class="mb-1">Логичная последовательность остановок</h5>
                     </div>
+                    <span class="route-hint">Фильм выбирается по голосованию в каждом городе</span>
                 </div>
-            </div>
 
-            <div class="row g-3">
-                @foreach ($weeklySchedule as $day)
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 afisha-card fade-in-up">
-                            <div class="card-body">
-                                @php
-                                    $availableTickets = max(0, $day['capacity'] - $day['sold']);
-                                    $fillPercentage = $day['capacity'] > 0 ? min(100, (int) round(($day['sold'] / $day['capacity']) * 100)) : 0;
-                                    $availabilityLabel = 'Билеты есть';
-                                    $availabilityClass = 'bg-success';
-                                    if ($availableTickets === 0) {
-                                        $availabilityLabel = 'Билеты закончились';
-                                        $availabilityClass = 'bg-danger';
-                                    } elseif ($availableTickets <= 10) {
-                                        $availabilityLabel = 'Осталось мало';
-                                        $availabilityClass = 'bg-warning text-dark';
-                                    }
-                                @endphp
-                                <div class="text-muted small mb-2">{{ $day['date'] }}</div>
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h5 class="card-title mb-0">{{ $day['city']->name }}</h5>
-                                    <span class="badge {{ $availabilityClass }}">{{ $availabilityLabel }}</span>
-                                </div>
+                <div class="route-timeline">
+                    @foreach ($routeCities as $idx => $city)
+                        <div class="route-step">
+                            <span class="route-step-index">{{ $idx + 1 }}</span>
+                            <span class="route-step-name">{{ $city->name }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
+            <section class="schedule-grid">
+                @foreach ($weeklySchedule as $dayIndex => $day)
+                    @php
+                        $availableTickets = max(0, $day['capacity'] - $day['sold']);
+                        $fillPercentage = $day['capacity'] > 0 ? min(100, (int) round(($day['sold'] / $day['capacity']) * 100)) : 0;
+                        $availabilityLabel = 'Билеты есть';
+                        $availabilityClass = 'ticket-availability--available';
+                        if ($availableTickets === 0) {
+                            $availabilityLabel = 'Билеты закончились';
+                            $availabilityClass = 'ticket-availability--sold-out';
+                        } elseif ($availableTickets <= 10) {
+                            $availabilityLabel = 'Осталось мало';
+                            $availabilityClass = 'ticket-availability--limited';
+                        }
+                    @endphp
+
+                    <article class="schedule-card fade-in-up">
+                        <div class="schedule-card-topline">
+                            <div>
+                                <span class="schedule-date">День {{ $dayIndex + 1 }}</span>
+                                <p class="schedule-date-value">{{ $day['date'] }}</p>
+                            </div>
+                            <span class="ticket-availability {{ $availabilityClass }}">{{ $availabilityLabel }}</span>
+                        </div>
+
+                        <div class="schedule-card-body">
+                            <div class="schedule-poster-wrap">
                                 @if (!empty($day['movie']) && $day['movie']->poster)
-                                    <img class="afisha-poster mb-2" src="{{ $day['movie']->poster_url }}" alt="{{ $day['movie']->title }}">
+                                    <img class="schedule-poster" src="{{ $day['movie']->poster_url }}" alt="{{ $day['movie']->title }}">
+                                @elseif (!empty($day['movie']))
+                                    <div class="schedule-poster-fallback">
+                                        <span>🎬</span>
+                                        <strong>{{ $day['movie']->title }}</strong>
+                                    </div>
+                                @else
+                                    <div class="schedule-poster-fallback schedule-poster-fallback--empty">
+                                        <span>📽️</span>
+                                        <strong>Фильм скоро появится</strong>
+                                    </div>
                                 @endif
-                                <p class="mb-1"><strong>Фильм:</strong> {{ $day['movie']->title ?? 'Пока не назначен' }}</p>
-                                <p class="mb-1"><strong>Время:</strong> {{ $day['show_time'] }}</p>
-                                <p class="mb-1"><strong>Площадка:</strong> {{ $day['movie']->venue ?? 'Уточняется' }}</p>
-                                <p class="mb-1"><strong>Расписание:</strong> {{ $day['date'] }} / {{ $day['city']->name }} / {{ $day['movie']->title ?? '—' }}</p>
-                                <p class="mb-1"><strong>Цена билета:</strong> {{ $ticketPrice }} ₽</p>
-                                <p class="mb-0"><strong>Возраст:</strong>
-                                    @if (!empty($day['movie']) && $day['movie']->age_rating !== null)
-                                        {{ $day['movie']->age_rating }}+
-                                    @else
-                                        —
-                                    @endif
-                                </p>
+                            </div>
+
+                            <div class="schedule-info">
+                                <h3 class="schedule-city">{{ $day['city']->name }}</h3>
+
+                                @if (!empty($day['movie']))
+                                    <h4 class="schedule-movie">{{ $day['movie']->title }}</h4>
+                                    <div class="schedule-meta">
+                                        <span>🕒 {{ $day['show_time'] }}</span>
+                                        <span>📍 {{ $day['movie']->venue ?? 'Площадка уточняется' }}</span>
+                                        <span>💳 {{ $ticketPrice }} ₽</span>
+                                        <span>🎟️ Свободно {{ $availableTickets }} из {{ $day['capacity'] }}</span>
+                                    </div>
+                                @else
+                                    <div class="schedule-movie schedule-movie--empty">Фильм пока не назначен</div>
+                                    <div class="schedule-meta">
+                                        <span>🕒 {{ $day['show_time'] }}</span>
+                                        <span>📍 Площадка уточняется</span>
+                                        <span>💳 {{ $ticketPrice }} ₽</span>
+                                        <span>🎟️ Свободно {{ $availableTickets }} из {{ $day['capacity'] }}</span>
+                                    </div>
+                                @endif
+
                                 <div class="movie-session-kpi mt-3">
                                     <div class="session-meta">
                                         <span>Продано: <strong>{{ $day['sold'] }}</strong></span>
@@ -78,14 +108,15 @@
                                     </div>
                                     <small class="d-block mt-2 text-muted">Заполняемость: {{ $fillPercentage }}%</small>
                                 </div>
+
                                 @if (!empty($day['movie']))
-                                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                                    <div class="schedule-actions">
                                         <a href="{{ route('movies.show', $day['movie']) }}" class="btn btn-outline-secondary btn-sm">Подробнее</a>
                                         @auth
                                             @if ($availableTickets > 0)
                                                 <a href="{{ route('tickets.create', ['city_id' => $day['city']->id, 'movie_id' => $day['movie']->id, 'show_date' => $day['show_date'], 'show_time' => $day['show_time']]) }}" class="btn btn-primary btn-sm">Купить билет</a>
                                             @else
-                                                <span class="badge bg-danger">Билеты закончились</span>
+                                                <span class="ticket-availability ticket-availability--sold-out">Билеты закончились</span>
                                             @endif
                                         @else
                                             <a href="{{ route('login') }}" class="btn btn-primary btn-sm">Войти для покупки</a>
@@ -94,9 +125,9 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
+                    </article>
                 @endforeach
-            </div>
+            </section>
         @endif
     </div>
 @endsection

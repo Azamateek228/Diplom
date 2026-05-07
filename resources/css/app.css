@@ -2353,7 +2353,6 @@ strong,
     border: 1px solid var(--card-border);
 }
 
-.route-ticket span,
 .movie-rating-badge,
 .city-badge,
 .badge-warning,
@@ -2361,6 +2360,10 @@ strong,
 .badge.bg-warning,
 .alert-warning strong {
     color: #111 !important;
+}
+
+.route-ticket span {
+    color: var(--accent) !important;
 }
 
 .movie-rating-badge,

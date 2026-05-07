@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\City;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 class NearbyCitySelector
 {
@@ -23,6 +24,15 @@ class NearbyCitySelector
                 return $name === 'агрыз' || str_contains($name, 'agryz');
             })
             ->values();
+
+        if (self::hasUsableRouteOrder($allCities)) {
+            $orderedCities = $allCities
+                ->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX)
+                ->take($nearest + 1)
+                ->values();
+
+            return self::appendEnsuredCity($orderedCities, $ensureCityId);
+        }
 
         $baseCity = $allCities->first(function ($city) {
             $name = mb_strtolower(trim((string) $city->name));
@@ -47,7 +57,7 @@ class NearbyCitySelector
                         (float) $city->lng
                     ))
                     ->take($nearest)
-)
+            )
             ->values();
 
         return self::appendEnsuredCity($cities, $ensureCityId);
@@ -57,6 +67,12 @@ class NearbyCitySelector
     {
         if ($cities->isEmpty()) {
             return collect();
+        }
+
+        if (self::hasUsableRouteOrder($cities)) {
+            return $cities
+                ->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX)
+                ->values();
         }
 
         $remaining = $cities->values()->all();
@@ -113,7 +129,25 @@ class NearbyCitySelector
 
         return $cities
             ->push($ensuredCity)
+            ->when(self::hasUsableRouteOrder($cities), fn ($collection) => $collection->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX))
             ->values();
+    }
+
+    private static function hasUsableRouteOrder(Collection $cities): bool
+    {
+        return self::hasRouteOrder()
+            && $cities->contains(fn ($city) => $city->route_order !== null);
+    }
+
+    private static function hasRouteOrder(): bool
+    {
+        static $hasRouteOrder = null;
+
+        if ($hasRouteOrder === null) {
+            $hasRouteOrder = Schema::hasColumn('cities', 'route_order');
+        }
+
+        return $hasRouteOrder;
     }
 
     private static function distanceInKm(float $lat1, float $lng1, float $lat2, float $lng2): float

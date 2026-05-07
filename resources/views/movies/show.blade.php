@@ -16,7 +16,7 @@
             <div class="movie-show-info">
                 <span class="eyebrow">Подробности сеанса</span>
                 <h1>{{ $movie->title }}</h1>
-                <p class="lead-text">{{ $movie->description ?? 'Описание фильма будет добавлено администратором.' }}</p>
+                <p class="lead-text">{{ $movie->description ?? 'Описание фильма появится позже.' }}</p>
 
                 <div class="show-meta-grid">
                     <div><span>Жанр</span><strong>{{ $movie->genre ?? 'Уточняется' }}</strong></div>
