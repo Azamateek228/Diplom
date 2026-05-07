@@ -110,13 +110,13 @@
                             </div>
 
                             <div class="movie-stats-row">
-                                <span>🗳️ {{ $movie->votes_count ?? 0 }} голосов</span>
-                                <span>🎟️ {{ $movie->sold_tickets ?? 0 }} билетов</span>
+                                <span>Голосов: <strong>{{ $movie->votes_count ?? 0 }}</strong></span>
+                                <span>Куплено билетов: <strong>{{ $movie->sold_tickets ?? 0 }}</strong></span>
                             </div>
                             <div class="movie-session-kpi">
                                 <div class="session-meta">
-                                    <span>Цена: <strong>{{ $ticketPrice }} ₽</strong></span>
-                                    <span>Заполнено: <strong>{{ $movie->fill_percentage ?? 0 }}%</strong></span>
+                                    <span>Цена билета: <strong>{{ $ticketPrice }} ₽</strong></span>
+                                    <span>Заполненность: <strong>{{ $movie->fill_percentage ?? 0 }}%</strong></span>
                                 </div>
                                 <div class="progress-bar-container"><div class="progress-bar" style="width: {{ $movie->fill_percentage ?? 0 }}%"></div></div>
                             </div>
@@ -135,7 +135,6 @@
                                                 @endforeach
                                             </select>
                                         @endif
-                                        <input type="number" name="expected_attendees" class="form-control" min="1" max="10" value="1" title="Сколько зрителей придёт с вами">
                                         <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Закрыто' : 'Голосовать' }}</button>
                                     </form>
                                 @else

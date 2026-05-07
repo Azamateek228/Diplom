@@ -90,7 +90,7 @@ class TicketController extends Controller
         ]);
 
         return redirect()->route('profile.edit', ['tab' => 'tickets'])
-            ->with('success', 'Оплата прошла успешно. Билет добавлен в профиль, раздел "Мои билеты" (QR-код).');
+            ->with('success', 'Билет успешно куплен. Он доступен в профиле во вкладке «Мои билеты».');
     }
 
     public function refund(Ticket $ticket)
