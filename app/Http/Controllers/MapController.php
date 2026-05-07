@@ -15,13 +15,10 @@ class MapController extends Controller
             $settings?->current_city_id
         );
 
-        $settingsCurrentCity = $settings?->currentCity;
-        $currentCity = $cities->firstWhere('id', $settingsCurrentCity?->id)
-            ?? $cities->first(function ($city) {
-                $name = mb_strtolower(trim((string) $city->name));
-                return str_contains($name, 'набережные челны') || str_contains($name, 'naberezhnye chelny');
-            })
-            ?? $cities->first();
+        $currentCity = $cities->first(function ($city) {
+            $name = mb_strtolower(trim((string) $city->name));
+            return str_contains($name, 'набережные челны') || str_contains($name, 'naberezhnye chelny');
+        }) ?? $cities->first();
         
         // Подготавливаем данные городов для JavaScript
         $citiesData = $cities->map(function($city) {
