@@ -27,6 +27,7 @@ class MapController extends Controller
                 'name' => $city->name,
                 'lat' => (float)$city->lat,
                 'lng' => (float)$city->lng,
+                'route_order' => $city->route_order,
                 'votes_count' => $city->votes_count ?? 0
             ];
         })->values()->toArray(); // Преобразуем в массив

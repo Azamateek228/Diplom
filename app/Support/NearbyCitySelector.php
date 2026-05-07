@@ -25,10 +25,9 @@ class NearbyCitySelector
             })
             ->values();
 
-        if (self::hasRouteOrder()) {
+        if (self::hasUsableRouteOrder($allCities)) {
             $orderedCities = $allCities
-                ->filter(fn ($city) => $city->route_order !== null)
-                ->sortBy(fn ($city) => (int) $city->route_order)
+                ->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX)
                 ->take($nearest + 1)
                 ->values();
 
@@ -70,7 +69,7 @@ class NearbyCitySelector
             return collect();
         }
 
-        if (self::hasRouteOrder() && $cities->contains(fn ($city) => $city->route_order !== null)) {
+        if (self::hasUsableRouteOrder($cities)) {
             return $cities
                 ->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX)
                 ->values();
@@ -130,8 +129,14 @@ class NearbyCitySelector
 
         return $cities
             ->push($ensuredCity)
-            ->when(self::hasRouteOrder(), fn ($collection) => $collection->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX))
+            ->when(self::hasUsableRouteOrder($cities), fn ($collection) => $collection->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX))
             ->values();
+    }
+
+    private static function hasUsableRouteOrder(Collection $cities): bool
+    {
+        return self::hasRouteOrder()
+            && $cities->contains(fn ($city) => $city->route_order !== null);
     }
 
     private static function hasRouteOrder(): bool

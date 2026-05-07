@@ -22,7 +22,8 @@
         @if (isset($citiesData) && count($citiesData) > 1)
             <div class="map-controls mt-3">
                 <div id="routeInfo" class="route-info">
-                    <span id="currentCityName"></span> → <span id="nextCityName"></span>
+                    <div><strong>Маршрут:</strong> <span id="routeSummary"></span></div>
+                    <div><strong>Следующий город:</strong> <span id="nextCityName"></span></div>
                     <div class="progress-bar-container">
                         <div id="routeProgress" class="progress-bar"></div>
                     </div>
@@ -72,45 +73,10 @@
             return NaN;
         }
 
-        function orderCities(citiesArray) {
-            const valid = citiesArray.filter(city => {
-                const lat = parseCoordinate(city.lat);
-                const lng = parseCoordinate(city.lng);
-                return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-            });
-
-            if (valid.length <= 2) return valid;
-
-            const remaining = [...valid];
-            const startIndex = currentCityId
-                ? Math.max(remaining.findIndex(c => c.id === currentCityId), 0)
-                : 0;
-
-            const ordered = [remaining.splice(startIndex, 1)[0]];
-
-            while (remaining.length > 0) {
-                const current = ordered[ordered.length - 1];
-                const currentLat = parseCoordinate(current.lat);
-                const currentLng = parseCoordinate(current.lng);
-
-                let nearestIndex = 0;
-                let nearestDistance = Infinity;
-
-                for (let i = 0; i < remaining.length; i++) {
-                    const candidateLat = parseCoordinate(remaining[i].lat);
-                    const candidateLng = parseCoordinate(remaining[i].lng);
-                    const distance = map.distance([currentLat, currentLng], [candidateLat, candidateLng]);
-
-                    if (distance < nearestDistance) {
-                        nearestDistance = distance;
-                        nearestIndex = i;
-                    }
-                }
-
-                ordered.push(remaining.splice(nearestIndex, 1)[0]);
-            }
-
-            return ordered;
+        function hasValidCoordinates(city) {
+            const lat = parseCoordinate(city.lat);
+            const lng = parseCoordinate(city.lng);
+            return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
         }
 
         function initMap() {
@@ -124,7 +90,7 @@
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            const orderedCities = orderCities(cities);
+            const orderedCities = cities.filter(hasValidCoordinates);
             if (orderedCities.length === 0) {
                 L.marker(defaultCenter).addTo(map).bindPopup('Добавьте города с координатами для отображения маршрута');
                 return;
@@ -222,13 +188,14 @@
 
             isAnimating = true;
             const routeInfo = document.getElementById('routeInfo');
-            const currentCityNameEl = document.getElementById('currentCityName');
+            const routeSummaryEl = document.getElementById('routeSummary');
             const nextCityNameEl = document.getElementById('nextCityName');
             const progressBar = document.getElementById('routeProgress');
 
-            if (routeInfo && currentCityNameEl && nextCityNameEl) {
-                currentCityNameEl.textContent = cities[0]?.name || 'Город 1';
-                nextCityNameEl.textContent = cities[cities.length - 1]?.name || 'Город N';
+            if (routeInfo && routeSummaryEl && nextCityNameEl) {
+                const routeNames = cities.map(city => city.name).join(' → ');
+                routeSummaryEl.textContent = routeNames || 'Маршрут не сформирован';
+                nextCityNameEl.textContent = cities[1]?.name || 'Следующая остановка уточняется';
                 routeInfo.style.display = 'block';
             }
 

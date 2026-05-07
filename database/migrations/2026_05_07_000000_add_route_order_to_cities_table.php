@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cities', function (Blueprint $table) {
-            $table->unsignedSmallInteger('route_order')->nullable()->after('population');
+            $table->unsignedInteger('route_order')->nullable()->after('population');
         });
     }
 
