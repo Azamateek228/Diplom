@@ -2353,7 +2353,6 @@ strong,
     border: 1px solid var(--card-border);
 }
 
-.route-ticket span,
 .movie-rating-badge,
 .city-badge,
 .badge-warning,
@@ -2361,6 +2360,10 @@ strong,
 .badge.bg-warning,
 .alert-warning strong {
     color: #111 !important;
+}
+
+.route-ticket span {
+    color: var(--accent) !important;
 }
 
 .movie-rating-badge,
@@ -2619,6 +2622,20 @@ select option,
 .leaflet-container,
 #map {
     color: #111 !important;
+}
+
+.leaflet-popup-content,
+.leaflet-popup-content h4 {
+    color: #111827 !important;
+}
+
+.leaflet-popup-content p {
+    color: #4b5563 !important;
+}
+
+.leaflet-popup-content .current-location-popup {
+    color: #b45309 !important;
+    font-weight: 800;
 }
 
 @media (max-width: 820px) {
