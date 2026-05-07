@@ -12,6 +12,17 @@ use Illuminate\Support\Str;
 
 class TicketController extends Controller
 {
+    public function index()
+    {
+        $tickets = auth()->user()
+            ->tickets()
+            ->with(['city', 'movie'])
+            ->latest()
+            ->get();
+
+        return view('tickets.index', compact('tickets'));
+    }
+
     public function create(Request $request)
     {
         $city = City::findOrFail($request->integer('city_id'));
@@ -78,7 +89,7 @@ class TicketController extends Controller
             'qr_token' => Str::uuid()->toString(),
         ]);
 
-        return redirect()->route('profile.edit', ['tab' => 'tickets'])
+        return redirect()->route('tickets.index')
             ->with('success', 'Оплата прошла успешно. Билет добавлен в раздел "Мои билеты" (QR-код).');
     }
 

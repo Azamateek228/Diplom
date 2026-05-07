@@ -10,10 +10,10 @@
         $viteDevServerIsRunning = file_exists(public_path('hot'));
     @endphp
 
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+
     @if ($viteDevServerIsRunning || $viteManifestExists)
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        @vite(['resources/js/app.js'])
     @endif
 </head>
 
@@ -25,7 +25,9 @@
                 <a class="btn btn-outline-light btn-sm" href="{{ route('movies.index') }}">Фильмы</a>
                 <a class="btn btn-outline-light btn-sm" href="{{ route('afisha.index') }}">Афиша</a>
                 <a class="btn btn-outline-light btn-sm" href="{{ url('/map') }}">Карта</a>
+                <a class="btn btn-outline-light btn-sm" href="{{ route('about') }}">О проекте</a>
                 @auth
+                    <a class="btn btn-outline-light btn-sm" href="{{ route('tickets.index') }}">Мои билеты</a>
                     <a class="btn btn-outline-light btn-sm" href="{{ route('profile.edit') }}">Профиль</a>
                     @if(auth()->user()->role === 'admin')
                         <a class="btn btn-warning btn-sm" href="{{ route('admin.stats') }}">Админ-панель</a>

@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Models\Ticket;
 use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
 {
@@ -48,6 +49,27 @@ class AdminController extends Controller
         }
         
         $movies = $moviesQuery->orderByDesc('votes_count')->get();
+        $movies->each(function (Movie $movie) {
+            $showTime = $movie->show_time ? Carbon::parse($movie->show_time) : null;
+            $movie->session_status_label = match (true) {
+                ! $showTime => 'Запланирован',
+                $showTime->isToday() => 'Сегодня',
+                $showTime->isPast() => 'Прошёл',
+                default => 'Запланирован',
+            };
+            $movie->session_status_class = match ($movie->session_status_label) {
+                'Сегодня' => 'status-today',
+                'Прошёл' => 'status-past',
+                default => 'status-planned',
+            };
+        });
+
+        $upcomingSessions = Movie::with('city')
+            ->whereNotNull('show_time')
+            ->where('show_time', '>=', now()->startOfDay())
+            ->orderBy('show_time')
+            ->take(5)
+            ->get();
         
         // Подсчет по городам: голоса и ожидаемые зрители из таблицы votes
         $cityStats = $cities->map(function ($city) {
@@ -107,7 +129,8 @@ class AdminController extends Controller
             'currentCityId',
             'currentCityName',
             'votingDeadline',
-            'ticketPrice'
+            'ticketPrice',
+            'upcomingSessions'
         ));
     }
 }
