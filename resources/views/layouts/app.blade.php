@@ -10,10 +10,10 @@
         $viteDevServerIsRunning = file_exists(public_path('hot'));
     @endphp
 
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+
     @if ($viteDevServerIsRunning || $viteManifestExists)
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        @vite(['resources/js/app.js'])
     @endif
 </head>
 
