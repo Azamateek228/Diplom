@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Ticket extends Model
@@ -26,6 +27,22 @@ class Ticket extends Model
         'show_date' => 'date',
         'refunded_at' => 'datetime',
     ];
+
+    public function getShowDateTimeAttribute(): Carbon
+    {
+        return Carbon::parse($this->show_date->toDateString() . ' ' . $this->show_time);
+    }
+
+    public function getRefundAvailableUntilAttribute(): Carbon
+    {
+        return $this->show_date_time->copy()->subHours(24);
+    }
+
+    public function getCanRefundAttribute(): bool
+    {
+        return $this->status === 'purchased'
+            && now()->lessThan($this->refund_available_until);
+    }
 
     public function city()
     {

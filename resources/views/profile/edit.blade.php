@@ -10,6 +10,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="auth-alert auth-alert-warning">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="profile-layout">
         <aside class="profile-sidebar profile-card">
             <h5 class="profile-card-title">Меню</h5>
@@ -139,10 +145,17 @@
                                                 <p class="mb-0 small">Код билета: <code>{{ $ticket->qr_token }}</code></p>
                                             </div>
                                         </div>
-                                        <form method="POST" action="{{ route('tickets.refund', $ticket) }}" class="mt-2">
-                                            @csrf
-                                            <button type="submit" class="btn btn-outline-danger btn-sm">Оформить возврат</button>
-                                        </form>
+                                        <div class="ticket-refund-note mt-2">
+                                            Возврат доступен до: {{ $ticket->refund_available_until->format('d.m.Y H:i') }}
+                                        </div>
+                                        @if ($ticket->can_refund)
+                                            <form method="POST" action="{{ route('tickets.refund', $ticket) }}" class="mt-2">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">Оформить возврат</button>
+                                            </form>
+                                        @else
+                                            <p class="ticket-refund-note mt-2 mb-0">Возврат недоступен: до показа осталось менее 24 часов.</p>
+                                        @endif
                                     @endif
                                 </div>
                             @endforeach
