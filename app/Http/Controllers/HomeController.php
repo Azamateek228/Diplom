@@ -9,14 +9,13 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $upcomingMovies = Movie::with('city')
-            ->withCount('votes')
-            ->whereNotNull('show_time')
-            ->orderBy('show_time')
+        $upcomingMovies = Movie::withCount('votes')
+            ->orderByDesc('votes_count')
+            ->orderBy('title')
             ->take(4)
             ->get();
 
-        $routeCities = NearbyCitySelector::mapCities(10);
+        $routeCities = NearbyCitySelector::actualRoute();
 
         return view('home', compact('upcomingMovies', 'routeCities'));
     }

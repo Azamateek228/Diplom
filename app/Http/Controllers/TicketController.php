@@ -103,6 +103,12 @@ class TicketController extends Controller
             return back()->with('error', 'Билет уже возвращён.');
         }
 
+        $showDateTime = Carbon::parse($ticket->show_date->toDateString() . ' ' . $ticket->show_time);
+
+        if (now()->greaterThanOrEqualTo($showDateTime->copy()->subHours(24))) {
+            return back()->with('error', 'Возврат билета невозможен менее чем за 24 часа до начала показа.');
+        }
+
         $ticket->update([
             'status' => 'refunded',
             'refunded_at' => now(),

@@ -44,13 +44,13 @@
     <section class="landing-section">
         <div class="section-heading section-heading--row">
             <div>
-                <span class="eyebrow">Афиша</span>
-                <h2>Ближайшие показы</h2>
+                <span class="eyebrow">Каталог</span>
+                <h2>Популярные фильмы</h2>
             </div>
             <a href="{{ route('afisha.index') }}" class="btn btn-outline-dark btn-sm">Вся афиша</a>
         </div>
         @if($upcomingMovies->isEmpty())
-            <div class="empty-state"><div class="empty-state-icon">🎬</div><h4>Сеансы появятся после заполнения базы</h4><p>Запустите сидер, чтобы увидеть демо-афишу.</p></div>
+            <div class="empty-state"><div class="empty-state-icon">🎬</div><h4>Фильмы появятся после заполнения базы</h4><p>Запустите сидер, чтобы увидеть демо-каталог.</p></div>
         @else
             <div class="landing-movies-grid">
                 @foreach($upcomingMovies as $movie)
@@ -63,8 +63,8 @@
                         <div>
                             <h3>{{ $movie->title }}</h3>
                             <p>{{ $movie->genre }} • {{ $movie->age_rating }}+ • {{ $movie->duration }} мин</p>
-                            <p>📍 {{ $movie->city?->name ?? 'Город уточняется' }} — {{ $movie->venue ?? 'площадка уточняется' }}</p>
-                            <p>🕒 {{ $movie->show_time?->format('d.m.Y H:i') ?? 'скоро' }}</p>
+                            <p>🗳️ Голосов: {{ $movie->votes_count ?? 0 }}</p>
+                            <p>Показы формируются в афише по маршруту голосования.</p>
                             <a href="{{ route('movies.show', $movie) }}" class="btn btn-main btn-sm">Подробнее</a>
                         </div>
                     </article>
@@ -77,7 +77,7 @@
         <div class="section-heading">
             <span class="eyebrow">Маршрут кинотеатра</span>
             <h2>Города тура по Татарстану</h2>
-            <p>Маршрут связывает крупные и малые города: от Набережных Челнов до Мамадыша и Мензелинска.</p>
+            <p>Если голосов нет, маршрут идёт по всем городам. Если голоса есть, маршрут строится только по активным городам.</p>
         </div>
         <div class="route-pills">
             @forelse($routeCities as $city)

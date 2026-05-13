@@ -14,7 +14,7 @@
             </div>
 
             <div class="movie-show-info">
-                <span class="eyebrow">Подробности сеанса</span>
+                <span class="eyebrow">Карточка фильма</span>
                 <h1>{{ $movie->title }}</h1>
                 <p class="lead-text">{{ $movie->description ?? 'Описание фильма появится позже.' }}</p>
 
@@ -22,18 +22,13 @@
                     <div><span>Жанр</span><strong>{{ $movie->genre ?? 'Уточняется' }}</strong></div>
                     <div><span>Возраст</span><strong>{{ $movie->age_rating }}+</strong></div>
                     <div><span>Длительность</span><strong>{{ $movie->duration }} мин</strong></div>
-                    <div><span>Город</span><strong>{{ $movie->city?->name ?? 'Уточняется' }}</strong></div>
-                    <div><span>Площадка</span><strong>{{ $movie->venue ?? 'Уточняется' }}</strong></div>
-                    <div><span>Дата показа</span><strong>{{ $movie->show_time?->format('d.m.Y H:i') ?? 'Уточняется' }}</strong></div>
-                    <div><span>Вместимость</span><strong>{{ $movie->venue_capacity ?? '—' }} мест</strong></div>
                     <div><span>Голоса</span><strong>{{ $movie->votes_count ?? 0 }}</strong></div>
                 </div>
 
                 <div class="movie-session-kpi show-kpi">
                     <div class="session-meta">
                         <span>Продано билетов: <strong>{{ $soldTickets }}</strong></span>
-                        <span>Заполняемость: <strong>{{ $fillPercentage }}%</strong></span>
-                        <span>Цена: <strong>{{ $ticketPrice }} ₽</strong></span>
+                        <span>Показы и покупка билетов доступны в афише</span>
                     </div>
                     <div class="progress-bar-container"><div class="progress-bar" style="width: {{ $fillPercentage }}%"></div></div>
                 </div>
@@ -43,14 +38,12 @@
                         <form method="POST" action="{{ route('votes.store') }}" class="vote-form vote-form-inline">
                             @csrf
                             <input type="hidden" name="movie_id" value="{{ $movie->id }}">
-                            <input type="hidden" name="city_id" value="{{ $movie->city_id }}">
-                            <input type="number" name="expected_attendees" class="form-control" min="1" max="10" value="1">
-                            <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Голосование закрыто' : 'Голосовать за фильм' }}</button>
+                            @if (auth()->user()->city_id)
+                                <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Голосование закрыто' : 'Голосовать за фильм' }}</button>
+                            @else
+                                <span class="vote-login-link">Выберите город в профиле, чтобы голосовать. <a href="{{ route('profile.edit') }}">Открыть профиль</a></span>
+                            @endif
                         </form>
-
-                        @if(Route::has('tickets.create') && $movie->city_id && $movie->show_time)
-                            <a href="{{ route('tickets.create', ['city_id' => $movie->city_id, 'movie_id' => $movie->id, 'show_date' => $movie->show_time->toDateString(), 'show_time' => $movie->show_time->format('H:i')]) }}" class="btn btn-success">Купить билет</a>
-                        @endif
                     @else
                         <a href="{{ route('login') }}" class="btn btn-success">Войти для голосования и покупки</a>
                     @endauth

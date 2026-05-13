@@ -12,15 +12,15 @@
     <section class="page-hero compact-hero">
         <span class="eyebrow">Голосование и билеты</span>
         <h1>Фильмы выездного кинотеатра</h1>
-        <p>Выберите город, поддержите фильм голосом и следите за заполненностью площадки.</p>
+        <p>Выберите фильм из общего каталога и поддержите его голосом от своего города.</p>
     </section>
 
     @auth
         @if(isset($userCityStats) && $userCityStats && $userCityStats['city'])
             <div class="user-city-panel">
                 <div><strong>Ваш город:</strong> {{ $userCityStats['city']->name }}</div>
-                <div>Голосов в городе: <strong>{{ $userCityStats['votes_count'] }}</strong></div>
-                <div>Ожидается зрителей: <strong>{{ $userCityStats['expected_attendees'] }}</strong></div>
+                <div>Голосов в вашем городе: <strong>{{ $userCityStats['votes_count'] }}</strong></div>
+                <div class="small text-muted">Ваш голос будет учтён именно в выбранном городе.</div>
             </div>
         @endif
     @else
@@ -50,12 +50,6 @@
                     class="form-control"
                     placeholder="Поиск по названию"
                 >
-                <select name="city_id" class="form-select">
-                    <option value="">Все города</option>
-                    @foreach ($cities as $city)
-                        <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
-                    @endforeach
-                </select>
                 <select name="genre" class="form-select">
                     <option value="">Все жанры</option>
                     @foreach ($genres as $genre)
@@ -76,7 +70,7 @@
         @if ($movies->isEmpty())
             <div class="empty-state">
                 <h4>Фильмы не найдены</h4>
-                <p>По выбранным параметрам ничего не найдено. Измените название, жанр, возрастной рейтинг или город.</p>
+                <p>По выбранным параметрам ничего не найдено. Измените название, жанр или возрастной рейтинг.</p>
                 <div class="empty-state-actions">
                     <a href="{{ route('movies.index') }}" class="btn btn-main btn-sm">Сбросить фильтры</a>
                     <a href="{{ route('afisha.index') }}" class="btn btn-outline-dark btn-sm">Открыть афишу</a>
@@ -103,9 +97,6 @@
                             <div class="movie-details">
                                 <div class="detail-item"><span class="detail-label">Жанр:</span><span class="detail-value">{{ $movie->genre ?? 'Уточняется' }}</span></div>
                                 <div class="detail-item"><span class="detail-label">Длительность:</span><span class="detail-value">{{ $movie->duration }} мин</span></div>
-                                <div class="detail-item"><span class="detail-label">Город:</span><span class="detail-value">{{ $movie->city?->name ?? 'Все города' }}</span></div>
-                                <div class="detail-item"><span class="detail-label">Площадка:</span><span class="detail-value">{{ $movie->venue ?? 'Уточняется' }}</span></div>
-                                <div class="detail-item"><span class="detail-label">Дата показа:</span><span class="detail-value">{{ $movie->show_time?->format('d.m.Y H:i') ?? 'Уточняется' }}</span></div>
                             </div>
 
                             <div class="movie-stats-row">
@@ -114,28 +105,26 @@
                             </div>
                             <div class="movie-session-kpi">
                                 <div class="session-meta">
-                                    <span>Цена билета: <strong>{{ $ticketPrice }} ₽</strong></span>
-                                    <span>Заполненность: <strong>{{ $movie->fill_percentage ?? 0 }}%</strong></span>
+                                    <span>Фильм участвует в голосовании по всем городам</span>
+                                    <span>Билеты покупаются в афише на конкретный показ</span>
                                 </div>
-                                <div class="progress-bar-container"><div class="progress-bar" style="width: {{ $movie->fill_percentage ?? 0 }}%"></div></div>
                             </div>
 
                             <div class="movie-actions">
                                 <a href="{{ route('movies.show', $movie) }}" class="btn btn-outline-dark btn-sm">Подробнее</a>
                                 @auth
-                                    <form method="POST" action="{{ route('votes.store') }}" class="vote-form">
-                                        @csrf
-                                        <input type="hidden" name="movie_id" value="{{ $movie->id }}">
-                                        @if (!$movie->city_id)
-                                            <select name="city_id" class="form-select" required>
-                                                <option value="">Выберите город</option>
-                                                @foreach ($cities as $city)
-                                                    <option value="{{ $city->id }}" {{ auth()->user()->city_id == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        @endif
-                                        <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Закрыто' : 'Голосовать' }}</button>
-                                    </form>
+                                    @if (auth()->user()->city_id)
+                                        <form method="POST" action="{{ route('votes.store') }}" class="vote-form">
+                                            @csrf
+                                            <input type="hidden" name="movie_id" value="{{ $movie->id }}">
+                                            <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Закрыто' : 'Голосовать' }}</button>
+                                        </form>
+                                    @else
+                                        <div class="vote-login-link">
+                                            Выберите город в профиле, чтобы голосовать.
+                                            <a href="{{ route('profile.edit') }}">Открыть профиль</a>
+                                        </div>
+                                    @endif
                                 @else
                                     <a href="{{ route('login') }}" class="vote-login-link">Войдите, чтобы голосовать</a>
                                 @endauth

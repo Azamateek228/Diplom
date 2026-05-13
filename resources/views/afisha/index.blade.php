@@ -21,14 +21,14 @@
                         <span class="section-kicker">Маршрут недели</span>
                         <h5 class="mb-1">Логичная последовательность остановок</h5>
                     </div>
-                    <span class="route-hint">Фильм выбирается по голосованию в каждом городе</span>
+                    <span class="route-hint">{{ $routeLabel ?? 'Фильм выбирается по голосованию в каждом городе' }}</span>
                 </div>
 
                 <div class="route-timeline">
                     @foreach ($routeCities as $idx => $city)
                         <div class="route-step">
                             <span class="route-step-index">{{ $idx + 1 }}</span>
-                            <span class="route-step-name">{{ $city->name }}</span>
+                            <span class="route-step-name">{{ $city->name }}@if(($city->votes_count ?? 0) > 0) — {{ $city->votes_count }} голос(ов)@endif</span>
                         </div>
                     @endforeach
                 </div>
@@ -80,16 +80,16 @@
                                 @if (!empty($day['movie']))
                                     <h4 class="schedule-movie">{{ $day['movie']->title }}</h4>
                                     <div class="schedule-meta">
-                                        <span>Время: {{ $day['show_time'] }}</span>
-                                        <span>Площадка: {{ $day['movie']->venue ?? 'Площадка уточняется' }}</span>
+                                        <span>Время: {{ $day['show_time'] }}–{{ $day['end_time'] }}</span>
+                                        <span>Площадка: {{ $day['venue'] }}</span>
                                         <span>Цена билета: {{ $ticketPrice }} ₽</span>
                                         <span>Свободно мест: {{ $availableTickets }} из {{ $day['capacity'] }}</span>
                                     </div>
                                 @else
                                     <div class="schedule-movie schedule-movie--empty">Фильм пока не назначен</div>
                                     <div class="schedule-meta">
-                                        <span>Время: {{ $day['show_time'] }}</span>
-                                        <span>Площадка: уточняется</span>
+                                        <span>Время: {{ $day['show_time'] }}–{{ $day['end_time'] }}</span>
+                                        <span>Площадка: {{ $day['venue'] }}</span>
                                         <span>Цена билета: {{ $ticketPrice }} ₽</span>
                                         <span>Свободно мест: {{ $availableTickets }} из {{ $day['capacity'] }}</span>
                                     </div>

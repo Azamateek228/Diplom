@@ -29,13 +29,21 @@ class Movie extends Model
 
     public function getPosterUrlAttribute(): string
     {
+        $fallback = asset('images/poster-placeholder.svg');
+
         if (! $this->poster) {
-            return asset('images/poster-placeholder.jpg');
+            return $fallback;
         }
 
-        return str_starts_with($this->poster, 'images/')
-            ? asset($this->poster)
-            : asset('storage/' . $this->poster);
+        if (str_starts_with($this->poster, 'images/')) {
+            return file_exists(public_path($this->poster))
+                ? asset($this->poster)
+                : $fallback;
+        }
+
+        return file_exists(storage_path('app/public/' . $this->poster))
+            ? asset('storage/' . $this->poster)
+            : $fallback;
     }
 
     public function votes()
