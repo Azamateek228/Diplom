@@ -63,6 +63,16 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Активный зритель', 'password' => Hash::make('password'), 'role' => 'user', 'city_id' => $cities['Елабуга']->id]
         );
 
+        $aznakaevoViewer = User::updateOrCreate(
+            ['email' => 'aznakaevo@example.com'],
+            ['name' => 'Зритель из Азнакаево', 'password' => Hash::make('password'), 'role' => 'user', 'city_id' => $cities['Азнакаево']->id]
+        );
+
+        $nizhnekamskViewer = User::updateOrCreate(
+            ['email' => 'nizhnekamsk@example.com'],
+            ['name' => 'Зритель из Нижнекамска', 'password' => Hash::make('password'), 'role' => 'user', 'city_id' => $cities['Нижнекамск']->id]
+        );
+
         $moviesData = [
             ['Звёздный автобус', 'Приключения', 104, '6', 'images/movies/movie-1.svg', 'Набережные Челны', 'Площадь Азатлык', 1, 120, 96, 'Семейная история о школьниках, которые строят мобильный планетарий и отправляются показывать кино по малым городам. Фильм подчёркивает, что культура может приехать даже туда, где нет большого кинотеатра.'],
             ['Лето на Каме', 'Комедия', 97, '12', 'images/movies/movie-2.svg', 'Елабуга', 'Набережная', 2, 90, 74, 'Добрая комедия о соседях, которые устраивают фестиваль дворового кино. Герои спорят, мирятся и постепенно превращают обычный вечер в праздник для всего города.'],
@@ -97,11 +107,11 @@ class DatabaseSeeder extends Seeder
                     'age_rating' => $ageRating,
                     'poster' => $poster,
                     'description' => $description,
-                    'city_id' => $cities[$city]->id,
-                    'venue' => $venue,
-                    'show_time' => now()->addDays($dayOffset)->setTime(19 + ($dayOffset % 3), $dayOffset % 2 ? 30 : 0),
-                    'venue_capacity' => $capacity,
-                    'expected_attendees' => $expected,
+                    'city_id' => null,
+                    'venue' => null,
+                    'show_time' => null,
+                    'venue_capacity' => null,
+                    'expected_attendees' => null,
                 ]
             );
 
@@ -114,15 +124,11 @@ class DatabaseSeeder extends Seeder
         );
 
         $votes = [
-            [$user, 'Маршрут мечты', 'Альметьевск', 3],
-            [$user, 'Лето на Каме', 'Елабуга', 2],
-            [$user, 'Звёздный автобус', 'Набережные Челны', 4],
-            [$admin, 'Звёздный автобус', 'Набережные Челны', 2],
-            [$admin, 'Тайна старой мельницы', 'Нижнекамск', 3],
-            [$admin, 'Каникулы в фургоне', 'Лениногорск', 2],
-            [$guest, 'Лето на Каме', 'Елабуга', 4],
-            [$guest, 'Ночной сеанс', 'Бугульма', 2],
-            [$guest, 'По следам Сабантуя', 'Азнакаево', 3],
+            [$user, 'Маршрут мечты', 'Альметьевск', 1],
+            [$admin, 'Звёздный автобус', 'Набережные Челны', 1],
+            [$guest, 'Лето на Каме', 'Елабуга', 1],
+            [$aznakaevoViewer, 'Звёздный автобус', 'Азнакаево', 1],
+            [$nizhnekamskViewer, 'Тайна старой мельницы', 'Нижнекамск', 1],
         ];
 
         foreach ($votes as [$voter, $movieTitle, $cityName, $expectedAttendees]) {
@@ -142,8 +148,8 @@ class DatabaseSeeder extends Seeder
 
         foreach ($tickets as [$buyer, $movieTitle, $cityName, $quantity, $reference]) {
             $movie = $movies[$movieTitle];
-            $showDate = $movie->show_time ? $movie->show_time->toDateString() : now()->toDateString();
-            $showTime = $movie->show_time ? $movie->show_time->format('H:i') : '19:00';
+            $showDate = now()->addDays(3)->toDateString();
+            $showTime = '19:00';
             $unitPrice = 450;
 
             Ticket::updateOrCreate(

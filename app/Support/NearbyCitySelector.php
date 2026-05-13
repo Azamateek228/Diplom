@@ -20,6 +20,8 @@ class NearbyCitySelector
         return self::applyRouteOrdering(
             City::query()
                 ->withCount('votes')
+                ->whereNotNull('lat')
+                ->whereNotNull('lng')
         )->get()->values();
     }
 
@@ -29,6 +31,8 @@ class NearbyCitySelector
             City::query()
                 ->withCount('votes')
                 ->whereHas('votes')
+                ->whereNotNull('lat')
+                ->whereNotNull('lng')
         )->get()->values();
     }
 
@@ -47,8 +51,8 @@ class NearbyCitySelector
     public static function actualRouteLabel(): string
     {
         return self::actualRouteType() === 'short'
-            ? 'Короткий маршрут: маршрут построен по городам, где есть голоса зрителей'
-            : 'Длинный маршрут: голосов пока нет, показан полный маршрут по городам Татарстана';
+            ? 'Тип маршрута: короткий, построен по городам с голосами зрителей'
+            : 'Тип маршрута: длинный, так как голосов пока нет';
     }
 
     public static function naberezhnyeChelnyWithNearest(int $nearest = 10, ?int $ensureCityId = null): Collection

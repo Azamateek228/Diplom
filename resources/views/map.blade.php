@@ -6,8 +6,7 @@
 
         <div class="current-city-info mb-3">
             <div class="alert alert-info">
-                <div><strong>Тип маршрута:</strong> {{ ($routeType ?? 'long') === 'short' ? 'короткий по голосам' : 'длинный' }}</div>
-                <div>{{ $routeLabel ?? 'Длинный маршрут: голосов пока нет, показан полный маршрут по городам Татарстана' }}</div>
+                <div><strong>{{ $routeLabel ?? 'Тип маршрута: длинный, так как голосов пока нет' }}</strong></div>
                 @if ($currentCity)
                     <div class="mt-1">📍 <strong>Текущее местоположение:</strong> {{ $currentCity->name }}</div>
                 @endif
@@ -33,7 +32,7 @@
                                     <span class="badge bg-primary rounded-pill">текущий город</span>
                                 @endif
                                 @if (($city->votes_count ?? 0) > 0)
-                                    <span class="badge bg-success rounded-pill">есть голоса</span>
+                                    <span class="badge bg-success rounded-pill">{{ $city->votes_count }} голос(ов)</span>
                                 @endif
                             </span>
                         </li>

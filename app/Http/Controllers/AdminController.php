@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Vote;
-use App\Models\Movie;
 use App\Models\City;
+use App\Models\Movie;
 use App\Models\Setting;
 use App\Models\Ticket;
+use App\Models\User;
+use App\Models\Vote;
 use App\Support\NearbyCitySelector;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
 {
@@ -19,73 +18,68 @@ class AdminController extends Controller
         $settings = Setting::first();
         $currentCityId = $settings?->current_city_id;
         $selectedCityId = $request->get('city_id');
-        $ensureCityId = $selectedCityId ?: $currentCityId;
-        $cities = NearbyCitySelector::mapCities(10, $ensureCityId ? (int) $ensureCityId : null);
-        $cityIds = $cities->pluck('id')->all();
+        $cities = NearbyCitySelector::fullRoute();
+        $routeCities = NearbyCitySelector::actualRoute();
+        $routeType = NearbyCitySelector::actualRouteType();
+        $routeLabel = NearbyCitySelector::actualRouteLabel();
 
         $usersCount = User::count();
-        $votesCount = Vote::whereIn('city_id', $cityIds)->count();
+        $votesCount = Vote::count();
         $ticketsPurchased = (int) Ticket::where('status', 'purchased')->sum('quantity');
-        $totalCapacity = (int) Movie::whereNotNull('venue_capacity')->sum('venue_capacity');
-        $overallLoadPercent = $totalCapacity > 0
-            ? min(100, (int) round(($ticketsPurchased / $totalCapacity) * 100))
-            : 0;
+        $totalCapacity = max(1, $routeCities->sum(fn ($city) => $this->capacityByCity($city)));
+        $overallLoadPercent = min(100, (int) round(($ticketsPurchased / $totalCapacity) * 100));
 
         $topMovie = Movie::withCount('votes')
             ->orderByDesc('votes_count')
+            ->orderBy('title')
             ->first();
 
         $topCity = City::withCount('votes')
-            ->whereIn('id', $cityIds)
             ->orderByDesc('votes_count')
+            ->orderBy('name')
             ->first();
 
-        $moviesQuery = Movie::with(['city', 'votes'])->withCount('votes');
-        
+        $moviesQuery = Movie::withCount('votes');
+
         if ($selectedCityId) {
-            $moviesQuery->where('city_id', $selectedCityId);
-        } else {
-            $moviesQuery->whereIn('city_id', $cityIds);
+            $moviesQuery->whereHas('votes', fn ($query) => $query->where('city_id', $selectedCityId));
         }
-        
-        $movies = $moviesQuery->orderByDesc('votes_count')->get();
+
+        $movies = $moviesQuery->orderByDesc('votes_count')->orderBy('title')->get();
         $movies->each(function (Movie $movie) {
-            $showTime = $movie->show_time ? Carbon::parse($movie->show_time) : null;
-            $movie->session_status_label = match (true) {
-                ! $showTime => 'Запланирован',
-                $showTime->isToday() => 'Сегодня',
-                $showTime->isPast() => 'Прошёл',
-                default => 'Запланирован',
-            };
-            $movie->session_status_class = match ($movie->session_status_label) {
-                'Сегодня' => 'status-today',
-                'Прошёл' => 'status-past',
-                default => 'status-planned',
-            };
+            $movie->session_status_label = 'Каталог';
+            $movie->session_status_class = 'status-planned';
         });
 
-        $upcomingSessions = Movie::with('city')
-            ->whereNotNull('show_time')
-            ->where('show_time', '>=', now()->startOfDay())
-            ->orderBy('show_time')
-            ->take(5)
-            ->get();
-        
-        // Подсчет по городам: голоса и ожидаемые зрители из таблицы votes
+        $upcomingSessions = collect();
+
         $cityStats = $cities->map(function ($city) {
-            $cityMovies = Movie::where('city_id', $city->id)->get();
             $totalVotes = Vote::where('city_id', $city->id)->count();
             $totalExpected = Vote::where('city_id', $city->id)->sum('expected_attendees');
-            
+
             return [
                 'city' => $city,
-                'movies_count' => $cityMovies->count(),
+                'movies_count' => Vote::where('city_id', $city->id)->distinct('movie_id')->count('movie_id'),
                 'total_expected' => $totalExpected,
                 'total_votes' => $totalVotes,
             ];
         });
 
-        // Установка текущего города кинотеатра
+        $cityWinners = $routeCities->map(function ($city) {
+            $winnerVote = Vote::selectRaw('movie_id, COUNT(*) as votes_count')
+                ->where('city_id', $city->id)
+                ->groupBy('movie_id')
+                ->orderByDesc('votes_count')
+                ->orderBy('movie_id')
+                ->first();
+
+            return [
+                'city' => $city,
+                'movie' => $winnerVote ? Movie::find($winnerVote->movie_id) : null,
+                'votes_count' => (int) ($winnerVote->votes_count ?? 0),
+            ];
+        });
+
         if ($request->isMethod('post')) {
             $validated = $request->validate([
                 'current_city_id' => 'nullable|exists:cities,id',
@@ -130,7 +124,28 @@ class AdminController extends Controller
             'currentCityName',
             'votingDeadline',
             'ticketPrice',
-            'upcomingSessions'
+            'upcomingSessions',
+            'routeCities',
+            'routeType',
+            'routeLabel',
+            'cityWinners'
         ));
+    }
+
+    private function capacityByCity(City $city): int
+    {
+        $population = (int) ($city->population ?? 40000);
+
+        if ($population <= 20000) {
+            return 40;
+        }
+        if ($population <= 50000) {
+            return 60;
+        }
+        if ($population <= 100000) {
+            return 90;
+        }
+
+        return 120;
     }
 }

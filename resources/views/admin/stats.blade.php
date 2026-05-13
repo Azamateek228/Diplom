@@ -86,6 +86,40 @@
                 @endif
             </div>
         </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <h5>Тип маршрута</h5><small>зависит от наличия голосов</small>
+                <p>{{ ($routeType ?? 'long') === 'short' ? 'короткий по голосам' : 'длинный' }}</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="admin-section mb-5">
+        <h3 class="section-title">Маршрут по голосам</h3>
+        <p class="section-note">{{ $routeLabel }}</p>
+        <div class="route-timeline">
+            @foreach($routeCities as $idx => $city)
+                <div class="route-step">
+                    <span class="route-step-index">{{ $idx + 1 }}</span>
+                    <span class="route-step-name">{{ $city->name }}@if(($city->votes_count ?? 0) > 0) — {{ $city->votes_count }} голос(ов)@endif</span>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="admin-section mb-5">
+        <h3 class="section-title">Фильмы-победители по городам маршрута</h3>
+        <div class="city-stats-grid">
+            @foreach($cityWinners as $winner)
+                <div class="city-stat-card">
+                    <h4>{{ $winner['city']->name }}</h4>
+                    <p>{{ $winner['movie']?->title ?? 'Фильм будет выбран после голосования' }}</p>
+                    <small>Голосов за победителя: {{ $winner['votes_count'] }}</small>
+                </div>
+            @endforeach
+        </div>
     </div>
 
 
@@ -105,7 +139,7 @@
             @if($upcomingSessions->isEmpty())
                 <div class="empty-state compact-empty">
                     <h4>Сеансов пока нет</h4>
-                    <p>Укажите дату показа у фильма, чтобы он появился в расписании.</p>
+                    <p>Сеансы теперь формируются в афише по городам маршрута и фильмам-победителям голосования.</p>
                 </div>
             @else
                 <div class="upcoming-sessions-list">
@@ -172,12 +206,7 @@
     <!-- Фильмы по городам -->
     <div class="admin-section mb-5">
         <h3 class="section-title">
-            Фильмы 
-            @if($selectedCityId)
-                в городе: {{ $cities->firstWhere('id', $selectedCityId)?->name }}
-            @else
-                (все города)
-            @endif
+            Фильмы каталога @if($selectedCityId) с голосами в городе: {{ $cities->firstWhere('id', $selectedCityId)?->name }} @else (все фильмы) @endif
         </h3>
         
         @if($movies->isEmpty())
@@ -196,9 +225,6 @@
                         
                         <div class="movie-admin-header">
                             <h4>{{ $movie->title }}</h4>
-                            @if($movie->city)
-                                <span class="city-badge">{{ $movie->city->name }}</span>
-                            @endif
                             <span class="movie-status-badge {{ $movie->session_status_class }}">{{ $movie->session_status_label }}</span>
                         </div>
                         

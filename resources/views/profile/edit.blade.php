@@ -57,7 +57,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <small class="auth-form-text">Нужен для отображения статуса вашего города и подстановки в голосование.</small>
+                                    <small class="auth-form-text">Ваш город используется для голосования. Если вы голосуете за фильм, голос будет учтён именно в выбранном городе.</small>
                                 </div>
 
                                 <button type="submit" class="auth-btn auth-btn-primary">Сохранить</button>

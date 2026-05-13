@@ -17,14 +17,23 @@ class AfishaController extends Controller
     {
         $settings = Setting::first();
         $cities = NearbyCitySelector::actualRoute();
+        $routeType = NearbyCitySelector::actualRouteType();
+        $routeLabel = NearbyCitySelector::actualRouteLabel();
 
-        $fallbackMovie = Movie::withCount('votes')->orderByDesc('votes_count')->first();
+        $fallbackMovie = Movie::withCount('votes')->orderByDesc('votes_count')->orderBy('title')->first();
         $winnersByCity = $this->resolveWinnersByCity($cities, $fallbackMovie);
         $routeCities = $cities->all();
         $ticketPrice = $settings?->ticket_price ?? 350;
-        $weeklySchedule = $this->buildWeeklySchedule($routeCities, $winnersByCity, $fallbackMovie);
+        $weeklySchedule = $this->buildSchedule($routeCities, $winnersByCity, $fallbackMovie);
 
-        return view('afisha.index', compact('weeklySchedule', 'routeCities', 'winnersByCity', 'ticketPrice'));
+        return view('afisha.index', compact(
+            'weeklySchedule',
+            'routeCities',
+            'winnersByCity',
+            'ticketPrice',
+            'routeType',
+            'routeLabel'
+        ));
     }
 
     private function resolveWinnersByCity(Collection $cities, ?Movie $fallbackMovie): array
@@ -37,72 +46,70 @@ class AfishaController extends Controller
                 ->groupBy('movie_id')
                 ->orderByDesc('votes_count')
                 ->orderByDesc('expected_sum')
+                ->orderBy('movie_id')
                 ->first();
 
-            $movie = null;
-            if ($winnerVote) {
-                $movie = Movie::find($winnerVote->movie_id);
-            }
-
-            if (!$movie) {
-                $movie = Movie::where('city_id', $city->id)
-                    ->withCount('votes')
-                    ->orderByDesc('votes_count')
-                    ->first();
-            }
-
-            $winners[$city->id] = $movie ?: $fallbackMovie;
+            $winners[$city->id] = $winnerVote
+                ? Movie::find($winnerVote->movie_id) ?: $fallbackMovie
+                : $fallbackMovie;
         }
 
         return $winners;
     }
 
-    private function buildWeeklySchedule(array $routeCities, array $winnersByCity, ?Movie $fallbackMovie): array
+    private function buildSchedule(array $routeCities, array $winnersByCity, ?Movie $fallbackMovie): array
     {
         $schedule = [];
         $baseDate = Carbon::today();
 
-        if (empty($routeCities)) {
-            return $schedule;
-        }
-
-        for ($day = 0; $day < 7; $day++) {
-            $city = $routeCities[$day % count($routeCities)];
+        foreach ($routeCities as $day => $city) {
             $movie = $winnersByCity[$city->id] ?? $fallbackMovie;
             $date = $baseDate->copy()->addDays($day);
-
-            $showTime = $movie?->show_time
-                ? Carbon::parse($movie->show_time)->format('H:i')
-                : '19:00';
+            $startAt = $date->copy()->setTime(19, 0);
+            $duration = (int) ($movie?->duration ?? 90);
+            $endAt = $startAt->copy()->addMinutes($duration);
 
             $schedule[] = [
                 'date' => $date->translatedFormat('d.m.Y, l'),
                 'show_date' => $date->toDateString(),
                 'city' => $city,
                 'movie' => $movie,
-                'show_time' => $showTime,
+                'show_time' => $startAt->format('H:i'),
+                'end_time' => $endAt->format('H:i'),
+                'venue' => $this->defaultVenueForCity($city),
                 'capacity' => $this->capacityByCity($city),
                 'sold' => $movie ? $this->soldTickets($city->id, $movie->id, $date->toDateString()) : 0,
+                'city_votes' => (int) ($city->votes_count ?? Vote::where('city_id', $city->id)->count()),
             ];
         }
 
         return $schedule;
     }
 
-    private function soldTickets(int $cityId, int $movieId, string $showDate): int
+    private function defaultVenueForCity(City $city): string
     {
-        $soldForDate = Ticket::where('city_id', $cityId)
-            ->where('movie_id', $movieId)
-            ->whereDate('show_date', $showDate)
-            ->where('status', 'purchased')
-            ->sum('quantity');
+        $venues = [
+            'Набережные Челны' => 'Площадь Азатлык',
+            'Нижнекамск' => 'Парк Нефтехимиков',
+            'Казань' => 'Центральная площадь',
+            'Елабуга' => 'Набережная',
+            'Альметьевск' => 'Городской парк',
+        ];
 
-        if ($soldForDate > 0) {
-            return (int) $soldForDate;
+        if (isset($venues[$city->name])) {
+            return $venues[$city->name];
         }
 
+        $defaults = ['Центральная площадь', 'Городской парк', 'Дом культуры', 'Набережная'];
+
+        return $defaults[((int) $city->id) % count($defaults)];
+    }
+
+    private function soldTickets(int $cityId, int $movieId, string $showDate): int
+    {
         return (int) Ticket::where('city_id', $cityId)
             ->where('movie_id', $movieId)
+            ->whereDate('show_date', $showDate)
             ->where('status', 'purchased')
             ->sum('quantity');
     }

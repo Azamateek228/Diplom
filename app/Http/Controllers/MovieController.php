@@ -15,12 +15,8 @@ class MovieController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Movie::with(['city', 'votes'])
-            ->withCount('votes');
+        $query = Movie::withCount('votes');
 
-        if ($request->filled('city_id')) {
-            $query->where('city_id', $request->integer('city_id'));
-        }
 
         if ($request->filled('search')) {
             $search = trim($request->input('search'));
@@ -44,17 +40,14 @@ class MovieController extends Controller
 
         $movies->each(function ($movie) use ($soldTicketsByMovie) {
             $soldTickets = (int) ($soldTicketsByMovie[$movie->id] ?? 0);
-            $capacity = (int) ($movie->venue_capacity ?? 0);
             $movie->sold_tickets = $soldTickets;
-            $movie->fill_percentage = $capacity > 0
-                ? min(100, (int) round(($soldTickets / $capacity) * 100))
-                : 0;
+            $movie->fill_percentage = 0;
         });
 
-        $cities = NearbyCitySelector::mapCities(10, auth()->user()?->city_id);
+        $cities = NearbyCitySelector::fullRoute();
         $genres = Movie::query()->whereNotNull('genre')->distinct()->orderBy('genre')->pluck('genre');
         $ageRatings = Movie::query()->whereNotNull('age_rating')->distinct()->orderBy('age_rating')->pluck('age_rating');
-        $filters = $request->only(['city_id', 'search', 'genre', 'age_rating']);
+        $filters = $request->only(['search', 'genre', 'age_rating']);
         $settings = Setting::first();
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
@@ -75,15 +68,12 @@ class MovieController extends Controller
 
     public function show(Movie $movie)
     {
-        $movie->load('city')->loadCount('votes');
+        $movie->loadCount('votes');
 
         $soldTickets = (int) Ticket::where('movie_id', $movie->id)
             ->where('status', 'purchased')
             ->sum('quantity');
-        $capacity = (int) ($movie->venue_capacity ?? 0);
-        $fillPercentage = $capacity > 0
-            ? min(100, (int) round(($soldTickets / $capacity) * 100))
-            : 0;
+        $fillPercentage = 0;
         $ticketPrice = Setting::first()?->ticket_price ?? 350;
         $votingDeadline = Setting::first()?->voting_deadline;
         $votingClosed = $votingDeadline && now()->greaterThan($votingDeadline);
