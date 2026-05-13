@@ -3,6 +3,8 @@
 namespace App\Support;
 
 use App\Models\City;
+use App\Models\Vote;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
@@ -10,57 +12,48 @@ class NearbyCitySelector
 {
     public static function mapCities(int $limit = 10, ?int $ensureCityId = null): Collection
     {
-        return self::naberezhnyeChelnyWithNearest($limit, $ensureCityId);
+        return self::appendEnsuredCity(self::fullRoute(), $ensureCityId);
+    }
+
+    public static function fullRoute(): Collection
+    {
+        return self::applyRouteOrdering(
+            City::query()
+                ->withCount('votes')
+        )->get()->values();
+    }
+
+    public static function votedRoute(): Collection
+    {
+        return self::applyRouteOrdering(
+            City::query()
+                ->withCount('votes')
+                ->whereHas('votes')
+        )->get()->values();
+    }
+
+    public static function actualRoute(): Collection
+    {
+        return Vote::count() > 0
+            ? self::votedRoute()
+            : self::fullRoute();
+    }
+
+    public static function actualRouteType(): string
+    {
+        return Vote::count() > 0 ? 'short' : 'long';
+    }
+
+    public static function actualRouteLabel(): string
+    {
+        return self::actualRouteType() === 'short'
+            ? 'Короткий маршрут: маршрут построен по городам, где есть голоса зрителей'
+            : 'Длинный маршрут: голосов пока нет, показан полный маршрут по городам Татарстана';
     }
 
     public static function naberezhnyeChelnyWithNearest(int $nearest = 10, ?int $ensureCityId = null): Collection
     {
-        $allCities = City::query()
-            ->whereNotNull('lat')
-            ->whereNotNull('lng')
-            ->get()
-            ->reject(function ($city) {
-                $name = mb_strtolower(trim((string) $city->name));
-                return $name === 'агрыз' || str_contains($name, 'agryz');
-            })
-            ->values();
-
-        if (self::hasUsableRouteOrder($allCities)) {
-            $orderedCities = $allCities
-                ->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX)
-                ->take($nearest + 1)
-                ->values();
-
-            return self::appendEnsuredCity($orderedCities, $ensureCityId);
-        }
-
-        $baseCity = $allCities->first(function ($city) {
-            $name = mb_strtolower(trim((string) $city->name));
-            return str_contains($name, 'набережные челны')
-                || str_contains($name, 'наб челны')
-                || str_contains($name, 'naberezhnye chelny');
-        });
-
-        if (!$baseCity) {
-            $fallback = $allCities->sortBy('name')->values();
-            return self::appendEnsuredCity($fallback, $ensureCityId);
-        }
-
-        $cities = collect([$baseCity])
-            ->concat(
-                $allCities
-                    ->reject(fn ($city) => (int) $city->id === (int) $baseCity->id)
-                    ->sortBy(fn ($city) => self::distanceInKm(
-                        (float) $baseCity->lat,
-                        (float) $baseCity->lng,
-                        (float) $city->lat,
-                        (float) $city->lng
-                    ))
-                    ->take($nearest)
-            )
-            ->values();
-
-        return self::appendEnsuredCity($cities, $ensureCityId);
+        return self::appendEnsuredCity(self::fullRoute()->take($nearest + 1)->values(), $ensureCityId);
     }
 
     public static function orderedRoute(Collection $cities, ?int $currentCityId = null): Collection
@@ -69,74 +62,40 @@ class NearbyCitySelector
             return collect();
         }
 
-        if (self::hasUsableRouteOrder($cities)) {
-            return $cities
-                ->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX)
-                ->values();
+        return $cities
+            ->sortBy([
+                fn ($a, $b) => ($a->route_order ?? PHP_INT_MAX) <=> ($b->route_order ?? PHP_INT_MAX),
+                fn ($a, $b) => $a->id <=> $b->id,
+                fn ($a, $b) => strnatcasecmp((string) $a->name, (string) $b->name),
+            ])
+            ->values();
+    }
+
+    private static function applyRouteOrdering(Builder $query): Builder
+    {
+        if (self::hasRouteOrder()) {
+            $query
+                ->orderByRaw('CASE WHEN route_order IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('route_order');
         }
 
-        $remaining = $cities->values()->all();
-        $ordered = [];
-        $startIndex = 0;
-
-        if ($currentCityId) {
-            foreach ($remaining as $idx => $city) {
-                if ((int) $city->id === (int) $currentCityId) {
-                    $startIndex = $idx;
-                    break;
-                }
-            }
-        }
-
-        $current = array_splice($remaining, $startIndex, 1)[0];
-        $ordered[] = $current;
-
-        while (!empty($remaining)) {
-            $nearestIndex = 0;
-            $nearestDistance = INF;
-
-            foreach ($remaining as $idx => $candidate) {
-                $distance = self::distanceInKm(
-                    (float) $current->lat,
-                    (float) $current->lng,
-                    (float) $candidate->lat,
-                    (float) $candidate->lng
-                );
-
-                if ($distance < $nearestDistance) {
-                    $nearestDistance = $distance;
-                    $nearestIndex = $idx;
-                }
-            }
-
-            $current = array_splice($remaining, $nearestIndex, 1)[0];
-            $ordered[] = $current;
-        }
-
-        return collect($ordered)->values();
+        return $query
+            ->orderBy('id')
+            ->orderBy('name');
     }
 
     private static function appendEnsuredCity(Collection $cities, ?int $ensureCityId): Collection
     {
-        if (!$ensureCityId || $cities->contains(fn ($city) => (int) $city->id === $ensureCityId)) {
-            return $cities->values();
+        if (!$ensureCityId || $cities->contains(fn ($city) => (int) $city->id === (int) $ensureCityId)) {
+            return self::orderedRoute($cities);
         }
 
-        $ensuredCity = City::find($ensureCityId);
-        if (!$ensuredCity || !$ensuredCity->lat || !$ensuredCity->lng) {
-            return $cities->values();
+        $ensuredCity = City::withCount('votes')->find($ensureCityId);
+        if (!$ensuredCity) {
+            return self::orderedRoute($cities);
         }
 
-        return $cities
-            ->push($ensuredCity)
-            ->when(self::hasUsableRouteOrder($cities), fn ($collection) => $collection->sortBy(fn ($city) => $city->route_order ?? PHP_INT_MAX))
-            ->values();
-    }
-
-    private static function hasUsableRouteOrder(Collection $cities): bool
-    {
-        return self::hasRouteOrder()
-            && $cities->contains(fn ($city) => $city->route_order !== null);
+        return self::orderedRoute($cities->push($ensuredCity));
     }
 
     private static function hasRouteOrder(): bool
@@ -148,20 +107,5 @@ class NearbyCitySelector
         }
 
         return $hasRouteOrder;
-    }
-
-    private static function distanceInKm(float $lat1, float $lng1, float $lat2, float $lng2): float
-    {
-        $earthRadiusKm = 6371;
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLng = deg2rad($lng2 - $lng1);
-
-        $a = sin($dLat / 2) * sin($dLat / 2)
-            + cos(deg2rad($lat1)) * cos(deg2rad($lat2))
-            * sin($dLng / 2) * sin($dLng / 2);
-
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-        return $earthRadiusKm * $c;
     }
 }

@@ -4,13 +4,15 @@
     <div class="map-page">
         <h2 class="mb-4 text-center">Маршрут кинотеатра</h2>
 
-        @if ($currentCity)
-            <div class="current-city-info mb-3">
-                <div class="alert alert-info">
-                    📍 <strong>Текущее местоположение:</strong> {{ $currentCity->name }}
-                </div>
+        <div class="current-city-info mb-3">
+            <div class="alert alert-info">
+                <div><strong>Тип маршрута:</strong> {{ ($routeType ?? 'long') === 'short' ? 'короткий по голосам' : 'длинный' }}</div>
+                <div>{{ $routeLabel ?? 'Длинный маршрут: голосов пока нет, показан полный маршрут по городам Татарстана' }}</div>
+                @if ($currentCity)
+                    <div class="mt-1">📍 <strong>Текущее местоположение:</strong> {{ $currentCity->name }}</div>
+                @endif
             </div>
-        @endif
+        </div>
 
         <div id="map"
             style="width: 100%; height: 600px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: #1c1c2b; display: flex; align-items: center; justify-content: center;">
@@ -18,6 +20,27 @@
                 <p>Загрузка карты...</p>
             </div>
         </div>
+
+        @if (isset($cities) && $cities->count())
+            <div class="route-cities-list mt-4">
+                <h3 class="mb-3">Список городов маршрута</h3>
+                <ol class="list-group list-group-numbered">
+                    @foreach ($cities as $city)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ $city->name }}</span>
+                            <span>
+                                @if ($currentCity && (int) $currentCity->id === (int) $city->id)
+                                    <span class="badge bg-primary rounded-pill">текущий город</span>
+                                @endif
+                                @if (($city->votes_count ?? 0) > 0)
+                                    <span class="badge bg-success rounded-pill">есть голоса</span>
+                                @endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+        @endif
 
         @if (isset($citiesData) && count($citiesData) > 1)
             <div class="map-controls mt-3">
@@ -40,7 +63,7 @@
             </div>
         @elseif(isset($citiesData) && count($citiesData) === 1)
             <div class="alert alert-info mt-3 text-center">
-                <p>Добавлен 1 город. Для отображения маршрута необходимо минимум 2 города с координатами.</p>
+                <p>Маршрут состоит из одного города. Это нормально для короткого маршрута, если голос есть только в одном городе.</p>
             </div>
         @else
             <div class="alert alert-warning mt-3 text-center">
@@ -195,14 +218,19 @@
 
         async function buildRoadSegment(fromPoint, toPoint) {
             const coordinates = `${fromPoint[1]},${fromPoint[0]};${toPoint[1]},${toPoint[0]}`;
-            const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`);
-            const data = await response.json();
+            try {
+                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`);
+                const data = await response.json();
 
-            if (!data.routes || data.routes.length === 0) {
-                throw new Error('Маршрут не построен');
+                if (!data.routes || data.routes.length === 0) {
+                    throw new Error('Маршрут не построен');
+                }
+
+                return data.routes[0].geometry.coordinates.map(point => [point[1], point[0]]);
+            } catch (error) {
+                console.warn('OSRM недоступен, строим прямой отрезок между городами.', error);
+                return [fromPoint, toPoint];
             }
-
-            return data.routes[0].geometry.coordinates.map(point => [point[1], point[0]]);
         }
 
         function routeStartPointIndex() {

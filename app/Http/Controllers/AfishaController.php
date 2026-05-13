@@ -16,11 +16,11 @@ class AfishaController extends Controller
     public function index()
     {
         $settings = Setting::first();
-        $cities = NearbyCitySelector::mapCities(10, $settings?->current_city_id);
+        $cities = NearbyCitySelector::actualRoute();
 
         $fallbackMovie = Movie::withCount('votes')->orderByDesc('votes_count')->first();
         $winnersByCity = $this->resolveWinnersByCity($cities, $fallbackMovie);
-        $routeCities = NearbyCitySelector::orderedRoute($cities, $settings?->current_city_id)->all();
+        $routeCities = $cities->all();
         $ticketPrice = $settings?->ticket_price ?? 350;
         $weeklySchedule = $this->buildWeeklySchedule($routeCities, $winnersByCity, $fallbackMovie);
 
