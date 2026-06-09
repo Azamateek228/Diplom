@@ -133,17 +133,10 @@
                                     </div>
 
                                     @if ($ticket->status === 'purchased')
-                                        <div class="ticket-qr-wrap">
-                                            <img
-                                                src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ urlencode($ticket->qr_token) }}"
-                                                alt="QR Ticket"
-                                                loading="lazy"
-                                                onerror="this.style.display='none'; this.parentElement.querySelector('.qr-fallback').style.display='block';"
-                                            >
-                                            <div class="qr-fallback" style="display:none;">
-                                                <p class="mb-1"><strong>QR временно недоступен</strong></p>
-                                                <p class="mb-0 small">Код билета: <code>{{ $ticket->qr_token }}</code></p>
-                                            </div>
+                                        <div class="ticket-qr-wrap demo-qr-block">
+                                            <div class="demo-qr-pattern" aria-label="Демо QR-код билета"></div>
+                                            <p class="mb-1"><strong>Демо QR-код</strong></p>
+                                            <p class="mb-0 small">Код билета: <code>{{ $ticket->qr_token }}</code></p>
                                         </div>
                                         <div class="ticket-refund-note mt-2">
                                             Возврат доступен до: {{ $ticket->refund_available_until->format('d.m.Y H:i') }}

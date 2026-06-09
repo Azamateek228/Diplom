@@ -1,9 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="420" height="620" viewBox="0 0 420 620" role="img" aria-label="Постер фильма 13">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9b59b6"/><stop offset="1" stop-color="#111827"/></linearGradient></defs>
-  <rect width="420" height="620" rx="28" fill="url(#g)"/>
-  <circle cx="210" cy="210" r="86" fill="rgba(255,255,255,.16)"/>
-  <text x="210" y="225" text-anchor="middle" font-size="86" font-family="Arial, sans-serif">🎬</text>
-  <text x="210" y="390" text-anchor="middle" fill="#fff" font-size="34" font-weight="700" font-family="Arial, sans-serif">Кинотеатр</text>
-  <text x="210" y="438" text-anchor="middle" fill="#fff" font-size="28" font-family="Arial, sans-serif">на колёсах</text>
-  <text x="210" y="525" text-anchor="middle" fill="rgba(255,255,255,.82)" font-size="24" font-family="Arial, sans-serif">Фильм 13</text>
+<svg width="420" height="620" viewBox="0 0 420 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="420" y2="620" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#080812"/>
+    </linearGradient>
+    <radialGradient id="r" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(118 118) rotate(48) scale(280 220)">
+      <stop stop-color="#dbeafe" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#dbeafe" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="420" height="620" rx="34" fill="url(#g)"/>
+  <rect width="420" height="620" rx="34" fill="url(#r)"/>
+  <path d="M34 96H386M34 524H386" stroke="#dbeafe" stroke-opacity="0.45" stroke-width="3"/>
+  <g opacity="0.18" fill="#fff">
+    <circle cx="70" cy="50" r="9"/><circle cx="122" cy="50" r="9"/><circle cx="174" cy="50" r="9"/><circle cx="226" cy="50" r="9"/><circle cx="278" cy="50" r="9"/><circle cx="330" cy="50" r="9"/>
+    <circle cx="70" cy="570" r="9"/><circle cx="122" cy="570" r="9"/><circle cx="174" cy="570" r="9"/><circle cx="226" cy="570" r="9"/><circle cx="278" cy="570" r="9"/><circle cx="330" cy="570" r="9"/>
+  </g>
+  <circle cx="210" cy="260" r="112" fill="#000" fill-opacity="0.22" stroke="#dbeafe" stroke-opacity="0.52" stroke-width="3"/>
+  <text x="210" y="292" text-anchor="middle" fill="#dbeafe" font-size="92" font-family="Arial, sans-serif" font-weight="900">✧</text>
+  <text x="210" y="132" text-anchor="middle" fill="#dbeafe" font-size="22" font-family="Arial, sans-serif" font-weight="700" letter-spacing="3">КИНОТУР ТАТАРСТАНА</text>
+  <text x="210" y="430" text-anchor="middle" fill="#fff" font-size="34" font-family="Arial, sans-serif" font-weight="900">Чистое небо</text>
+
+  <rect x="94" y="492" width="232" height="42" rx="21" fill="#dbeafe" fill-opacity="0.18" stroke="#dbeafe" stroke-opacity="0.5"/>
+  <text x="210" y="520" text-anchor="middle" fill="#fff" font-size="22" font-family="Arial, sans-serif" font-weight="700">Драма</text>
+  <text x="210" y="574" text-anchor="middle" fill="rgba(255,255,255,.72)" font-size="18" font-family="Arial, sans-serif">локальная демо-афиша #13</text>
 </svg>
