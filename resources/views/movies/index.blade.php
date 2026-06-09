@@ -83,7 +83,7 @@
                         @if($movie->poster)
                             <img class="movie-poster" src="{{ $movie->poster_url }}" alt="{{ $movie->title }}">
                         @else
-                            <div class="movie-poster poster-fallback"><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
+                            <div class="movie-poster poster-fallback"><strong>{{ $movie->title }}</strong><small>Афиша скоро появится</small></div>
                         @endif
 
                         <div class="info">
@@ -91,6 +91,9 @@
                                 <h4>{{ $movie->title }}</h4>
                                 <span class="movie-rating-badge">{{ $movie->age_rating }}+</span>
                             </div>
+                            @if (($userVoteMovieId ?? null) === $movie->id)
+                                <span class="selected-vote-badge">Ваш выбор в городе</span>
+                            @endif
 
                             <p class="movie-description">{{ \Illuminate\Support\Str::limit($movie->description ?? 'Описание будет добавлено.', 130) }}</p>
 
@@ -117,7 +120,10 @@
                                         <form method="POST" action="{{ route('votes.store') }}" class="vote-form">
                                             @csrf
                                             <input type="hidden" name="movie_id" value="{{ $movie->id }}">
-                                            <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Закрыто' : 'Голосовать' }}</button>
+                                            <button type="submit" class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Голосование закрыто' : (($userVoteMovieId ?? null) === $movie->id ? 'Изменить голос' : 'Голосовать') }}</button>
+                                            @if ($votingClosed)
+                                                <span class="vote-help-text">Дедлайн голосования прошёл.</span>
+                                            @endif
                                         </form>
                                     @else
                                         <div class="vote-login-link">
