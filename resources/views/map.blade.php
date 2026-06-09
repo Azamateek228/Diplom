@@ -13,9 +13,15 @@
             </div>
         </div>
 
-        <div id="map"
-            style="width: 100%; height: 600px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: #1c1c2b; display: flex; align-items: center; justify-content: center;">
-            <div style="color: #888; text-align: center;">
+        <div class="map-toolbar mb-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <div class="route-state-hint">
+                Вид карты сохраняется в этом браузере. Текущая остановка берётся из настроек маршрута.
+            </div>
+            <button id="fitRouteButton" type="button" class="btn btn-main btn-sm">Показать весь маршрут</button>
+        </div>
+
+        <div id="map" class="map-canvas">
+            <div class="map-placeholder">
                 <p>Загрузка карты...</p>
             </div>
         </div>
@@ -25,7 +31,7 @@
                 <h3 class="mb-3">Список городов маршрута</h3>
                 <ol class="list-group list-group-numbered">
                     @foreach ($cities as $city)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <li class="list-group-item d-flex justify-content-between align-items-center {{ $currentCity && (int) $currentCity->id === (int) $city->id ? 'active-route-city' : '' }}">
                             <span>{{ $city->name }}</span>
                             <span>
                                 @if ($currentCity && (int) $currentCity->id === (int) $city->id)
@@ -80,16 +86,23 @@
     <script>
         let map;
         let routePolyline;
+        let activeRoutePolyline;
         let movingMarker;
         let cityMarkers = [];
         let isAnimating = false;
         let roadPathCoordinates = [];
         let routeSegments = [];
         let animationFrameId = null;
+        let restoredViewport = null;
+        let savedRouteState = null;
+        let isRestoringViewport = false;
 
         const cities = @json($citiesData ?? []);
         const currentCityId = @json($currentCity?->id ?? null);
         const defaultCenter = @json($defaultCenter ?? [55.7558, 37.6173]);
+        const MAP_VIEW_STORAGE_KEY = 'cinemaRouteMap.viewport.v1';
+        const ROUTE_STATE_STORAGE_KEY = 'cinemaRouteMap.routeState.v1';
+        const routeSignature = cities.map(city => `${city.id}:${city.route_order || ''}`).join('|');
 
         function parseCoordinate(value) {
             if (typeof value === 'number') return value;
@@ -103,11 +116,128 @@
             return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
         }
 
+
+        function readStorageJson(key) {
+            try {
+                const raw = window.localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('Не удалось прочитать сохранённое состояние карты.', error);
+                window.localStorage.removeItem(key);
+                return null;
+            }
+        }
+
+        function writeStorageJson(key, value) {
+            try {
+                window.localStorage.setItem(key, JSON.stringify(value));
+            } catch (error) {
+                console.warn('Не удалось сохранить состояние карты.', error);
+            }
+        }
+
+        function getSavedViewport() {
+            const viewport = readStorageJson(MAP_VIEW_STORAGE_KEY);
+            if (!viewport || !Array.isArray(viewport.center) || viewport.center.length !== 2) {
+                return null;
+            }
+
+            const lat = parseCoordinate(viewport.center[0]);
+            const lng = parseCoordinate(viewport.center[1]);
+            const zoom = Number(viewport.zoom);
+
+            if (isNaN(lat) || isNaN(lng) || isNaN(zoom) || zoom < 1 || zoom > 19) {
+                window.localStorage.removeItem(MAP_VIEW_STORAGE_KEY);
+                return null;
+            }
+
+            return { center: [lat, lng], zoom };
+        }
+
+        function saveMapViewport() {
+            if (!map || isRestoringViewport) return;
+
+            const center = map.getCenter();
+            writeStorageJson(MAP_VIEW_STORAGE_KEY, {
+                center: [Number(center.lat.toFixed(6)), Number(center.lng.toFixed(6))],
+                zoom: map.getZoom(),
+                savedAt: Date.now(),
+            });
+        }
+
+        function saveRouteState(pointIndex) {
+            const segment = routeSegmentForPoint(pointIndex);
+            writeStorageJson(ROUTE_STATE_STORAGE_KEY, {
+                pointIndex,
+                currentCityId,
+                activeStopId: segment?.from?.id || currentCityId,
+                routeSignature,
+                savedAt: Date.now(),
+            });
+        }
+
+        function getSavedRouteState() {
+            const state = readStorageJson(ROUTE_STATE_STORAGE_KEY);
+            if (!state || state.routeSignature !== routeSignature || Number(state.currentCityId) !== Number(currentCityId)) {
+                return null;
+            }
+
+            const pointIndex = Number(state.pointIndex);
+            if (isNaN(pointIndex) || pointIndex < 0) {
+                return null;
+            }
+
+            return state;
+        }
+
+        function applyStoredViewport() {
+            if (!map || !restoredViewport) return;
+
+            isRestoringViewport = true;
+            map.setView(restoredViewport.center, restoredViewport.zoom, { animate: false });
+            setTimeout(() => { isRestoringViewport = false; }, 0);
+        }
+
+        function fitWholeRoute() {
+            if (!map) return;
+
+            if (routePolyline) {
+                map.fitBounds(routePolyline.getBounds(), { padding: [32, 32] });
+                saveMapViewport();
+                return;
+            }
+
+            const orderedCities = cities.filter(hasValidCoordinates);
+            if (orderedCities.length > 0) {
+                const bounds = L.latLngBounds(orderedCities.map(city => [parseCoordinate(city.lat), parseCoordinate(city.lng)]));
+                map.fitBounds(bounds, { padding: [32, 32] });
+                saveMapViewport();
+            }
+        }
+
+        function focusCurrentCityIfNoSavedViewport(orderedCities) {
+            if (restoredViewport) return;
+
+            const activeCity = currentCityId
+                ? orderedCities.find(city => Number(city.id) === Number(currentCityId))
+                : orderedCities[0];
+
+            if (activeCity) {
+                map.setView([parseCoordinate(activeCity.lat), parseCoordinate(activeCity.lng)], Math.max(map.getZoom(), 8), { animate: false });
+            }
+        }
+
         function initMap() {
             const mapContainer = document.getElementById('map');
             mapContainer.innerHTML = '';
 
-            map = L.map('map').setView(defaultCenter, cities.length > 0 ? 6 : 4);
+            restoredViewport = getSavedViewport();
+            savedRouteState = getSavedRouteState();
+            const initialCenter = restoredViewport?.center || defaultCenter;
+            const initialZoom = restoredViewport?.zoom || (cities.length > 0 ? 7 : 4);
+
+            map = L.map('map').setView(initialCenter, initialZoom);
+            map.on('moveend zoomend', saveMapViewport);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -117,18 +247,20 @@
             const orderedCities = cities.filter(hasValidCoordinates);
             if (orderedCities.length === 0) {
                 L.marker(defaultCenter).addTo(map).bindPopup('Добавьте города с координатами для отображения маршрута');
+                applyStoredViewport();
                 return;
             }
 
             orderedCities.forEach((city) => {
                 const lat = parseCoordinate(city.lat);
                 const lng = parseCoordinate(city.lng);
-                const isCurrent = currentCityId === city.id;
+                const isCurrent = Number(currentCityId) === Number(city.id);
 
                 const marker = L.circleMarker([lat, lng], {
-                    radius: 8,
-                    color: isCurrent ? '#ff0000' : '#1e98ff',
-                    fillColor: isCurrent ? '#ff0000' : '#1e98ff',
+                    radius: isCurrent ? 11 : 8,
+                    color: isCurrent ? '#f5b301' : '#1e98ff',
+                    weight: isCurrent ? 4 : 2,
+                    fillColor: isCurrent ? '#f97316' : '#1e98ff',
                     fillOpacity: 0.9
                 }).addTo(map).bindPopup(`
                     <div style="padding: 8px;">
@@ -138,11 +270,11 @@
                     </div>
                 `);
 
-                cityMarkers.push(marker);
+                cityMarkers.push({ cityId: city.id, marker });
             });
 
             const startCity = currentCityId
-                ? orderedCities.find(c => c.id === currentCityId) || orderedCities[0]
+                ? orderedCities.find(c => Number(c.id) === Number(currentCityId)) || orderedCities[0]
                 : orderedCities[0];
 
             movingMarker = L.marker([parseCoordinate(startCity.lat), parseCoordinate(startCity.lng)]).addTo(map)
@@ -150,9 +282,12 @@
 
             cities.length = 0;
             cities.push(...orderedCities);
+            focusCurrentCityIfNoSavedViewport(orderedCities);
 
             if (cities.length > 1) {
                 buildRoute();
+            } else {
+                applyStoredViewport();
             }
         }
 
@@ -171,15 +306,15 @@
 
             routePolyline = L.polyline(roadPathCoordinates, {
                 color: '#ff8c00',
-                weight: 6,
-                opacity: 0.95
+                weight: 5,
+                opacity: 0.45
             }).addTo(map);
 
-            map.fitBounds(routePolyline.getBounds(), { padding: [25, 25] });
-
-            const startPointIndex = routeStartPointIndex();
+            const startPointIndex = restoredAnimationPointIndex();
             movingMarker.setLatLng(roadPathCoordinates[startPointIndex]);
             updateRouteNavigator(startPointIndex);
+            saveRouteState(startPointIndex);
+            applyStoredViewport();
 
             if (!isAnimating) {
                 animateVan(startPointIndex);
@@ -237,12 +372,12 @@
                 return 0;
             }
 
-            const fromSegment = routeSegments.find(segment => segment.from.id === currentCityId);
+            const fromSegment = routeSegments.find(segment => Number(segment.from.id) === Number(currentCityId));
             if (fromSegment) {
                 return fromSegment.startIndex;
             }
 
-            const toSegment = routeSegments.find(segment => segment.to.id === currentCityId);
+            const toSegment = routeSegments.find(segment => Number(segment.to.id) === Number(currentCityId));
             return toSegment ? toSegment.endIndex : 0;
         }
 
@@ -250,6 +385,34 @@
             return routeSegments.find(segment => pointIndex >= segment.startIndex && pointIndex <= segment.endIndex)
                 || routeSegments[routeSegments.length - 1]
                 || null;
+        }
+
+        function restoredAnimationPointIndex() {
+            const startPointIndex = routeStartPointIndex();
+            if (!savedRouteState || !roadPathCoordinates.length) {
+                return startPointIndex;
+            }
+
+            const pointIndex = Math.min(Number(savedRouteState.pointIndex), roadPathCoordinates.length - 1);
+            return pointIndex >= 0 ? pointIndex : startPointIndex;
+        }
+
+        function refreshActiveRouteSegment(pointIndex) {
+            const segment = routeSegmentForPoint(pointIndex);
+            if (!segment || !roadPathCoordinates.length) return;
+
+            if (activeRoutePolyline) {
+                map.removeLayer(activeRoutePolyline);
+            }
+
+            const segmentCoordinates = roadPathCoordinates.slice(segment.startIndex, segment.endIndex + 1);
+            if (segmentCoordinates.length > 1) {
+                activeRoutePolyline = L.polyline(segmentCoordinates, {
+                    color: '#f5b301',
+                    weight: 7,
+                    opacity: 0.95
+                }).addTo(map);
+            }
         }
 
         function updateRouteNavigator(pointIndex) {
@@ -267,6 +430,7 @@
             nextCityNameEl.textContent = segment.to.name;
             routeLegNameEl.textContent = `${segment.legNumber} из ${segment.totalLegs}`;
             routeInfo.style.display = 'block';
+            refreshActiveRouteSegment(pointIndex);
 
             if (movingMarker) {
                 movingMarker.setPopupContent(`<strong>Кинофургон на маршруте</strong><br>${segment.from.name} → ${segment.to.name}`);
@@ -291,6 +455,7 @@
                     pointIndex = (pointIndex + 1) % roadPathCoordinates.length;
                     movingMarker.setLatLng(roadPathCoordinates[pointIndex]);
                     updateRouteNavigator(pointIndex);
+                    saveRouteState(pointIndex);
                     if (progressBar) progressBar.style.width = `${(pointIndex / roadPathCoordinates.length) * 100}%`;
                     lastTick = timestamp;
                 }
@@ -303,6 +468,7 @@
 
         const stopBtn = document.getElementById('stopAnimation');
         const resetBtn = document.getElementById('resetAnimation');
+        const fitRouteBtn = document.getElementById('fitRouteButton');
 
         if (stopBtn) {
             stopBtn.addEventListener('click', function() {
@@ -322,8 +488,13 @@
                 if (progressBar) progressBar.style.width = `${(startPointIndex / roadPathCoordinates.length) * 100}%`;
                 if (movingMarker && roadPathCoordinates.length > 0) movingMarker.setLatLng(roadPathCoordinates[startPointIndex]);
                 updateRouteNavigator(startPointIndex);
+                saveRouteState(startPointIndex);
                 setTimeout(() => animateVan(startPointIndex), 500);
             });
+        }
+
+        if (fitRouteBtn) {
+            fitRouteBtn.addEventListener('click', fitWholeRoute);
         }
 
         initMap();

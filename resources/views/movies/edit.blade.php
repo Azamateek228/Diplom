@@ -7,8 +7,7 @@
         @if ($movie->poster)
             <div class="current-poster mb-4">
                 <label>Текущий постер:</label>
-                <img src="{{ $movie->poster_url }}" alt="{{ $movie->title }}"
-                    style="max-width: 200px; border-radius: 10px; margin-top: 10px;">
+                <img src="{{ $movie->poster_url }}" alt="{{ $movie->title }}" class="current-poster-img">
             </div>
         @endif
 
