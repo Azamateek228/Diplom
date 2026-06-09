@@ -3004,3 +3004,37 @@ select option,
         grid-template-columns: 1fr;
     }
 }
+
+/* Persistent route map */
+.map-toolbar {
+    padding: 12px 14px;
+    border: 1px solid rgba(245, 179, 1, 0.18);
+    border-radius: 18px;
+    background: rgba(20, 20, 33, 0.88);
+}
+
+.route-state-hint {
+    color: var(--muted, #b9bdca);
+    font-size: 14px;
+}
+
+.route-cities-list .active-route-city {
+    border-color: rgba(245, 179, 1, 0.48);
+    background: linear-gradient(90deg, rgba(245, 179, 1, 0.22), rgba(20, 20, 33, 0.92));
+    color: var(--text, #f7f7fb);
+}
+
+@media (max-width: 576px) {
+    #map {
+        height: 480px !important;
+    }
+
+    .map-toolbar {
+        align-items: stretch !important;
+    }
+
+    .map-toolbar .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
