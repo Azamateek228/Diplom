@@ -324,10 +324,3 @@
         height: 220px;
     }
 }
-
-
-#map > div.leaflet-control-container > div.leaflet-bottom.leaflet-right > div{
-    visibility: hidden;
-    display: none;
-    
-}
