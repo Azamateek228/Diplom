@@ -1,14 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     <section class="page-hero compact-hero">
         <span class="eyebrow">Личный кабинет зрителя</span>
         <h1>Мои билеты</h1>
@@ -50,11 +42,13 @@
                         <p class="mb-0 small">Код билета: <code>{{ $ticket->qr_token }}</code></p>
                     </div>
 
-                    @if ($ticket->status === 'purchased')
+                    @if ($ticket->can_refund)
                         <form method="POST" action="{{ route('tickets.refund', $ticket) }}" class="mt-2">
                             @csrf
                             <button type="submit" class="btn btn-outline-danger btn-sm">Оформить возврат</button>
                         </form>
+                    @elseif ($ticket->status === 'purchased')
+                        <p class="ticket-refund-note mt-2 mb-0">Возврат недоступен: до показа осталось менее 24 часов.</p>
                     @endif
                 </article>
             @endforeach

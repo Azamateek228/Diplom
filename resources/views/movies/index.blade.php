@@ -1,14 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     <section class="page-hero compact-hero">
         <span class="eyebrow">Голосование и билеты</span>
         <h1>Фильмы выездного кинотеатра</h1>
@@ -38,33 +30,56 @@
 
     <div class="movies">
         <div class="movies-header movies-header--stacked">
-            <div>
-                <h3>Сейчас в прокате</h3>
-                <p class="text-muted mb-0">Поиск и фильтры помогают быстро найти подходящий сеанс.</p>
+            <div class="catalog-heading-row">
+                <div>
+                    <h3>Сейчас в прокате</h3>
+                    <p class="text-muted mb-0">Поиск и фильтры помогают быстро найти подходящий сеанс.</p>
+                </div>
+                @if($movies->total() > 0)
+                    <span class="result-counter">Найдено: {{ $movies->total() }} фильмов</span>
+                @endif
             </div>
-            <form method="GET" action="{{ route('movies.index') }}" class="movie-filter-panel">
-                <input
-                    type="search"
-                    name="search"
-                    value="{{ $filters['search'] ?? '' }}"
-                    class="form-control"
-                    placeholder="Поиск по названию"
-                >
-                <select name="genre" class="form-select">
-                    <option value="">Все жанры</option>
-                    @foreach ($genres as $genre)
-                        <option value="{{ $genre }}" {{ ($filters['genre'] ?? '') === $genre ? 'selected' : '' }}>{{ $genre }}</option>
-                    @endforeach
-                </select>
-                <select name="age_rating" class="form-select">
-                    <option value="">Все рейтинги</option>
-                    @foreach ($ageRatings as $rating)
-                        <option value="{{ $rating }}" {{ ($filters['age_rating'] ?? '') == $rating ? 'selected' : '' }}>{{ $rating }}+</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-main btn-sm">Применить</button>
-                <a href="{{ route('movies.index') }}" class="btn btn-outline-dark btn-sm">Сбросить фильтры</a>
+            <form method="GET" action="{{ route('movies.index') }}" class="movie-filter-panel catalog-filter-panel">
+                <label class="filter-field filter-field--wide">
+                    <span>Название</span>
+                    <input
+                        type="search"
+                        name="search"
+                        value="{{ $filters['search'] ?? '' }}"
+                        class="form-control"
+                        placeholder="Поиск по названию"
+                    >
+                </label>
+                <label class="filter-field">
+                    <span>Жанр</span>
+                    <select name="genre" class="form-select">
+                        <option value="">Все жанры</option>
+                        @foreach ($genres as $genre)
+                            <option value="{{ $genre }}" {{ ($filters['genre'] ?? '') === $genre ? 'selected' : '' }}>{{ $genre }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="filter-field">
+                    <span>Возраст</span>
+                    <select name="age_rating" class="form-select">
+                        <option value="">Все рейтинги</option>
+                        @foreach ($ageRatings as $rating)
+                            <option value="{{ $rating }}" {{ ($filters['age_rating'] ?? '') == $rating ? 'selected' : '' }}>{{ $rating }}+</option>
+                        @endforeach
+                    </select>
+                </label>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Применить</button>
+                    <a href="{{ route('movies.index') }}" class="btn btn-secondary">Сбросить</a>
+                </div>
             </form>
+            @if(($activeFiltersCount ?? 0) > 0)
+                <div class="active-filter-chips">
+                    @if(!empty($filters['search']))<span class="filter-chip">Поиск: {{ $filters['search'] }}</span>@endif
+                    @if(!empty($filters['genre']))<span class="filter-chip">Жанр: {{ $filters['genre'] }}</span>@endif
+                    @if(!empty($filters['age_rating']))<span class="filter-chip">Возраст: {{ $filters['age_rating'] }}+</span>@endif
+                </div>
+            @endif
         </div>
 
         @if ($movies->isEmpty())
@@ -83,7 +98,7 @@
                         @if($movie->poster)
                             <img class="movie-poster" src="{{ $movie->poster_url }}" alt="{{ $movie->title }}">
                         @else
-                            <div class="movie-poster poster-fallback"><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
+                            <div class="movie-poster poster-fallback"><strong>{{ $movie->title }}</strong><small>Афиша скоро появится</small></div>
                         @endif
 
                         <div class="info">
@@ -91,6 +106,9 @@
                                 <h4>{{ $movie->title }}</h4>
                                 <span class="movie-rating-badge">{{ $movie->age_rating }}+</span>
                             </div>
+                            @if (($userVoteMovieId ?? null) === $movie->id)
+                                <span class="selected-vote-badge">Ваш выбор в городе</span>
+                            @endif
 
                             <p class="movie-description">{{ \Illuminate\Support\Str::limit($movie->description ?? 'Описание будет добавлено.', 130) }}</p>
 
@@ -117,7 +135,10 @@
                                         <form method="POST" action="{{ route('votes.store') }}" class="vote-form">
                                             @csrf
                                             <input type="hidden" name="movie_id" value="{{ $movie->id }}">
-                                            <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Закрыто' : 'Голосовать' }}</button>
+                                            <button type="submit" class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Голосование закрыто' : (($userVoteMovieId ?? null) === $movie->id ? 'Изменить голос' : 'Голосовать') }}</button>
+                                            @if ($votingClosed)
+                                                <span class="vote-help-text">Дедлайн голосования прошёл.</span>
+                                            @endif
                                         </form>
                                     @else
                                         <div class="vote-login-link">
@@ -132,6 +153,30 @@
                         </div>
                     </article>
                 @endforeach
+            </div>
+            <div class="cinema-pagination catalog-pagination">
+                <div class="pagination-summary">Показано {{ $movies->firstItem() }}–{{ $movies->lastItem() }} из {{ $movies->total() }} фильмов</div>
+                <div class="pagination-links">
+                    @if ($movies->onFirstPage())
+                        <span class="page-link is-disabled">← Назад</span>
+                    @else
+                        <a class="page-link" href="{{ $movies->previousPageUrl() }}">← Назад</a>
+                    @endif
+
+                    @foreach ($movies->getUrlRange(1, $movies->lastPage()) as $page => $url)
+                        @if ($page === $movies->currentPage())
+                            <span class="page-link is-active">{{ $page }}</span>
+                        @else
+                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($movies->hasMorePages())
+                        <a class="page-link" href="{{ $movies->nextPageUrl() }}">Вперёд →</a>
+                    @else
+                        <span class="page-link is-disabled">Вперёд →</span>
+                    @endif
+                </div>
             </div>
         @endif
     </div>
