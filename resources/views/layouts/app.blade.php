@@ -10,10 +10,10 @@
         $viteDevServerIsRunning = file_exists(public_path('hot'));
     @endphp
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
-
     @if ($viteDevServerIsRunning || $viteManifestExists)
-        @vite(['resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     @endif
 </head>
 
@@ -45,6 +45,33 @@
     @if (auth()->check() && isset($currentCity) && $currentCity && auth()->user()->city_id === $currentCity->id)
         <div class="cinema-in-your-city-bar text-center py-2">🎉 Сегодня кинотеатр в вашем городе!</div>
     @endif
+
+    @php
+        $flashTypes = ['success' => 'Успешно', 'error' => 'Ошибка', 'warning' => 'Внимание', 'info' => 'Информация'];
+    @endphp
+    <div class="toast-stack" data-toast-stack aria-live="polite" aria-atomic="true">
+        @foreach ($flashTypes as $type => $label)
+            @if (session($type))
+                <div class="app-toast app-toast--{{ $type }}" role="alert" data-toast>
+                    <div>
+                        <strong>{{ $label }}</strong>
+                        <p>{{ session($type) }}</p>
+                    </div>
+                    <button type="button" class="app-toast-close" aria-label="Закрыть уведомление" data-toast-close>×</button>
+                </div>
+            @endif
+        @endforeach
+
+        @if ($errors->any())
+            <div class="app-toast app-toast--error" role="alert" data-toast>
+                <div>
+                    <strong>Проверьте форму</strong>
+                    <p>Исправьте отмеченные поля и повторите отправку.</p>
+                </div>
+                <button type="button" class="app-toast-close" aria-label="Закрыть уведомление" data-toast-close>×</button>
+            </div>
+        @endif
+    </div>
 
     <main class="container mt-4">
         @yield('content')
