@@ -42,7 +42,7 @@
                 <h5>Средняя загрузка</h5><small>продажи относительно вместимости площадок</small>
                 <h3>{{ $overallLoadPercent }}%</h3>
                 <div class="kpi-progress mt-2">
-                    <div class="kpi-progress-bar" style="width: {{ $overallLoadPercent }}%"></div>
+                    <div class="kpi-progress-bar" style="--progress: {{ $overallLoadPercent }}%"></div>
                 </div>
             </div>
         </div>

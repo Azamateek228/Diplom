@@ -34,7 +34,7 @@
                         <span>Продано билетов: <strong>{{ $soldTickets }}</strong></span>
                         <span>Показы и покупка билетов доступны в афише</span>
                     </div>
-                    <div class="progress-bar-container"><div class="progress-bar" style="width: {{ $fillPercentage }}%"></div></div>
+                    <div class="progress-bar-container"><div class="progress-bar" style="--progress: {{ $fillPercentage }}%"></div></div>
                 </div>
 
                 <div class="show-actions">

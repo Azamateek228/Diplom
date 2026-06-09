@@ -64,3 +64,15 @@ document.querySelectorAll('[data-ticket-quantity]').forEach((input) => {
     input.addEventListener('input', updateTotal);
     updateTotal();
 });
+
+
+document.querySelectorAll('[data-nav-toggle]').forEach((toggle) => {
+    const nav = toggle.closest('[data-app-nav]');
+    const links = nav?.querySelector('[data-nav-links]');
+
+    toggle.addEventListener('click', () => {
+        const isOpen = nav?.classList.toggle('is-open') ?? false;
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        links?.classList.toggle('is-open', isOpen);
+    });
+});
