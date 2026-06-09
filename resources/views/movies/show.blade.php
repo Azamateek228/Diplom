@@ -9,7 +9,7 @@
                 @if($movie->poster)
                     <img src="{{ $movie->poster_url }}" alt="{{ $movie->title }}">
                 @else
-                    <div class="poster-fallback poster-fallback--large"><span>🎬</span><strong>{{ $movie->title }}</strong><small>Постер готовится</small></div>
+                    <div class="poster-fallback poster-fallback--large"><span>🎬</span><strong>{{ $movie->title }}</strong><small>Афиша скоро появится</small></div>
                 @endif
             </div>
 
@@ -17,6 +17,10 @@
                 <span class="eyebrow">Карточка фильма</span>
                 <h1>{{ $movie->title }}</h1>
                 <p class="lead-text">{{ $movie->description ?? 'Описание фильма появится позже.' }}</p>
+
+                @if (($userVoteMovieId ?? null) === $movie->id)
+                    <span class="selected-vote-badge">Вы уже выбрали этот фильм в своём городе</span>
+                @endif
 
                 <div class="show-meta-grid">
                     <div><span>Жанр</span><strong>{{ $movie->genre ?? 'Уточняется' }}</strong></div>
@@ -30,7 +34,7 @@
                         <span>Продано билетов: <strong>{{ $soldTickets }}</strong></span>
                         <span>Показы и покупка билетов доступны в афише</span>
                     </div>
-                    <div class="progress-bar-container"><div class="progress-bar" style="width: {{ $fillPercentage }}%"></div></div>
+                    <div class="progress-bar-container"><div class="progress-bar" style="--progress: {{ $fillPercentage }}%"></div></div>
                 </div>
 
                 <div class="show-actions">
@@ -39,7 +43,10 @@
                             @csrf
                             <input type="hidden" name="movie_id" value="{{ $movie->id }}">
                             @if (auth()->user()->city_id)
-                                <button class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Голосование закрыто' : 'Голосовать за фильм' }}</button>
+                                <button type="submit" class="vote-btn" {{ $votingClosed ? 'disabled' : '' }}>{{ $votingClosed ? 'Голосование закрыто' : (($userVoteMovieId ?? null) === $movie->id ? 'Обновить голос' : 'Голосовать за фильм') }}</button>
+                                @if ($votingClosed)
+                                    <span class="vote-help-text">Голосование закрыто: маршрут уже формируется.</span>
+                                @endif
                             @else
                                 <span class="vote-login-link">Выберите город в профиле, чтобы голосовать. <a href="{{ route('profile.edit') }}">Открыть профиль</a></span>
                             @endif

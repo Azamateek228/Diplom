@@ -43,6 +43,6 @@ class VoteController extends Controller
             ['movie_id' => $movie->id, 'expected_attendees' => 1]
         );
 
-        return redirect()->back()->with('success', 'Голос учтён в вашем городе!');
+        return redirect()->back()->with('success', 'Ваш голос учтён. Он повлияет на маршрут выездного кинотеатра.');
     }
 }

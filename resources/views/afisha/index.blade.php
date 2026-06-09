@@ -101,7 +101,7 @@
                                         <span>Свободно мест: <strong>{{ $availableTickets }}</strong></span>
                                     </div>
                                     <div class="progress-bar-container">
-                                        <div class="progress-bar" style="width: {{ $fillPercentage }}%"></div>
+                                        <div class="progress-bar" style="--progress: {{ $fillPercentage }}%"></div>
                                     </div>
                                     <small class="d-block mt-2 text-muted">Заполненность: {{ $fillPercentage }}%</small>
                                 </div>

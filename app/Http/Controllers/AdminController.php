@@ -18,6 +18,8 @@ class AdminController extends Controller
         $settings = Setting::first();
         $currentCityId = $settings?->current_city_id;
         $selectedCityId = $request->get('city_id');
+        $adminMovieSearch = trim((string) $request->get('admin_movie_search', ''));
+        $adminMovieStatus = $request->get('admin_movie_status', 'all');
         $cities = NearbyCitySelector::fullRoute();
         $routeCities = NearbyCitySelector::actualRoute();
         $routeType = NearbyCitySelector::actualRouteType();
@@ -45,11 +47,43 @@ class AdminController extends Controller
             $moviesQuery->whereHas('votes', fn ($query) => $query->where('city_id', $selectedCityId));
         }
 
-        $movies = $moviesQuery->orderByDesc('votes_count')->orderBy('title')->get();
-        $movies->each(function (Movie $movie) {
-            $movie->session_status_label = 'Каталог';
-            $movie->session_status_class = 'status-planned';
+        if ($adminMovieSearch !== '') {
+            $moviesQuery->where('title', 'like', '%' . $adminMovieSearch . '%');
+        }
+
+        match ($adminMovieStatus) {
+            'actual' => $moviesQuery->whereNotNull('show_time')->where('show_time', '>=', now()),
+            'past' => $moviesQuery->whereNotNull('show_time')->where('show_time', '<', now()),
+            'no_date' => $moviesQuery->whereNull('show_time'),
+            default => null,
+        };
+
+        $movies = $moviesQuery->orderByDesc('votes_count')
+            ->orderBy('title')
+            ->paginate(6, ['*'], 'movies_page')
+            ->withQueryString();
+
+        $movies->getCollection()->each(function (Movie $movie) {
+            if (! $movie->show_time) {
+                $movie->session_status_label = 'без даты';
+                $movie->session_status_class = 'status-no-date';
+                return;
+            }
+
+            if ($movie->show_time->isPast()) {
+                $movie->session_status_label = 'прошедший';
+                $movie->session_status_class = 'status-past';
+                return;
+            }
+
+            $movie->session_status_label = 'актуальный';
+            $movie->session_status_class = 'status-current';
         });
+
+        $adminMovieFilters = [
+            'search' => $adminMovieSearch,
+            'status' => $adminMovieStatus,
+        ];
 
         $upcomingSessions = collect();
 
@@ -119,6 +153,7 @@ class AdminController extends Controller
             'cities',
             'movies',
             'selectedCityId',
+            'adminMovieFilters',
             'cityStats',
             'currentCityId',
             'currentCityName',
