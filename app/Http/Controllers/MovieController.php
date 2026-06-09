@@ -31,14 +31,17 @@ class MovieController extends Controller
             $query->where('age_rating', $request->input('age_rating'));
         }
 
-        $movies = $query->orderByDesc('votes_count')->orderBy('title')->get();
+        $movies = $query->orderByDesc('votes_count')
+            ->orderBy('title')
+            ->paginate(8)
+            ->withQueryString();
         $soldTicketsByMovie = Ticket::query()
             ->selectRaw('movie_id, SUM(quantity) as sold_total')
             ->where('status', 'purchased')
             ->groupBy('movie_id')
             ->pluck('sold_total', 'movie_id');
 
-        $movies->each(function ($movie) use ($soldTicketsByMovie) {
+        $movies->getCollection()->each(function ($movie) use ($soldTicketsByMovie) {
             $soldTickets = (int) ($soldTicketsByMovie[$movie->id] ?? 0);
             $movie->sold_tickets = $soldTickets;
             $movie->fill_percentage = 0;
@@ -48,6 +51,7 @@ class MovieController extends Controller
         $genres = Movie::query()->whereNotNull('genre')->distinct()->orderBy('genre')->pluck('genre');
         $ageRatings = Movie::query()->whereNotNull('age_rating')->distinct()->orderBy('age_rating')->pluck('age_rating');
         $filters = $request->only(['search', 'genre', 'age_rating']);
+        $activeFiltersCount = collect($filters)->filter(fn ($value) => filled($value))->count();
         $settings = Setting::first();
         $votingDeadline = $settings?->voting_deadline;
         $ticketPrice = $settings?->ticket_price ?? 350;
@@ -65,7 +69,7 @@ class MovieController extends Controller
             $userVoteMovieId = Vote::where('user_id', auth()->id())->where('city_id', $cityId)->value('movie_id');
         }
 
-        return view('movies.index', compact('movies', 'cities', 'genres', 'ageRatings', 'filters', 'userCityStats', 'userVoteMovieId', 'votingDeadline', 'votingClosed', 'ticketPrice'));
+        return view('movies.index', compact('movies', 'cities', 'genres', 'ageRatings', 'filters', 'activeFiltersCount', 'userCityStats', 'userVoteMovieId', 'votingDeadline', 'votingClosed', 'ticketPrice'));
     }
 
     public function show(Movie $movie)
@@ -168,7 +172,7 @@ class MovieController extends Controller
             'show_time' => $validated['show_time'],
         ]);
 
-        return redirect()->route('admin.stats')->with('success', 'Дата показа обновлена.');
+        return back()->with('success', 'Дата показа обновлена.');
     }
 
     public function duplicate(Movie $movie)
