@@ -58,7 +58,7 @@
                                 </div>
                             @else
                                 <div class="detail-row">
-                                    <span class="value" style="color: #888;">Координаты не указаны</span>
+                                    <span class="value muted-value">Координаты не указаны</span>
                                 </div>
                             @endif
                         </div>

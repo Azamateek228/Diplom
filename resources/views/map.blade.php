@@ -20,9 +20,8 @@
             <button id="fitRouteButton" type="button" class="btn btn-main btn-sm">Показать весь маршрут</button>
         </div>
 
-        <div id="map"
-            style="width: 100%; height: 600px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: #1c1c2b; display: flex; align-items: center; justify-content: center;">
-            <div style="color: #888; text-align: center;">
+        <div id="map" class="map-shell">
+            <div class="map-placeholder text-center">
                 <p>Загрузка карты...</p>
             </div>
         </div>
@@ -264,7 +263,7 @@
                     fillColor: isCurrent ? '#f97316' : '#1e98ff',
                     fillOpacity: 0.9
                 }).addTo(map).bindPopup(`
-                    <div style="padding: 8px;">
+                    <div class="map-popup-content">
                         <h4>${city.name}</h4>
                         <p>🗳️ Голосов: ${city.votes_count || 0}</p>
                         ${isCurrent ? '<p class="current-location-popup">📍 Текущее местоположение</p>' : ''}
