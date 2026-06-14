@@ -3588,3 +3588,277 @@ a:focus-visible,
         width: 100%;
     }
 }
+
+/* Restored expressive route map details */
+.route-map-shell {
+    width: 100%;
+    height: 600px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid rgba(245, 179, 1, 0.22);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(255,255,255,0.04);
+    background: radial-gradient(circle at 30% 20%, rgba(245,179,1,0.13), transparent 32%), #1c1c2b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.route-map-loader {
+    color: var(--muted, #b9bdca);
+    text-align: center;
+}
+
+.route-city-popup { padding: 8px; }
+
+.cinema-van-marker {
+    display: grid;
+    place-items: center;
+    width: 38px !important;
+    height: 38px !important;
+    margin: 0 !important;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f5b301, #f97316);
+    border: 2px solid rgba(255,255,255,0.92);
+    box-shadow: 0 0 0 6px rgba(245,179,1,0.18), 0 12px 28px rgba(0,0,0,0.36);
+    animation: routeVanPulse 1.8s ease-in-out infinite;
+}
+
+.cinema-van-marker span { transform: translateY(-1px); font-size: 20px; }
+
+@keyframes routeVanPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(245,179,1,0.18), 0 12px 28px rgba(0,0,0,0.36); }
+    50% { box-shadow: 0 0 0 10px rgba(245,179,1,0.08), 0 16px 34px rgba(0,0,0,0.42); }
+}
+
+/* Final visual polish for diploma UI: navigation, cards, route lists */
+.navbar {
+    background: rgba(8, 9, 18, 0.96) !important;
+    border-bottom: 1px solid rgba(245, 179, 1, 0.12);
+    backdrop-filter: blur(14px);
+}
+
+.navbar .container {
+    gap: 18px;
+}
+
+.navbar-actions {
+    row-gap: 10px !important;
+}
+
+.navbar .btn.btn-sm {
+    min-height: 38px;
+    padding: 9px 16px;
+    border-radius: 14px;
+    box-shadow: none;
+}
+
+.navbar .btn-outline-light {
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(255,255,255,0.22);
+}
+
+.navbar .btn-warning,
+.navbar .btn-danger {
+    border-radius: 10px;
+}
+
+@media (max-width: 720px) {
+    .navbar .container {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+
+    .navbar-brand {
+        width: 100%;
+        text-align: center;
+        margin-right: 0 !important;
+    }
+
+    .navbar-actions {
+        width: 100%;
+        justify-content: center !important;
+    }
+
+    .navbar .btn.btn-sm {
+        flex: 1 1 calc(50% - 8px);
+        max-width: 180px;
+    }
+}
+
+.showtime-admin-panel {
+    grid-template-columns: minmax(210px, 1fr) minmax(148px, auto);
+    align-items: stretch;
+}
+
+.showtime-admin-panel .form-control,
+.showtime-admin-panel .btn-admin-action,
+.movie-admin-action-list .btn-admin-action {
+    min-height: 52px;
+}
+
+.movie-admin-action-list {
+    grid-template-columns: repeat(3, minmax(132px, 1fr));
+}
+
+.movie-admin-action-list .btn-admin-action {
+    padding-inline: 12px;
+    font-size: 14px;
+}
+
+.btn-admin-action.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #fb7185);
+    border-color: rgba(248, 113, 113, 0.56);
+    color: #fff;
+    box-shadow: 0 12px 26px rgba(239, 68, 68, 0.18);
+}
+
+.city-winners-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.city-winner-card {
+    position: relative;
+    display: grid;
+    gap: 16px;
+    min-height: 188px;
+    overflow: hidden;
+}
+
+.city-winner-card::after {
+    content: '';
+    position: absolute;
+    inset: auto -30px -46px auto;
+    width: 130px;
+    height: 130px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(245,179,1,0.18), transparent 68%);
+    pointer-events: none;
+}
+
+.city-winner-topline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.city-winner-pin {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    color: #111827;
+    font-weight: 900;
+    box-shadow: 0 12px 24px rgba(245,179,1,0.22);
+}
+
+.city-winner-topline h4 { margin: 0; }
+.city-winner-route-label,
+.city-winner-movie span,
+.city-winner-footer span { color: var(--muted); font-size: 13px; font-weight: 700; }
+
+.city-winner-movie,
+.city-winner-footer {
+    display: grid;
+    gap: 5px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.city-winner-movie strong { color: var(--text); font-size: 17px; }
+.city-winner-footer strong { color: var(--accent); font-size: 22px; line-height: 1; }
+
+.route-city-list {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+}
+
+.route-city-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 15px;
+    border-radius: 18px;
+    border: 1px solid rgba(245,179,1,0.16);
+    background: linear-gradient(135deg, rgba(28,29,45,0.88), rgba(12,13,24,0.9));
+}
+
+.route-city-order {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 12px;
+    background: rgba(245,179,1,0.14);
+    color: var(--accent);
+    font-weight: 900;
+}
+
+.route-city-name { font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
+.route-city-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.route-city-badge { padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; }
+.route-city-badge-current { background: rgba(245,179,1,0.2); color: #ffd166; }
+.route-city-badge-votes { background: rgba(34,197,94,0.14); color: #86efac; }
+
+.landing-movies-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.landing-movie-card {
+    grid-template-columns: 120px minmax(0, 1fr);
+    min-height: 230px;
+}
+
+.landing-movie-card img {
+    min-height: 100%;
+    height: 100%;
+    max-height: 210px;
+}
+
+.landing-movie-card h3 {
+    line-height: 1.08;
+    margin-bottom: 8px;
+}
+
+.landing-movie-card .btn {
+    width: fit-content;
+    min-width: 126px;
+}
+
+.movie-card .vote-form,
+.movie-card .vote-form .vote-btn {
+    width: 100%;
+}
+
+.movie-card .vote-form .vote-btn {
+    min-height: 46px;
+    padding-inline: 14px;
+    white-space: normal;
+    text-align: center;
+}
+
+@media (max-width: 560px) {
+    .route-city-row {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .route-city-badges {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        padding-left: 44px;
+    }
+
+    .landing-movie-card {
+        grid-template-columns: 96px minmax(0, 1fr);
+        padding: 14px;
+    }
+
+    .landing-movie-card img { max-height: 180px; }
+}

@@ -21,7 +21,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container d-flex flex-nowrap justify-content-between align-items-center">
             <a class="navbar-brand mb-0 me-3" href="{{ url('/') }}">Кино на колёсах</a>
-            <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
+            <div class="navbar-actions d-flex align-items-center flex-wrap gap-2 justify-content-end">
                 <a class="btn btn-outline-light btn-sm" href="{{ route('movies.index') }}">Фильмы</a>
                 <a class="btn btn-outline-light btn-sm" href="{{ route('afisha.index') }}">Афиша</a>
                 <a class="btn btn-outline-light btn-sm" href="{{ url('/map') }}">Карта</a>

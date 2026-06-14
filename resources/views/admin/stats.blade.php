@@ -98,12 +98,24 @@
 
     <div class="admin-section mb-5">
         <h3 class="section-title">Фильмы-победители по городам маршрута</h3>
-        <div class="city-stats-grid">
+        <div class="city-stats-grid city-winners-grid">
             @foreach($cityWinners as $winner)
-                <div class="city-stat-card">
-                    <h4>{{ $winner['city']->name }}</h4>
-                    <p>{{ $winner['movie']?->title ?? 'Фильм будет выбран после голосования' }}</p>
-                    <small>Голосов за победителя: {{ $winner['votes_count'] }}</small>
+                <div class="city-stat-card city-winner-card">
+                    <div class="city-winner-topline">
+                        <span class="city-winner-pin">{{ $loop->iteration }}</span>
+                        <div>
+                            <h4>{{ $winner['city']->name }}</h4>
+                            <span class="city-winner-route-label">остановка маршрута</span>
+                        </div>
+                    </div>
+                    <div class="city-winner-movie">
+                        <span>Фильм-победитель</span>
+                        <strong>{{ $winner['movie']?->title ?? 'Фильм будет выбран после голосования' }}</strong>
+                    </div>
+                    <div class="city-winner-footer">
+                        <span>Голосов за победителя</span>
+                        <strong>{{ $winner['votes_count'] }}</strong>
+                    </div>
                 </div>
             @endforeach
         </div>
