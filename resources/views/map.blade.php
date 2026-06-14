@@ -20,9 +20,8 @@
             <button id="fitRouteButton" type="button" class="btn btn-main btn-sm">Показать весь маршрут</button>
         </div>
 
-        <div id="map"
-            style="width: 100%; height: 600px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: #1c1c2b; display: flex; align-items: center; justify-content: center;">
-            <div style="color: #888; text-align: center;">
+        <div id="map" class="route-map-shell">
+            <div class="route-map-loader">
                 <p>Загрузка карты...</p>
             </div>
         </div>
@@ -264,7 +263,7 @@
                     fillColor: isCurrent ? '#f97316' : '#1e98ff',
                     fillOpacity: 0.9
                 }).addTo(map).bindPopup(`
-                    <div style="padding: 8px;">
+                    <div class="route-city-popup">
                         <h4>${city.name}</h4>
                         <p>🗳️ Голосов: ${city.votes_count || 0}</p>
                         ${isCurrent ? '<p class="current-location-popup">📍 Текущее местоположение</p>' : ''}
@@ -278,7 +277,14 @@
                 ? orderedCities.find(c => Number(c.id) === Number(currentCityId)) || orderedCities[0]
                 : orderedCities[0];
 
-            movingMarker = L.marker([parseCoordinate(startCity.lat), parseCoordinate(startCity.lng)]).addTo(map)
+            const vanIcon = L.divIcon({
+                className: 'cinema-van-marker',
+                html: '<span>🚐</span>',
+                iconSize: [38, 38],
+                iconAnchor: [19, 19],
+            });
+
+            movingMarker = L.marker([parseCoordinate(startCity.lat), parseCoordinate(startCity.lng)], { icon: vanIcon }).addTo(map)
                 .bindPopup('<strong>Кинотеатр на колёсах</strong><br>Маркер маршрута');
 
             cities.length = 0;
@@ -363,9 +369,35 @@
 
                 return data.routes[0].geometry.coordinates.map(point => [point[1], point[0]]);
             } catch (error) {
-                console.warn('OSRM недоступен, строим прямой отрезок между городами.', error);
-                return [fromPoint, toPoint];
+                console.warn('OSRM недоступен, строим резервный сегмент с поворотом между городами.', error);
+                return buildFallbackSegment(fromPoint, toPoint);
             }
+        }
+
+        function buildFallbackSegment(fromPoint, toPoint) {
+            const latDelta = toPoint[0] - fromPoint[0];
+            const lngDelta = toPoint[1] - fromPoint[1];
+            const bendStrength = Math.min(0.55, Math.max(0.18, Math.abs(latDelta + lngDelta) / 12));
+            const controlA = [
+                fromPoint[0] + latDelta * 0.35 - lngDelta * bendStrength,
+                fromPoint[1] + lngDelta * 0.35 + latDelta * bendStrength,
+            ];
+            const controlB = [
+                fromPoint[0] + latDelta * 0.68 + lngDelta * bendStrength * 0.55,
+                fromPoint[1] + lngDelta * 0.68 - latDelta * bendStrength * 0.55,
+            ];
+            const points = [];
+
+            for (let step = 0; step <= 28; step++) {
+                const t = step / 28;
+                const oneMinusT = 1 - t;
+                points.push([
+                    oneMinusT ** 3 * fromPoint[0] + 3 * oneMinusT ** 2 * t * controlA[0] + 3 * oneMinusT * t ** 2 * controlB[0] + t ** 3 * toPoint[0],
+                    oneMinusT ** 3 * fromPoint[1] + 3 * oneMinusT ** 2 * t * controlA[1] + 3 * oneMinusT * t ** 2 * controlB[1] + t ** 3 * toPoint[1],
+                ]);
+            }
+
+            return points;
         }
 
         function routeStartPointIndex() {

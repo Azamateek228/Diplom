@@ -1127,3 +1127,44 @@ a:focus-visible,
         width: 100%;
     }
 }
+
+/* Restored expressive route map details */
+.route-map-shell {
+    width: 100%;
+    height: 600px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid rgba(245, 179, 1, 0.22);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(255,255,255,0.04);
+    background: radial-gradient(circle at 30% 20%, rgba(245,179,1,0.13), transparent 32%), #1c1c2b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.route-map-loader {
+    color: var(--muted, #b9bdca);
+    text-align: center;
+}
+
+.route-city-popup { padding: 8px; }
+
+.cinema-van-marker {
+    display: grid;
+    place-items: center;
+    width: 38px !important;
+    height: 38px !important;
+    margin: 0 !important;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f5b301, #f97316);
+    border: 2px solid rgba(255,255,255,0.92);
+    box-shadow: 0 0 0 6px rgba(245,179,1,0.18), 0 12px 28px rgba(0,0,0,0.36);
+    animation: routeVanPulse 1.8s ease-in-out infinite;
+}
+
+.cinema-van-marker span { transform: translateY(-1px); font-size: 20px; }
+
+@keyframes routeVanPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(245,179,1,0.18), 0 12px 28px rgba(0,0,0,0.36); }
+    50% { box-shadow: 0 0 0 10px rgba(245,179,1,0.08), 0 16px 34px rgba(0,0,0,0.42); }
+}
