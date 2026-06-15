@@ -4037,3 +4037,147 @@ body.mobile-menu-open .navbar {
         gap: 10px;
     }
 }
+
+/* Follow-up fixes from review: poster overflow, admin action order, route marking restore */
+.movie-card img.movie-poster[src$=".svg"],
+.movie-card .movie-poster[src*="/movies/movie-"] {
+    object-fit: contain;
+    background: linear-gradient(180deg, rgba(22, 27, 43, 0.98), rgba(11, 12, 22, 0.98));
+}
+
+.movie-poster.poster-fallback {
+    padding: 18px;
+}
+
+.movie-poster.poster-fallback strong {
+    display: -webkit-box;
+    max-width: 92%;
+    overflow: hidden;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    font-size: clamp(20px, 7vw, 32px);
+    line-height: 1.12;
+}
+
+.movie-card-header,
+.movie-card h4,
+.landing-movie-card h3 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+
+.movie-actions {
+    gap: 12px;
+}
+
+.movie-actions .btn,
+.movie-actions .vote-btn,
+.movie-actions .vote-form {
+    width: 100%;
+}
+
+.movie-actions .btn,
+.movie-actions .vote-btn {
+    min-height: 52px;
+}
+
+.landing-movies-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.landing-movie-card {
+    grid-template-columns: minmax(120px, 0.82fr) minmax(0, 1fr);
+    align-items: center;
+}
+
+.landing-movie-card > div:last-child {
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.landing-movie-card .btn {
+    width: min(100%, 180px);
+    min-height: 54px;
+    padding-inline: 18px;
+    justify-self: start;
+}
+
+.showtime-admin-panel,
+.movie-admin-action-list {
+    grid-template-columns: 1fr;
+}
+
+.showtime-admin-panel .btn,
+.movie-admin-action-list .btn {
+    width: 100%;
+    min-height: 42px;
+}
+
+.btn-admin-action {
+    white-space: normal;
+}
+
+.admin-movie-filter-panel .btn,
+.admin-settings-form .btn {
+    min-height: 46px;
+}
+
+@media (min-width: 721px) {
+    .movie-admin-actions {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 720px) {
+    .landing-movies-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .landing-movie-card {
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .landing-movie-card img {
+        min-height: 150px;
+    }
+
+    .landing-movie-card .btn {
+        width: min(100%, 170px);
+    }
+}
+
+@media (max-width: 480px) {
+    .landing-movie-card {
+        grid-template-columns: 1fr;
+    }
+
+    .landing-movie-card .btn {
+        width: 100%;
+    }
+}
+
+/* Movie show actions: keep voting button readable and balanced */
+.show-actions {
+    align-items: stretch;
+}
+
+.show-actions .vote-form-inline,
+.show-actions > .btn {
+    flex: 1 1 220px;
+    min-width: min(100%, 220px);
+}
+
+.show-actions .vote-form-inline {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.show-actions .vote-btn,
+.show-actions > .btn {
+    width: 100%;
+    min-height: 54px;
+}
