@@ -245,16 +245,19 @@
                                 </div>
                             </div>
 
-                            <div class="movie-admin-details">
-                                <div class="detail-row"><span class="label">Жанр</span><span class="value">{{ $movie->genre ?: 'Не указан' }}</span></div>
-                                <div class="detail-row"><span class="label">Возраст</span><span class="value">{{ $movie->age_rating ? $movie->age_rating . '+' : 'Не указан' }}</span></div>
-                                <div class="detail-row"><span class="label">Длительность</span><span class="value">{{ $movie->duration ? $movie->duration . ' мин' : 'Не указана' }}</span></div>
-                                <div class="detail-row"><span class="label">Дата</span><span class="value">{{ $movie->show_time ? \Illuminate\Support\Carbon::parse($movie->show_time)->format('d.m.Y H:i') : 'Без даты показа' }}</span></div>
-                                <div class="detail-row"><span class="label">Площадка</span><span class="value">{{ $movie->venue ?: 'Не указана' }}</span></div>
-                                <div class="detail-row"><span class="label">Вместимость</span><span class="value">{{ $movie->venue_capacity ? $movie->venue_capacity . ' чел.' : 'Не указана' }}</span></div>
-                                <div class="detail-row"><span class="label">Ожидается</span><span class="value">{{ $movie->expected_attendees ?: 'Нет прогноза' }}</span></div>
-                                <div class="detail-row highlight"><span class="label">Голоса</span><span class="value">{{ $movie->votes_count ?? 0 }}</span></div>
-                            </div>
+                            <details class="movie-admin-details-toggle" open>
+                                <summary>Информация о сеансе</summary>
+                                <div class="movie-admin-details">
+                                    <div class="detail-row"><span class="label">Жанр</span><span class="value">{{ $movie->genre ?: 'Не указан' }}</span></div>
+                                    <div class="detail-row"><span class="label">Возраст</span><span class="value">{{ $movie->age_rating ? $movie->age_rating . '+' : 'Не указан' }}</span></div>
+                                    <div class="detail-row"><span class="label">Длительность</span><span class="value">{{ $movie->duration ? $movie->duration . ' мин' : 'Не указана' }}</span></div>
+                                    <div class="detail-row"><span class="label">Дата</span><span class="value">{{ $movie->show_time ? \Illuminate\Support\Carbon::parse($movie->show_time)->format('d.m.Y H:i') : 'Без даты показа' }}</span></div>
+                                    <div class="detail-row"><span class="label">Площадка</span><span class="value">{{ $movie->venue ?: 'Не указана' }}</span></div>
+                                    <div class="detail-row"><span class="label">Вместимость</span><span class="value">{{ $movie->venue_capacity ? $movie->venue_capacity . ' чел.' : 'Не указана' }}</span></div>
+                                    <div class="detail-row"><span class="label">Ожидается</span><span class="value">{{ $movie->expected_attendees ?: 'Нет прогноза' }}</span></div>
+                                    <div class="detail-row highlight"><span class="label">Голоса</span><span class="value">{{ $movie->votes_count ?? 0 }}</span></div>
+                                </div>
+                            </details>
 
                             <div class="movie-admin-actions">
                                 <form method="POST" action="{{ route('movies.update-show-time', $movie) }}" class="showtime-admin-panel">
