@@ -308,7 +308,7 @@
             routePolyline = L.polyline(roadPathCoordinates, {
                 color: '#ff8c00',
                 weight: 5,
-                opacity: 0.45
+                opacity: 0.65
             }).addTo(map);
 
             const startPointIndex = restoredAnimationPointIndex();

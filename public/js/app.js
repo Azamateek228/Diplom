@@ -1,5 +1,3 @@
-import './bootstrap';
-
 const dismissToast = (toast) => {
     toast.classList.add('is-hiding');
     window.setTimeout(() => toast.remove(), 220);
