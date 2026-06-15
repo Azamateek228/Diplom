@@ -410,8 +410,9 @@
             if (segmentCoordinates.length > 1) {
                 activeRoutePolyline = L.polyline(segmentCoordinates, {
                     color: '#f5b301',
-                    weight: 7,
-                    opacity: 0.95
+                    weight: 5,
+                    opacity: 0.7,
+                    dashArray: '8 10'
                 }).addTo(map);
             }
         }
