@@ -29,7 +29,7 @@
             <div class="payment-form-card">
                 <div class="demo-payment-callout">
                     <strong>Демо-оплата</strong>
-                    <p>Используйте тестовый номер 4242 4242 4242 4242, любой будущий срок действия и CVV из 3 цифр. Реальные платёжные шлюзы не подключены.</p>
+                    <p>Введите любой номер карты из 13–19 цифр, будущий срок действия в формате MM/YY и CVV/CVC из 3–4 цифр. Реальные платёжные шлюзы не подключены.</p>
                 </div>
 
                 @if ($availableTickets <= 0)
@@ -55,7 +55,7 @@
 
                         <div class="form-group">
                             <label class="form-label" for="card_number">Номер карты</label>
-                            <input id="card_number" type="text" inputmode="numeric" autocomplete="cc-number" class="form-control @error('card_number') is-invalid @enderror" name="card_number" value="{{ old('card_number') }}" placeholder="4242 4242 4242 4242" required data-card-number>
+                            <input id="card_number" type="text" inputmode="numeric" autocomplete="cc-number" class="form-control @error('card_number') is-invalid @enderror" name="card_number" value="{{ old('card_number') }}" placeholder="0000 0000 0000 0000" required data-card-number>
                             @error('card_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 

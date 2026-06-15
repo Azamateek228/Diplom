@@ -25,9 +25,9 @@ class StoreDemoTicketRequest extends FormRequest
             'show_date' => ['required', 'date'],
             'show_time' => ['required', 'date_format:H:i'],
             'quantity' => ['required', 'integer', 'min:1'],
-            'card_number' => ['required', 'string', 'max:32'],
+            'card_number' => ['required', 'string', 'max:32', 'regex:/^[\d\s-]+$/'],
             'card_holder' => ['required', 'string', 'min:3', 'max:80', 'regex:/^[\pL\s-]+$/u'],
-            'card_expiry' => ['required', 'string', 'max:7'],
+            'card_expiry' => ['required', 'string', 'max:5'],
             'card_cvv' => ['required', 'regex:/^\d{3,4}$/'],
         ];
     }
@@ -46,12 +46,13 @@ class StoreDemoTicketRequest extends FormRequest
             'quantity.min' => 'Нужно выбрать хотя бы один билет.',
             'card_number.required' => 'Введите номер карты.',
             'card_number.max' => 'Номер карты слишком длинный.',
+            'card_number.regex' => 'Номер карты должен содержать только цифры.',
             'card_holder.required' => 'Введите имя держателя карты.',
             'card_holder.min' => 'Имя держателя карты слишком короткое.',
             'card_holder.max' => 'Имя держателя карты слишком длинное.',
             'card_holder.regex' => 'В имени держателя допустимы только буквы, пробелы и дефисы.',
             'card_expiry.required' => 'Введите срок действия карты.',
-            'card_expiry.max' => 'Срок действия карты должен быть в формате MM/YY или MM/YYYY.',
+            'card_expiry.max' => 'Введите срок в формате MM/YY.',
             'card_cvv.required' => 'Введите CVV.',
             'card_cvv.regex' => 'CVV должен состоять из 3 или 4 цифр.',
         ];
@@ -65,11 +66,11 @@ class StoreDemoTicketRequest extends FormRequest
             }
 
             if (! DemoCardValidator::hasValidNumber((string) $this->input('card_number'))) {
-                $validator->errors()->add('card_number', 'Введите корректный демо-номер карты: 16–19 цифр и верная контрольная сумма Луна.');
+                $validator->errors()->add('card_number', 'Введите номер карты: 13–19 цифр без привязки к конкретному тестовому номеру.');
             }
 
             if (! DemoCardValidator::hasValidExpiry((string) $this->input('card_expiry'))) {
-                $validator->errors()->add('card_expiry', 'Срок действия карты указан неверно или уже истёк.');
+                $validator->errors()->add('card_expiry', DemoCardValidator::parseExpiry((string) $this->input('card_expiry')) ? 'Срок действия карты истек.' : 'Введите срок в формате MM/YY.');
             }
 
             $availableTickets = $this->availableTickets();

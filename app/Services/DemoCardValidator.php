@@ -15,11 +15,7 @@ class DemoCardValidator
     {
         $digits = self::normalizeNumber($number);
 
-        if (! preg_match('/^\d{16,19}$/', $digits)) {
-            return false;
-        }
-
-        return self::passesLuhn($digits);
+        return (bool) preg_match('/^\d{13,19}$/', $digits);
     }
 
     public static function hasValidExpiry(string $expiry): bool
@@ -54,26 +50,4 @@ class DemoCardValidator
         return [$month, $year];
     }
 
-    private static function passesLuhn(string $digits): bool
-    {
-        $sum = 0;
-        $alternate = false;
-
-        for ($i = strlen($digits) - 1; $i >= 0; $i--) {
-            $number = (int) $digits[$i];
-
-            if ($alternate) {
-                $number *= 2;
-
-                if ($number > 9) {
-                    $number -= 9;
-                }
-            }
-
-            $sum += $number;
-            $alternate = ! $alternate;
-        }
-
-        return $sum % 10 === 0;
-    }
 }

@@ -306,9 +306,9 @@
             }
 
             routePolyline = L.polyline(roadPathCoordinates, {
-                color: '#ff8c00',
-                weight: 5,
-                opacity: 0.45
+                color: '#2563eb',
+                weight: 4,
+                opacity: 0.5
             }).addTo(map);
 
             const startPointIndex = restoredAnimationPointIndex();
@@ -410,8 +410,9 @@
             if (segmentCoordinates.length > 1) {
                 activeRoutePolyline = L.polyline(segmentCoordinates, {
                     color: '#f5b301',
-                    weight: 7,
-                    opacity: 0.95
+                    weight: 5,
+                    opacity: 0.7,
+                    dashArray: '8 10'
                 }).addTo(map);
             }
         }
