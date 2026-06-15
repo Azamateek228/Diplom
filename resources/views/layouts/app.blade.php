@@ -14,6 +14,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
         <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+        <script defer src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}"></script>
     @endif
 </head>
 
@@ -21,7 +22,10 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container d-flex flex-nowrap justify-content-between align-items-center">
             <a class="navbar-brand mb-0 me-3" href="{{ url('/') }}">Кино на колёсах</a>
-            <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
+            <button class="mobile-menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation" data-mobile-menu-toggle>
+                <span></span><span></span><span></span>
+            </button>
+            <div id="main-navigation" class="main-navigation d-flex align-items-center flex-wrap gap-2 justify-content-end" data-mobile-menu>
                 <a class="btn btn-outline-light btn-sm" href="{{ route('movies.index') }}">Фильмы</a>
                 <a class="btn btn-outline-light btn-sm" href="{{ route('afisha.index') }}">Афиша</a>
                 <a class="btn btn-outline-light btn-sm" href="{{ url('/map') }}">Карта</a>

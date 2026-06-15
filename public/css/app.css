@@ -1127,3 +1127,156 @@ a:focus-visible,
         width: 100%;
     }
 }
+
+/* Mobile navigation and final responsive polish */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    border-bottom: 1px solid rgba(245, 179, 1, 0.16);
+    background: rgba(10, 10, 18, 0.92) !important;
+    backdrop-filter: blur(14px);
+}
+
+.navbar .container {
+    position: relative;
+    gap: 12px;
+}
+
+.navbar-brand {
+    color: var(--accent) !important;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
+}
+
+.main-navigation {
+    min-width: 0;
+}
+
+.mobile-menu-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid rgba(245, 179, 1, 0.28);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.mobile-menu-toggle span {
+    width: 20px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.mobile-menu-toggle:hover {
+    transform: translateY(-1px);
+    border-color: rgba(245, 179, 1, 0.52);
+    background: rgba(245, 179, 1, 0.12);
+}
+
+body.mobile-menu-open .mobile-menu-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+body.mobile-menu-open .mobile-menu-toggle span:nth-child(2) { opacity: 0; }
+body.mobile-menu-open .mobile-menu-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+img { max-width: 100%; }
+
+.poster-fallback,
+.movie-poster.poster-fallback,
+.poster-fallback--large,
+.schedule-poster-fallback,
+.movie-admin-poster-fallback {
+    background:
+        radial-gradient(circle at 28% 18%, rgba(245, 179, 1, 0.32), transparent 34%),
+        linear-gradient(145deg, rgba(47, 33, 83, 0.96), rgba(13, 14, 25, 0.98));
+    border: 1px solid rgba(245, 179, 1, 0.22);
+    color: var(--text);
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.poster-fallback strong,
+.schedule-poster-fallback strong,
+.movie-admin-poster-fallback strong {
+    max-width: 100%;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.table-responsive,
+.admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table { min-width: 680px; }
+
+@media (max-width: 1024px) {
+    main.container { max-width: 100%; }
+    .movies, .admin-page, .map-page { padding: 28px 14px; }
+    .movie-grid, .stats-grid, .cities-stats-grid, .cities-admin-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle { display: inline-flex; flex: 0 0 auto; }
+
+    .main-navigation {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 12px;
+        right: 12px;
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 10px !important;
+        padding: 14px;
+        border: 1px solid rgba(245, 179, 1, 0.22);
+        border-radius: 22px;
+        background: rgba(18, 18, 30, 0.98);
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.48);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    }
+
+    body.mobile-menu-open .main-navigation {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .main-navigation .btn,
+    .main-navigation form,
+    .main-navigation form .btn {
+        width: 100%;
+    }
+
+    .hero { min-height: 560px; height: auto; padding: 44px 18px; text-align: center; }
+    .hero h2 { font-size: clamp(32px, 10vw, 46px); }
+    .movies { padding: 34px 14px; }
+    .movie-grid, .schedule-grid, .movies-admin-grid { grid-template-columns: 1fr; gap: 18px; }
+    .movie-card .movie-poster, .movie-card img.movie-poster, .movie-card img { height: min(420px, 118vw); }
+    .admin-section, .admin-form-container { padding: 20px; border-radius: 22px; }
+    .form-actions, .admin-header-actions, .city-admin-actions, .movie-admin-actions { flex-direction: column; align-items: stretch; }
+    .form-actions .btn, .admin-header-actions .btn, .city-admin-actions .btn { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    main.container { padding-left: 12px; padding-right: 12px; }
+    .navbar-brand { font-size: 1rem; }
+    .payment-summary-card, .payment-form-card, .route-panel, .afisha-hero, .page-hero.afisha-hero { border-radius: 20px; padding: 18px; }
+    .btn, button.btn, a.btn, .vote-btn, .btn-edit, .btn-delete { width: 100%; white-space: normal; overflow-wrap: anywhere; }
+    .payment-total-box { align-items: flex-start; flex-direction: column; }
+    .movie-card .info { padding: 16px; }
+}
