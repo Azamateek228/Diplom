@@ -1280,3 +1280,299 @@ img { max-width: 100%; }
     .payment-total-box { align-items: flex-start; flex-direction: column; }
     .movie-card .info { padding: 16px; }
 }
+
+/* Follow-up polish: consistent controls, compact admin cards, cleaner map/list/menu */
+:root {
+    --control-radius: 14px;
+}
+
+.btn,
+button.btn,
+a.btn,
+.auth-btn,
+.vote-btn,
+.btn-edit,
+.btn-delete,
+.quick-action,
+.page-link,
+.mobile-menu-toggle {
+    border-radius: var(--control-radius) !important;
+    min-height: 44px;
+    padding: 10px 16px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.btn-sm,
+.navbar .btn-sm {
+    min-height: 40px;
+    padding: 8px 14px;
+}
+
+.vote-btn {
+    width: 100%;
+}
+
+.navbar .container {
+    justify-content: center !important;
+}
+
+.navbar-brand {
+    margin-right: auto !important;
+}
+
+.main-navigation {
+    gap: 12px !important;
+}
+
+.navbar .main-navigation .btn {
+    min-width: 92px;
+    box-shadow: none;
+}
+
+body.mobile-menu-open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(4, 6, 12, 0.54);
+    backdrop-filter: blur(3px);
+}
+
+body.mobile-menu-open .navbar {
+    z-index: 1060;
+}
+
+.mobile-menu-toggle {
+    position: relative;
+    z-index: 1062;
+}
+
+@media (max-width: 768px) {
+    .main-navigation {
+        left: 16px;
+        right: 16px;
+        padding: 18px;
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 50% -20%, rgba(245, 179, 1, 0.2), transparent 45%),
+            rgba(16, 17, 28, 0.98);
+        border-color: rgba(245, 179, 1, 0.34);
+    }
+
+    .main-navigation .btn,
+    .main-navigation form .btn {
+        justify-content: center;
+        min-height: 42px;
+        border-radius: 12px !important;
+        font-size: 14px;
+    }
+}
+
+#map {
+    border: 1px solid rgba(245, 179, 1, 0.18);
+}
+
+.leaflet-interactive {
+    transition: stroke-opacity 0.18s ease, stroke-width 0.18s ease;
+}
+
+.route-cities-list {
+    padding: 22px;
+    border: 1px solid rgba(245, 179, 1, 0.16);
+    border-radius: 24px;
+    background: rgba(20, 20, 33, 0.9);
+    box-shadow: var(--shadow-soft);
+}
+
+.route-cities-list .list-group {
+    display: grid;
+    gap: 10px;
+    padding: 0;
+}
+
+.route-cities-list .list-group-item {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    min-height: 48px;
+    padding: 11px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.045) !important;
+    color: var(--text) !important;
+    overflow: hidden;
+}
+
+.route-cities-list .list-group-item > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 800;
+}
+
+.route-cities-list .list-group-item > span:last-child {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.route-cities-list .badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 5px 9px;
+    border-radius: 999px !important;
+    font-size: 12px;
+}
+
+.route-cities-list .active-route-city {
+    border-color: rgba(245, 179, 1, 0.38) !important;
+    background: rgba(245, 179, 1, 0.12) !important;
+}
+
+.admin-settings-form,
+.admin-movie-filter-panel,
+.showtime-admin-panel {
+    align-items: stretch;
+}
+
+.admin-settings-form .btn,
+.admin-movie-filter-panel .btn,
+.showtime-admin-panel .btn,
+.movie-admin-action-list .btn {
+    height: 100%;
+    min-width: 0;
+}
+
+.admin-movie-filter-panel {
+    grid-template-columns: minmax(220px, 1.15fr) minmax(180px, 0.8fr) minmax(150px, 0.7fr) minmax(120px, 0.48fr) minmax(120px, 0.48fr);
+}
+
+.filter-actions {
+    display: contents;
+}
+
+.movies-admin-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.movie-admin-card {
+    border-radius: 24px;
+}
+
+.movie-admin-body {
+    gap: 14px;
+}
+
+.movie-admin-header h4 {
+    min-height: auto;
+}
+
+.movie-admin-details-toggle {
+    min-width: 0;
+}
+
+.movie-admin-details-toggle summary {
+    display: none;
+    cursor: pointer;
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid rgba(245, 179, 1, 0.22);
+    border-radius: 14px;
+    background: rgba(245, 179, 1, 0.1);
+    color: #ffe8a3;
+    font-weight: 900;
+}
+
+.movie-admin-details {
+    gap: 12px;
+}
+
+.movie-admin-details .detail-row {
+    padding: 12px 14px;
+    border-radius: 14px;
+}
+
+.showtime-admin-panel {
+    grid-template-columns: minmax(0, 1fr) minmax(132px, 0.48fr);
+    padding: 12px;
+}
+
+.movie-admin-action-list {
+    grid-template-columns: repeat(3, minmax(105px, 1fr));
+    gap: 12px;
+}
+
+.btn-admin-action {
+    min-height: 44px;
+    padding-inline: 12px;
+    font-size: 14px;
+    line-height: 1.15;
+    white-space: normal;
+}
+
+@media (max-width: 1200px) {
+    .admin-movie-filter-panel,
+    .admin-settings-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .filter-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 720px) {
+    .route-cities-list {
+        padding: 16px;
+    }
+
+    .route-cities-list .list-group-item {
+        grid-template-columns: 1fr;
+    }
+
+    .route-cities-list .list-group-item > span:last-child {
+        justify-content: flex-start;
+    }
+
+    .movie-admin-media {
+        height: 180px;
+    }
+
+    .movie-admin-details-toggle summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .movie-admin-details-toggle summary::after {
+        content: '＋';
+        font-size: 18px;
+        line-height: 1;
+    }
+
+    .movie-admin-details-toggle[open] summary::after {
+        content: '−';
+    }
+
+    .movie-admin-details {
+        margin-top: 12px;
+    }
+
+    .showtime-admin-panel,
+    .movie-admin-action-list,
+    .admin-movie-filter-panel,
+    .admin-settings-form,
+    .filter-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .movie-admin-actions {
+        gap: 10px;
+    }
+}

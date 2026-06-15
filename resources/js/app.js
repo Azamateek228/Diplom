@@ -102,3 +102,16 @@ if (mobileMenuToggle && mobileMenu) {
         }
     });
 }
+
+document.querySelectorAll('.movie-admin-details-toggle[open]').forEach((details) => {
+    const closeOnMobile = () => {
+        if (window.matchMedia('(max-width: 720px)').matches) {
+            details.removeAttribute('open');
+        } else {
+            details.setAttribute('open', 'open');
+        }
+    };
+
+    closeOnMobile();
+    window.addEventListener('resize', closeOnMobile, { passive: true });
+});
