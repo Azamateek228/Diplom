@@ -4181,3 +4181,39 @@ body.mobile-menu-open .navbar {
     width: 100%;
     min-height: 54px;
 }
+
+/* Review revert: keep movie posters in the original cover style */
+.movie-card img.movie-poster[src$=".svg"],
+.movie-card .movie-poster[src*="/movies/movie-"] {
+    object-fit: cover;
+    background: #0f1324;
+}
+
+.movie-poster.poster-fallback strong {
+    display: block;
+    max-width: none;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: initial;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.landing-movies-grid {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.landing-movie-card {
+    grid-template-columns: 120px 1fr;
+    align-items: stretch;
+}
+
+.landing-movie-card > div:last-child {
+    display: block;
+}
+
+@media (max-width: 720px) {
+    .landing-movie-card {
+        grid-template-columns: 1fr;
+    }
+}
