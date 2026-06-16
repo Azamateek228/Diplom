@@ -65,48 +65,6 @@
                         </div>
                     </div>
 
-                    <div class="profile-section">
-                        <div class="profile-card">
-                            <h5 class="profile-card-title">🔐 Безопасность</h5>
-
-                            <div class="security-item">
-                                <div class="security-item-info">
-                                    <strong>Двухфакторная аутентификация</strong>
-                                    <p class="security-item-status">
-                                        {{ $user->two_factor_enabled ? 'Включена' : 'Отключена' }}
-                                    </p>
-                                </div>
-                                <a href="{{ route('two-factor.settings') }}" class="auth-btn auth-btn-sm auth-btn-outline">
-                                    Настроить
-                                </a>
-                            </div>
-
-                            <div class="security-divider"></div>
-
-                            <div class="security-item">
-                                <div class="security-item-info">
-                                    <strong>Сменить пароль</strong>
-                                    <p class="security-item-status">
-                                        Последний раз изменён {{ $user->updated_at->format('d.m.Y') }}
-                                    </p>
-                                </div>
-                                <a href="{{ route('password.request') }}" class="auth-btn auth-btn-sm auth-btn-outline">
-                                    Изменить
-                                </a>
-                            </div>
-
-                            @if ($user->is_locked)
-                                <div class="security-divider"></div>
-                                <div class="auth-alert auth-alert-warning">
-                                    <strong>⚠ Аккаунт заблокирован</strong>
-                                    <p class="mb-0 small">
-                                        Причина: {{ $user->lock_reason ?? 'Неизвестно' }}<br>
-                                        Разблокировка: {{ $user->lock_expires_at?->format('d.m.Y H:i') ?? '—' }}
-                                    </p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             @endif
 

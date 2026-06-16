@@ -6,8 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -20,7 +18,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Обработка входа с проверкой блокировки и 2FA
+     * Обработка входа с проверкой блокировки
      */
     public function login(Request $request)
     {
@@ -60,15 +58,6 @@ class AuthController extends Controller
 
         // Сброс счётчика неудачных попыток при успешном входе
         $user->resetFailedLoginAttempts();
-
-        // Если включена 2FA, перенаправляем на страницу ввода кода
-        if ($user->two_factor_enabled) {
-            session([
-                '2fa_user_id' => $user->id,
-                '2fa_user_email' => $user->email,
-            ]);
-            return redirect()->route('two-factor.verify');
-        }
 
         // Обычный вход
         Auth::login($user, $request->filled('remember'));
