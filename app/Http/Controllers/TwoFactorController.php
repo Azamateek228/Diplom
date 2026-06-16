@@ -15,6 +15,7 @@ class TwoFactorController extends Controller
 {
     private const CODE_TTL_MINUTES = 5;
     private const RESEND_COOLDOWN_SECONDS = 60;
+    private const MAIL_SETUP_HINT = 'Код записан через резервный log-mailer. Для реальной отправки заполните SMTP и MAIL_FROM_ADDRESS в .env, затем выполните php artisan config:clear.';
 
     public function showVerify()
     {
@@ -154,8 +155,17 @@ class TwoFactorController extends Controller
             Mail::mailer($mailer)->to($user->email)->send(new TwoFactorCodeMail($code, $user->name, self::CODE_TTL_MINUTES));
             return true;
         } catch (\Throwable $e) {
-            Log::error('Two-factor mail error', ['user_id' => $user->id, 'message' => $e->getMessage(), 'hint' => $this->mailSetupHint()]);
+            Log::error('Two-factor mail error', ['user_id' => $user->id, 'message' => $e->getMessage(), 'hint' => self::MAIL_SETUP_HINT]);
             return false;
+        }
+    }
+    private function resolveMailDriver(): string
+    {
+        $mailer = (string) config('mail.default', 'log');
+
+        if ($mailer === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
+            Log::warning('SMTP for 2FA is not configured; using log mailer fallback.');
+            return 'log';
         }
     }
     private function resolveMailDriver(): string
@@ -172,11 +182,6 @@ class TwoFactorController extends Controller
         $mailer = (string) config('mail.default');
 
         return $mailer;
-    }
-
-    private function mailSetupHint(): string
-    {
-        return 'Код записан через резервный log-mailer. Для реальной отправки заполните SMTP и MAIL_FROM_ADDRESS в .env, затем выполните php artisan config:clear.';
     }
 
 }
