@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PasswordResetController extends Controller
@@ -26,37 +27,37 @@ class PasswordResetController extends Controller
     public function sendResetLink(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email',
         ]);
 
-        // Удаляем старые токены
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        $user = User::where('email', $request->email)->first();
 
-        // Генерируем токен
+        if (!$user) {
+            return redirect()->route('login')
+                ->with('success', 'Если аккаунт с таким email существует, мы отправим инструкцию по сбросу пароля.');
+        }
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
         $token = Str::random(60);
 
-        // Сохраняем токен в БД
         DB::table('password_reset_tokens')->insert([
             'email' => $request->email,
             'token' => Hash::make($token),
             'created_at' => now(),
         ]);
 
-        // Получаем пользователя
-        $user = User::where('email', $request->email)->first();
-        
-        // Отправляем email
         try {
-            Mail::to($user->email)->send(
-                new ResetPasswordMail($token, $user->name, $user->email, 24)
-            );
-        } catch (\Exception $e) {
-            \Log::error('Mail error: ' . $e->getMessage());
-            // В продакшене здесь можно отправить алерт админу
+            Mail::to($user->email)->send(new ResetPasswordMail($token, $user->name, $user->email, 24));
+        } catch (\Throwable $e) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            Log::error('Password reset mail error', ['email' => $request->email, 'message' => $e->getMessage()]);
+
+            return back()->withInput($request->only('email'))
+                ->with('error', 'Не удалось отправить письмо для сброса пароля. Попробуйте позже.');
         }
 
         return redirect()->route('login')
-            ->with('success', 'Ссылка для сброса пароля отправлена на вашу почту. Проверьте папку "Спам", если письмо не пришло.');
+            ->with('success', 'Если аккаунт с таким email существует, мы отправим инструкцию по сбросу пароля. Проверьте папку "Спам", если письмо не пришло.');
     }
 
     /**
@@ -104,7 +105,7 @@ class PasswordResetController extends Controller
         }
 
         // Проверяем срок действия токена (24 часа)
-        if (now()->diffInHours($resetToken->created_at) > 24) {
+        if (now()->diffInHours($resetToken->created_at) >= 24) {
             return back()->withErrors([
                 'token' => 'Срок действия токена истёк',
             ]);
