@@ -6,129 +6,102 @@ use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 class TwoFactorController extends Controller
 {
-    /**
-     * Показать форму ввода 2FA-кода при входе
-     */
+    private const CODE_TTL_MINUTES = 5;
+    private const RESEND_COOLDOWN_SECONDS = 60;
+
     public function showVerify()
     {
         if (!session()->has('2fa_user_id')) {
-            return redirect()->route('login')
-                ->withErrors('Сначала необходимо войти в систему');
+            return redirect()->route('login')->withErrors('Сначала необходимо войти в систему');
         }
 
         return view('auth.two-factor-verify');
     }
 
-    /**
-     * Проверка 2FA-кода при входе
-     */
     public function verify(Request $request)
     {
-        $request->validate([
-            'code' => 'required|digits:6',
-        ]);
+        $request->validate(['code' => 'required|digits:6']);
 
         if (!session()->has('2fa_user_id')) {
-            return redirect()->route('login')
-                ->withErrors('Сначала необходимо войти в систему');
+            return redirect()->route('login')->withErrors('Сначала необходимо войти в систему');
         }
 
         $user = User::find(session('2fa_user_id'));
-
         if (!$user) {
-            session()->forget('2fa_user_id');
-            return redirect()->route('login')
-                ->withErrors('Пользователь не найден');
+            session()->forget(['2fa_user_id', '2fa_user_email', '2fa_remember', '2fa_last_sent_at']);
+            return redirect()->route('login')->withErrors('Пользователь не найден');
         }
 
         if ($user->verifyTwoFactorCode($request->code)) {
-            Auth::login($user);
-            session()->forget('2fa_user_id');
+            $remember = (bool) session('2fa_remember', false);
+            Auth::login($user, $remember);
+            session()->forget(['2fa_user_id', '2fa_user_email', '2fa_remember', '2fa_last_sent_at']);
             $request->session()->regenerate();
-            
-            return redirect('/');
+
+            return redirect('/')->with('success', 'Вход подтверждён');
         }
 
-        return back()->withErrors([
-            'code' => 'Неверный код или срок его действия истёк',
-        ]);
+        return back()->withErrors(['code' => 'Неверный код или срок его действия истёк']);
     }
 
-    /**
-     * Настройки 2FA для авторизованного пользователя
-     */
     public function showSettings()
     {
         return view('profile.two-factor-settings');
     }
 
-    /**
-     * Включение 2FA с отправкой кода на email
-     */
     public function enable(Request $request)
     {
         $user = $request->user();
-        
-        // Генерируем код
-        $code = $user->generateTwoFactorCode();
-        
-        // Отправляем код на email
-        try {
-            Mail::to($user->email)->send(
-                new TwoFactorCodeMail($code, $user->name, 5)
-            );
-        } catch (\Exception $e) {
-            // В случае ошибки почты, показываем код в интерфейсе (для тестирования)
-            \Log::error('Mail error: ' . $e->getMessage());
+
+        if ($user->two_factor_enabled) {
+            return redirect()->route('two-factor.settings')->with('success', 'Двухфакторная аутентификация уже включена');
         }
 
-        return view('profile.two-factor-setup', ['code' => null]);
+        if (!$this->sendCode($user)) {
+            return back()->with('error', 'Не удалось отправить код подтверждения. ' . $this->mailSetupHint());
+        }
+
+        $request->session()->put('2fa_setup_user_id', $user->id);
+        $request->session()->put('2fa_setup_email', $user->email);
+        $request->session()->put('2fa_setup_last_sent_at', now()->timestamp);
+
+        return view('profile.two-factor-setup');
     }
 
-    /**
-     * Подтверждение включения 2FA
-     */
     public function confirmEnable(Request $request)
     {
-        $request->validate([
-            'code' => 'required|digits:6',
-        ]);
+        $request->validate(['code' => 'required|digits:6']);
 
         $user = $request->user();
-        
-        if ($user->verifyTwoFactorCode($request->code)) {
-            $user->update([
-                'two_factor_enabled' => true,
-            ]);
-            
-            return redirect()->route('profile.edit')
-                ->with('success', 'Двухфакторная аутентификация включена');
+        if ((int) session('2fa_setup_user_id') !== (int) $user->id) {
+            return redirect()->route('two-factor.settings')->with('error', 'Сначала запросите код включения 2FA');
         }
 
-        return back()->withErrors([
-            'code' => 'Неверный код или срок его действия истёк',
-        ]);
+        if ($user->verifyTwoFactorCode($request->code)) {
+            $user->update(['two_factor_enabled' => true]);
+            $user->twoFactorCodes()->delete();
+            $request->session()->forget(['2fa_setup_user_id', '2fa_setup_email', '2fa_setup_last_sent_at']);
+
+            return redirect()->route('profile.edit')->with('success', 'Двухфакторная аутентификация включена');
+        }
+
+        return back()->withErrors(['code' => 'Неверный код или срок его действия истёк']);
     }
 
-    /**
-     * Отключение 2FA
-     */
     public function disable(Request $request)
     {
-        $request->validate([
-            'password' => 'required',
-        ]);
+        $request->validate(['password' => 'required']);
 
         $user = $request->user();
-
-        if (!Auth::attempt(['email' => $user->email, 'password' => $request->password])) {
-            return back()->withErrors([
-                'password' => 'Неверный пароль',
-            ]);
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Неверный пароль']);
         }
 
         $user->update([
@@ -136,40 +109,71 @@ class TwoFactorController extends Controller
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
         ]);
-
-        // Удаляем все коды
         $user->twoFactorCodes()->delete();
 
-        return redirect()->route('profile.edit')
-            ->with('success', 'Двухфакторная аутентификация отключена');
+        return redirect()->route('profile.edit')->with('success', 'Двухфакторная аутентификация отключена');
     }
 
-    /**
-     * Повторная отправка 2FA-кода
-     */
     public function resend(Request $request)
     {
-        if (!session()->has('2fa_user_id')) {
-            return response()->json(['error' => 'Сессия не найдена'], 400);
+        $setupUserId = session('2fa_setup_user_id');
+        $loginUserId = session('2fa_user_id');
+        $sessionKey = $setupUserId ? '2fa_setup_last_sent_at' : '2fa_last_sent_at';
+        $userId = $setupUserId ?: $loginUserId;
+
+        if (!$userId) {
+            return response()->json(['error' => 'Сессия подтверждения не найдена'], 400);
         }
 
-        $user = User::find(session('2fa_user_id'));
+        $lastSentAt = (int) session($sessionKey, 0);
+        $retryAfter = self::RESEND_COOLDOWN_SECONDS - (now()->timestamp - $lastSentAt);
+        if ($retryAfter > 0) {
+            return response()->json(['error' => "Повторная отправка будет доступна через {$retryAfter} сек.", 'retry_after' => $retryAfter], 429);
+        }
 
+        $user = User::find($userId);
         if (!$user) {
             return response()->json(['error' => 'Пользователь не найден'], 404);
         }
 
-        $code = $user->generateTwoFactorCode();
-        
-        try {
-            Mail::to($user->email)->send(
-                new TwoFactorCodeMail($code, $user->name, 5)
-            );
-        } catch (\Exception $e) {
-            \Log::error('Mail error: ' . $e->getMessage());
-            return response()->json(['error' => 'Ошибка отправки'], 500);
+        if (!$this->sendCode($user)) {
+            return response()->json(['error' => 'Не удалось отправить письмо. ' . $this->mailSetupHint()], 500);
         }
 
-        return response()->json(['success' => true]);
+        session()->put($sessionKey, now()->timestamp);
+
+        return response()->json(['success' => true, 'message' => 'Код отправлен повторно']);
     }
+
+    private function sendCode(User $user): bool
+    {
+        $code = $user->generateTwoFactorCode();
+
+        try {
+            $this->ensureMailCanBeSent();
+            Mail::to($user->email)->send(new TwoFactorCodeMail($code, $user->name, self::CODE_TTL_MINUTES));
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Two-factor mail error', ['user_id' => $user->id, 'message' => $e->getMessage(), 'hint' => $this->mailSetupHint()]);
+            return false;
+        }
+    }
+    private function ensureMailCanBeSent(): void
+    {
+        $mailer = (string) config('mail.default');
+
+        if ($mailer === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
+            throw new RuntimeException($this->mailSetupHint());
+        }
+
+        if (blank(config('mail.from.address'))) {
+            throw new RuntimeException($this->mailSetupHint());
+        }
+    }
+
+    private function mailSetupHint(): string
+    {
+        return 'Почта не настроена: для локальной проверки укажите MAIL_MAILER=log, для реальной отправки заполните SMTP и MAIL_FROM_ADDRESS в .env, затем выполните php artisan config:clear.';
+    }
+
 }

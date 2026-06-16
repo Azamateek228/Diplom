@@ -6,8 +6,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
+use App\Mail\TwoFactorCodeMail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 class AuthController extends Controller
 {
@@ -61,12 +63,28 @@ class AuthController extends Controller
         // Сброс счётчика неудачных попыток при успешном входе
         $user->resetFailedLoginAttempts();
 
-        // Если включена 2FA, перенаправляем на страницу ввода кода
+        // Если включена 2FA, отправляем email-код и завершаем вход только после проверки
         if ($user->two_factor_enabled) {
+            $code = $user->generateTwoFactorCode();
+
+            try {
+                $this->ensureTwoFactorMailCanBeSent();
+                Mail::to($user->email)->send(new TwoFactorCodeMail($code, $user->name, 5));
+            } catch (\Throwable $e) {
+                Log::error('Two-factor login mail error', ['user_id' => $user->id, 'message' => $e->getMessage()]);
+
+                return back()->withErrors([
+                    'email' => 'Не удалось отправить код подтверждения. Проверьте MAIL_MAILER/SMTP/MAIL_FROM_ADDRESS в .env и выполните php artisan config:clear.',
+                ])->withInput($request->only('email'));
+            }
+
             session([
                 '2fa_user_id' => $user->id,
                 '2fa_user_email' => $user->email,
+                '2fa_remember' => $request->filled('remember'),
+                '2fa_last_sent_at' => now()->timestamp,
             ]);
+
             return redirect()->route('two-factor.verify');
         }
 
@@ -76,6 +94,18 @@ class AuthController extends Controller
         
         return redirect('/');
     }
+
+    private function ensureTwoFactorMailCanBeSent(): void
+    {
+        if ((string) config('mail.default') === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
+            throw new RuntimeException('Почта не настроена: для локальной проверки укажите MAIL_MAILER=log, для реальной отправки заполните SMTP и MAIL_FROM_ADDRESS в .env, затем выполните php artisan config:clear.');
+        }
+
+        if (blank(config('mail.from.address'))) {
+            throw new RuntimeException('Почта не настроена: заполните MAIL_FROM_ADDRESS в .env и выполните php artisan config:clear.');
+        }
+    }
+
 
     /**
      * Показать форму регистрации
