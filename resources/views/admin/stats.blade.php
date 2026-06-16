@@ -171,8 +171,8 @@
                 <label class="form-label small">Цена билета (₽)</label>
                 <input type="number" name="ticket_price" class="form-control" min="100" max="5000" value="{{ $ticketPrice }}">
             </div>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-            <button type="submit" name="auto_city" value="1" class="btn btn-warning">Выбрать по спросу</button>
+            <button type="submit" class="btn btn-primary btn-admin-compact">Сохранить</button>
+            <button type="submit" name="auto_city" value="1" class="btn btn-warning btn-admin-compact">Выбрать по спросу</button>
         </form>
     </div>
 
@@ -216,8 +216,8 @@
                 </select>
             </label>
             <div class="filter-actions">
-                <button type="submit" class="btn btn-primary">Применить</button>
-                <a href="{{ route('admin.stats') }}" class="btn btn-secondary">Сбросить</a>
+                <button type="submit" class="btn btn-primary btn-admin-compact">Применить</button>
+                <a href="{{ route('admin.stats') }}" class="btn btn-secondary btn-admin-compact">Сбросить</a>
             </div>
         </form>
 
