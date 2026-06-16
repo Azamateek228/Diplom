@@ -128,3 +128,6 @@ MAIL_FROM_NAME="Кинотеатр на колёсах"
 ```
 
 После изменения почтовых настроек на хостинге выполните `php artisan config:clear` и `php artisan cache:clear`.
+
+Если при включении 2FA появляется сообщение «Не удалось отправить код подтверждения», проверьте, что в `.env` не пустые `MAIL_HOST` и `MAIL_FROM_ADDRESS` для SMTP. Для локальной демонстрации без реальной почты поставьте `MAIL_MAILER=log`, затем очистите кеш командой `php artisan config:clear`; код письма появится в `storage/logs/laravel.log`.
+

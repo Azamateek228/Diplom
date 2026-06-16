@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Mail\TwoFactorCodeMail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 class AuthController extends Controller
 {
@@ -67,12 +68,13 @@ class AuthController extends Controller
             $code = $user->generateTwoFactorCode();
 
             try {
+                $this->ensureTwoFactorMailCanBeSent();
                 Mail::to($user->email)->send(new TwoFactorCodeMail($code, $user->name, 5));
             } catch (\Throwable $e) {
                 Log::error('Two-factor login mail error', ['user_id' => $user->id, 'message' => $e->getMessage()]);
 
                 return back()->withErrors([
-                    'email' => 'Не удалось отправить код подтверждения. Попробуйте позже.',
+                    'email' => 'Не удалось отправить код подтверждения. Проверьте MAIL_MAILER/SMTP/MAIL_FROM_ADDRESS в .env и выполните php artisan config:clear.',
                 ])->withInput($request->only('email'));
             }
 
@@ -92,6 +94,18 @@ class AuthController extends Controller
         
         return redirect('/');
     }
+
+    private function ensureTwoFactorMailCanBeSent(): void
+    {
+        if ((string) config('mail.default') === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
+            throw new RuntimeException('Почта не настроена: для локальной проверки укажите MAIL_MAILER=log, для реальной отправки заполните SMTP и MAIL_FROM_ADDRESS в .env, затем выполните php artisan config:clear.');
+        }
+
+        if (blank(config('mail.from.address'))) {
+            throw new RuntimeException('Почта не настроена: заполните MAIL_FROM_ADDRESS в .env и выполните php artisan config:clear.');
+        }
+    }
+
 
     /**
      * Показать форму регистрации

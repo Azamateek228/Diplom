@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 class TwoFactorController extends Controller
 {
@@ -64,7 +65,7 @@ class TwoFactorController extends Controller
         }
 
         if (!$this->sendCode($user)) {
-            return back()->with('error', 'Не удалось отправить код подтверждения. Проверьте настройки почты и попробуйте ещё раз.');
+            return back()->with('error', 'Не удалось отправить код подтверждения. ' . $this->mailSetupHint());
         }
 
         $request->session()->put('2fa_setup_user_id', $user->id);
@@ -136,7 +137,7 @@ class TwoFactorController extends Controller
         }
 
         if (!$this->sendCode($user)) {
-            return response()->json(['error' => 'Не удалось отправить письмо. Попробуйте позже.'], 500);
+            return response()->json(['error' => 'Не удалось отправить письмо. ' . $this->mailSetupHint()], 500);
         }
 
         session()->put($sessionKey, now()->timestamp);
@@ -149,11 +150,30 @@ class TwoFactorController extends Controller
         $code = $user->generateTwoFactorCode();
 
         try {
+            $this->ensureMailCanBeSent();
             Mail::to($user->email)->send(new TwoFactorCodeMail($code, $user->name, self::CODE_TTL_MINUTES));
             return true;
         } catch (\Throwable $e) {
-            Log::error('Two-factor mail error', ['user_id' => $user->id, 'message' => $e->getMessage()]);
+            Log::error('Two-factor mail error', ['user_id' => $user->id, 'message' => $e->getMessage(), 'hint' => $this->mailSetupHint()]);
             return false;
         }
     }
+    private function ensureMailCanBeSent(): void
+    {
+        $mailer = (string) config('mail.default');
+
+        if ($mailer === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
+            throw new RuntimeException($this->mailSetupHint());
+        }
+
+        if (blank(config('mail.from.address'))) {
+            throw new RuntimeException($this->mailSetupHint());
+        }
+    }
+
+    private function mailSetupHint(): string
+    {
+        return 'Почта не настроена: для локальной проверки укажите MAIL_MAILER=log, для реальной отправки заполните SMTP и MAIL_FROM_ADDRESS в .env, затем выполните php artisan config:clear.';
+    }
+
 }
