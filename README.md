@@ -103,3 +103,31 @@ php artisan test
 npm run build
 php artisan serve
 ```
+
+## Email, 2FA и сброс пароля
+
+Двухфакторная аутентификация в проекте работает через 6-значный код, который отправляется на email пользователя. Google Authenticator, SMS и сторонние приложения не требуются.
+
+Для локальной проверки писем удобно использовать лог-драйвер Laravel:
+
+```env
+MAIL_MAILER=log
+```
+
+Для реальной отправки писем на хостинге или через Gmail/Mail.ru укажите SMTP-данные в `.env`:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=your.smtp.host
+MAIL_PORT=587
+MAIL_USERNAME=your-login
+MAIL_PASSWORD=your-password-or-app-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=no-reply@example.com
+MAIL_FROM_NAME="Кинотеатр на колёсах"
+```
+
+После изменения почтовых настроек на хостинге выполните `php artisan config:clear` и `php artisan cache:clear`.
+
+Если SMTP ещё не настроен, 2FA автоматически использует резервный `log`-mailer: код письма будет записан в `storage/logs/laravel.log`, а интерфейс не будет блокироваться ошибкой отправки. Для реальной отправки писем заполните SMTP-переменные в `.env` и выполните `php artisan config:clear`.
+

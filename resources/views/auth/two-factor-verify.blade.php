@@ -9,7 +9,7 @@
             </div>
             <div class="auth-body">
                 <p class="auth-description">
-                    На ваш email <strong>{{ session('2fa_user_email', auth()->user()->email ?? '') }}</strong> был отправлен 6-значный код подтверждения.
+                    Мы отправили 6-значный код на вашу почту <strong>{{ session('2fa_user_email', auth()->user()->email ?? '') }}</strong>.
                     Введите его для завершения входа.
                 </p>
 
@@ -69,77 +69,6 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const codeInput = document.getElementById('code');
-    const resendButton = document.getElementById('resendCode');
-    const resendTimer = document.getElementById('resendTimer');
-    const countdownElement = document.getElementById('countdown');
-    
-    // Разрешаем только цифры
-    codeInput.addEventListener('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    });
-    
-    // Автофокус на поле ввода
-    codeInput.focus();
-    
-    // Повторная отправка кода
-    resendButton.addEventListener('click', function() {
-        resendCode();
-    });
-    
-    function resendCode() {
-        resendButton.disabled = true;
-        resendButton.textContent = 'Отправка...';
-        
-        fetch("{{ route('two-factor.resend') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                resendButton.textContent = 'Код отправлен!';
-                resendButton.classList.remove('auth-btn-outline');
-                resendButton.classList.add('auth-btn-success');
-                startTimer();
-            } else {
-                resendButton.disabled = false;
-                resendButton.textContent = 'Отправить код повторно';
-                alert('Ошибка при отправке кода. Попробуйте позже.');
-            }
-        })
-        .catch(error => {
-            resendButton.disabled = false;
-            resendButton.textContent = 'Отправить код повторно';
-            alert('Ошибка при отправке кода. Попробуйте позже.');
-        });
-    }
-    
-    function startTimer() {
-        let seconds = 60;
-        resendButton.style.display = 'none';
-        resendTimer.style.display = 'block';
-        
-        const timer = setInterval(function() {
-            seconds--;
-            countdownElement.textContent = seconds;
-            
-            if (seconds <= 0) {
-                clearInterval(timer);
-                resendTimer.style.display = 'none';
-                resendButton.style.display = 'inline-block';
-                resendButton.disabled = false;
-                resendButton.textContent = 'Отправить код повторно';
-                resendButton.classList.remove('auth-btn-success');
-                resendButton.classList.add('auth-btn-outline');
-            }
-        }, 1000);
-    }
-});
-</script>
+@include('partials.two-factor-resend-script')
+
 @endsection

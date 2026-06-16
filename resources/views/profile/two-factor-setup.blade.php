@@ -9,61 +9,33 @@
             </div>
             <div class="auth-body">
                 <div class="auth-alert auth-alert-info">
-                    <strong>Код для тестирования: <code>{{ $code }}</code></strong>
-                    <p class="mb-0 mt-2">
-                        В реальном проекте этот код будет отправлен на ваш email или SMS.
-                        Для демонстрации он показан здесь.
-                    </p>
+                    Мы отправили 6-значный код на вашу почту <strong>{{ session('2fa_setup_email', auth()->user()->email) }}</strong>.
+                    Код действует 5 минут.
                 </div>
-
-                <p class="auth-description">
-                    Введите 6-значный код, который был отправлен на ваш email, чтобы подтвердить включение двухфакторной аутентификации.
-                </p>
 
                 <form method="POST" action="{{ route('two-factor.confirm') }}">
                     @csrf
-                    
                     <div class="auth-form-group">
                         <label for="code" class="auth-label">Код подтверждения</label>
-                        <input 
-                            type="text" 
-                            class="auth-input @error('code') is-invalid @enderror" 
-                            id="code" 
-                            name="code"
-                            placeholder="000000"
-                            maxlength="6"
-                            pattern="[0-9]{6}"
-                            inputmode="numeric"
-                            required
-                            autofocus
-                        >
-                        @error('code')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
+                        <input type="text" class="auth-input @error('code') is-invalid @enderror" id="code" name="code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required autofocus>
+                        @error('code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <button type="submit" class="auth-btn auth-btn-success">Подтвердить и включить 2FA</button>
                 </form>
 
-                <div class="auth-divider">
-                    <span>или</span>
+                <div class="resend-section">
+                    <p class="resend-text">Не пришло письмо?</p>
+                    <button type="button" class="auth-btn auth-btn-sm auth-btn-outline" id="resendCode">Отправить код повторно</button>
+                    <p class="resend-timer" id="resendTimer" style="display:none;">Отправим через <span id="countdown">60</span> сек.</p>
                 </div>
 
-                <div class="auth-footer">
-                    <a href="{{ route('profile.edit') }}" class="auth-link">Отмена</a>
-                </div>
+                <div class="auth-divider"><span>или</span></div>
+                <div class="auth-footer"><a href="{{ route('two-factor.settings') }}" class="auth-link">Отмена</a></div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const codeInput = document.getElementById('code');
-    
-    codeInput.addEventListener('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    });
-});
-</script>
+@include('partials.two-factor-resend-script')
 @endsection
