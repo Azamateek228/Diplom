@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 class TwoFactorController extends Controller
 {
@@ -166,6 +167,19 @@ class TwoFactorController extends Controller
             Log::warning('SMTP for 2FA is not configured; using log mailer fallback.');
             return 'log';
         }
+    }
+    private function resolveMailDriver(): string
+    {
+        $mailer = (string) config('mail.default', 'log');
+
+        if ($mailer === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
+            Log::warning('SMTP for 2FA is not configured; using log mailer fallback.');
+            return 'log';
+        }
+    }
+    private function ensureMailCanBeSent(): void
+    {
+        $mailer = (string) config('mail.default');
 
         return $mailer;
     }
