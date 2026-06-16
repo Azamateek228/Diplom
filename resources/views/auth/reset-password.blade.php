@@ -4,18 +4,14 @@
 <div class="auth-page">
     <div class="auth-container">
         <div class="auth-card">
-            <div class="auth-header">
-                <h4>Вход в систему</h4>
+            <div class="auth-header auth-header-warning">
+                <h4>Сброс пароля</h4>
             </div>
             <div class="auth-body">
-                @if (session('success'))
-                    <div class="auth-alert auth-alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('password.update') }}">
                     @csrf
+                    
+                    <input type="hidden" name="token" value="{{ $token }}">
                     
                     <!-- Email -->
                     <div class="auth-form-group">
@@ -37,15 +33,16 @@
 
                     <!-- Пароль -->
                     <div class="auth-form-group">
-                        <label for="password" class="auth-label">Пароль</label>
+                        <label for="password" class="auth-label">Новый пароль</label>
                         <div class="auth-input-group">
                             <input 
                                 type="password" 
                                 class="auth-input @error('password') is-invalid @enderror" 
                                 id="password" 
                                 name="password"
-                                placeholder="Введите пароль"
+                                placeholder="Минимум 8 символов"
                                 required
+                                minlength="8"
                             >
                             <button 
                                 class="auth-input-toggle" 
@@ -59,23 +56,29 @@
                         @error('password')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                        <small class="auth-form-text">
+                            Пароль должен содержать заглавные и строчные буквы, цифры и специальные символы
+                        </small>
                     </div>
 
-                    <!-- Запомнить меня -->
-                    <div class="auth-form-group auth-checkbox-group">
+                    <!-- Подтверждение пароля -->
+                    <div class="auth-form-group">
+                        <label for="password_confirmation" class="auth-label">Подтвердите пароль</label>
                         <input 
-                            type="checkbox" 
-                            class="auth-checkbox" 
-                            id="remember" 
-                            name="remember"
+                            type="password" 
+                            class="auth-input @error('password_confirmation') is-invalid @enderror" 
+                            id="password_confirmation" 
+                            name="password_confirmation"
+                            placeholder="Повторите пароль"
+                            required
                         >
-                        <label class="auth-checkbox-label" for="remember">
-                            Запомнить меня
-                        </label>
+                        @error('password_confirmation')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
-                    <!-- Кнопка входа -->
-                    <button type="submit" class="auth-btn auth-btn-primary">Войти</button>
+                    <!-- Кнопка сброса -->
+                    <button type="submit" class="auth-btn auth-btn-warning">Сбросить пароль</button>
                 </form>
 
                 <div class="auth-divider">
@@ -84,9 +87,8 @@
 
                 <div class="auth-footer">
                     <p>
-                        <a href="{{ route('password.request') }}" class="auth-link">Забыли пароль?</a>
+                        <a href="{{ route('login') }}" class="auth-link">← Вернуться ко входу</a>
                     </p>
-                    <p>Нет аккаунта? <a href="{{ route('register') }}" class="auth-link">Зарегистрироваться</a></p>
                 </div>
             </div>
         </div>
@@ -101,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
     togglePassword.addEventListener('click', function() {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        this.setAttribute('aria-label', type === 'password' ? 'Показать пароль' : 'Скрыть пароль');
     });
 });
 </script>
