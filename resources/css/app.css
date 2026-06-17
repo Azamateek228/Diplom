@@ -1807,6 +1807,22 @@ footer {
     gap: 10px;
 }
 
+.route-panel-header {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 18px;
+}
+
+.route-panel-header .section-kicker {
+    margin-bottom: 0;
+}
+
+.route-panel-header h5 {
+    margin: 0;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    line-height: 1.2;
+}
+
 .route-step {
     display: inline-flex;
     align-items: center;
