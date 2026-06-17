@@ -11,8 +11,6 @@ use App\Http\Controllers\MapController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\TicketController;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\TwoFactorController;
 
 // Маршруты аутентификации
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -23,22 +21,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Восстановление пароля
-Route::get('/forgot-password', [PasswordResetController::class, 'showForgotPassword'])
-    ->name('password.request');
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
-    ->name('password.email');
-Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
-    ->name('password.reset.form');
-Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-    ->name('password.update');
-
-// Двухфакторная аутентификация
-Route::get('/two-factor/verify', [TwoFactorController::class, 'showVerify'])
-    ->name('two-factor.verify');
-Route::post('/two-factor/verify', [TwoFactorController::class, 'verify']);
-Route::post('/two-factor/resend', [TwoFactorController::class, 'resend'])
-    ->name('two-factor.resend');
+Route::view('/terms', 'terms')->name('terms');
 
 // Маршруты для фильмов
 Route::get('/movies', [MovieController::class, 'index'])->name('movies.index');
@@ -80,15 +63,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
     Route::post('/tickets/{ticket}/refund', [TicketController::class, 'refund'])->name('tickets.refund');
     
-    // Двухфакторная аутентификация (настройки)
-    Route::get('/two-factor/settings', [TwoFactorController::class, 'showSettings'])
-        ->name('two-factor.settings');
-    Route::post('/two-factor/enable', [TwoFactorController::class, 'enable'])
-        ->name('two-factor.enable');
-    Route::post('/two-factor/confirm', [TwoFactorController::class, 'confirmEnable'])
-        ->name('two-factor.confirm');
-    Route::post('/two-factor/disable', [TwoFactorController::class, 'disable'])
-        ->name('two-factor.disable');
 });
 
 // Админ-панель

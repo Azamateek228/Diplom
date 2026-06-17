@@ -2,52 +2,20 @@
 
 namespace Tests\Feature;
 
-use App\Mail\ResetPasswordMail;
-use App\Mail\TwoFactorCodeMail;
 use App\Models\City;
 use App\Models\Movie;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class SecurityFlowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_enable_two_factor_without_showing_code(): void
+    public function test_login_ignores_legacy_two_factor_flag_and_authenticates_directly(): void
     {
-        Mail::fake();
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->post(route('two-factor.enable'));
-
-        $response->assertOk();
-        $response->assertDontSee($user->twoFactorCodes()->first()->code, false);
-        Mail::assertSent(TwoFactorCodeMail::class);
-    }
-
-    public function test_confirming_valid_two_factor_code_enables_two_factor(): void
-    {
-        $user = User::factory()->create();
-        $code = $user->generateTwoFactorCode();
-
-        $response = $this->actingAs($user)
-            ->withSession(['2fa_setup_user_id' => $user->id])
-            ->post(route('two-factor.confirm'), ['code' => $code]);
-
-        $response->assertRedirect(route('profile.edit'));
-        $this->assertTrue($user->fresh()->two_factor_enabled);
-        $this->assertDatabaseCount('two_factor_codes', 0);
-    }
-
-    public function test_login_with_two_factor_sends_code_and_waits_for_verification(): void
-    {
-        Mail::fake();
         $user = User::factory()->create([
             'password' => Hash::make('StrongPass1!'),
             'two_factor_enabled' => true,
@@ -59,70 +27,21 @@ class SecurityFlowTest extends TestCase
             'remember' => '1',
         ]);
 
-        $response->assertRedirect(route('two-factor.verify'));
-        $this->assertGuest();
-        Mail::assertSent(TwoFactorCodeMail::class);
-
-        $code = $user->twoFactorCodes()->first()->code;
-        $verify = $this->withSession(['2fa_user_id' => $user->id, '2fa_remember' => true])
-            ->post(route('two-factor.verify'), ['code' => $code]);
-
-        $verify->assertRedirect('/');
+        $response->assertRedirect('/');
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_password_reset_request_sends_email(): void
+    public function test_removed_security_routes_return_not_found(): void
     {
-        Mail::fake();
-        $user = User::factory()->create();
-
-        $response = $this->post(route('password.email'), ['email' => $user->email]);
-
-        $response->assertRedirect(route('login'));
-        $response->assertSessionHas('success');
-        Mail::assertSent(ResetPasswordMail::class);
+        $this->get('/forgot-password')->assertNotFound();
+        $this->get('/two-factor/verify')->assertNotFound();
     }
 
-    public function test_valid_password_reset_token_changes_password_and_deletes_token(): void
+    public function test_terms_page_is_available(): void
     {
-        $user = User::factory()->create(['password' => Hash::make('OldPass1!')]);
-        $token = Str::random(60);
-        DB::table('password_reset_tokens')->insert([
-            'email' => $user->email,
-            'token' => Hash::make($token),
-            'created_at' => now(),
-        ]);
-
-        $response = $this->post(route('password.update'), [
-            'email' => $user->email,
-            'token' => $token,
-            'password' => 'NewPass1!',
-            'password_confirmation' => 'NewPass1!',
-        ]);
-
-        $response->assertRedirect(route('login'));
-        $this->assertTrue(Hash::check('NewPass1!', $user->fresh()->password));
-        $this->assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
-    }
-
-    public function test_invalid_password_reset_token_does_not_change_password(): void
-    {
-        $user = User::factory()->create(['password' => Hash::make('OldPass1!')]);
-        DB::table('password_reset_tokens')->insert([
-            'email' => $user->email,
-            'token' => Hash::make('valid-token'),
-            'created_at' => now(),
-        ]);
-
-        $response = $this->post(route('password.update'), [
-            'email' => $user->email,
-            'token' => 'wrong-token',
-            'password' => 'NewPass1!',
-            'password_confirmation' => 'NewPass1!',
-        ]);
-
-        $response->assertSessionHasErrors('token');
-        $this->assertTrue(Hash::check('OldPass1!', $user->fresh()->password));
+        $this->get('/terms')
+            ->assertOk()
+            ->assertSee('Пользовательское соглашение');
     }
 
     public function test_ui_smoke_pages_do_not_fail(): void
