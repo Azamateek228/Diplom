@@ -16,12 +16,9 @@
             </div>
         @else
             <section class="route-panel fade-in-up">
-                <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-3">
-                    <div>
-                        <span class="section-kicker">Маршрут недели</span>
-                        <h5 class="mb-1">Логичная последовательность остановок</h5>
-                    </div>
-                    <span class="route-hint">{{ $routeLabel ?? 'Фильм выбирается по голосованию в каждом городе' }}</span>
+                <div class="route-panel-header">
+                    <span class="section-kicker">Маршрут недели</span>
+                    <h5>Логичная последовательность остановок</h5>
                 </div>
 
                 <div class="route-timeline">

@@ -38,24 +38,14 @@
                     <!-- Пароль -->
                     <div class="auth-form-group">
                         <label for="password" class="auth-label">Пароль</label>
-                        <div class="auth-input-group">
-                            <input 
-                                type="password" 
-                                class="auth-input @error('password') is-invalid @enderror" 
-                                id="password" 
-                                name="password"
-                                placeholder="Введите пароль"
-                                required
-                            >
-                            <button 
-                                class="auth-input-toggle" 
-                                type="button" 
-                                id="togglePassword"
-                                aria-label="Показать пароль"
-                            >
-                                👁️
-                            </button>
-                        </div>
+                        <input 
+                            type="password" 
+                            class="auth-input @error('password') is-invalid @enderror" 
+                            id="password" 
+                            name="password"
+                            placeholder="Введите пароль"
+                            required
+                        >
                         @error('password')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -90,16 +80,4 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const passwordInput = document.getElementById('password');
-    const togglePassword = document.getElementById('togglePassword');
-
-    togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        this.setAttribute('aria-label', type === 'password' ? 'Показать пароль' : 'Скрыть пароль');
-    });
-});
-</script>
 @endsection

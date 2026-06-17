@@ -55,26 +55,16 @@
                     <!-- Пароль -->
                     <div class="auth-form-group">
                         <label for="password" class="auth-label">Пароль <span class="text-danger">*</span></label>
-                        <div class="auth-input-group">
-                            <input 
-                                type="password" 
-                                class="auth-input @error('password') is-invalid @enderror" 
-                                id="password" 
-                                name="password"
-                                placeholder="Минимум 8 символов"
-                                required
-                                minlength="8"
-                                maxlength="255"
-                            >
-                            <button 
-                                class="auth-input-toggle" 
-                                type="button" 
-                                id="togglePassword"
-                                aria-label="Показать пароль"
-                            >
-                                👁️
-                            </button>
-                        </div>
+                        <input 
+                            type="password" 
+                            class="auth-input @error('password') is-invalid @enderror" 
+                            id="password" 
+                            name="password"
+                            placeholder="Минимум 8 символов"
+                            required
+                            minlength="8"
+                            maxlength="255"
+                        >
                         @error('password')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -95,24 +85,14 @@
                     <!-- Подтверждение пароля -->
                     <div class="auth-form-group">
                         <label for="password_confirmation" class="auth-label">Подтвердите пароль <span class="text-danger">*</span></label>
-                        <div class="auth-input-group">
-                            <input 
-                                type="password" 
-                                class="auth-input @error('password_confirmation') is-invalid @enderror" 
-                                id="password_confirmation" 
-                                name="password_confirmation"
-                                placeholder="Повторите пароль"
-                                required
-                            >
-                            <button 
-                                class="auth-input-toggle" 
-                                type="button" 
-                                id="togglePasswordConfirmation"
-                                aria-label="Показать пароль"
-                            >
-                                👁️
-                            </button>
-                        </div>
+                        <input 
+                            type="password" 
+                            class="auth-input @error('password_confirmation') is-invalid @enderror" 
+                            id="password_confirmation" 
+                            name="password_confirmation"
+                            placeholder="Повторите пароль"
+                            required
+                        >
                         @error('password_confirmation')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -156,9 +136,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
-    const togglePassword = document.getElementById('togglePassword');
     const passwordConfirmationInput = document.getElementById('password_confirmation');
-    const togglePasswordConfirmation = document.getElementById('togglePasswordConfirmation');
     
     // Элементы требований
     const reqLength = document.getElementById('req-length');
@@ -166,19 +144,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reqLowercase = document.getElementById('req-lowercase');
     const reqNumber = document.getElementById('req-number');
     const reqSpecial = document.getElementById('req-special');
-
-    // Переключение видимости пароля
-    togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        this.setAttribute('aria-label', type === 'password' ? 'Показать пароль' : 'Скрыть пароль');
-    });
-
-    togglePasswordConfirmation.addEventListener('click', function() {
-        const type = passwordConfirmationInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordConfirmationInput.setAttribute('type', type);
-        this.setAttribute('aria-label', type === 'password' ? 'Показать пароль' : 'Скрыть пароль');
-    });
 
     // Проверка требований к паролю в реальном времени
     passwordInput.addEventListener('input', function() {
