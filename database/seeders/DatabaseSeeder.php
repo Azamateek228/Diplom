@@ -148,7 +148,7 @@ class DatabaseSeeder extends Seeder
 
         foreach ($tickets as [$buyer, $movieTitle, $cityName, $quantity, $reference]) {
             $movie = $movies[$movieTitle];
-            $showDate = now()->addDays(3)->toDateString();
+            $showDate = now()->addDays(7)->toDateString();
             $showTime = '19:00';
             $unitPrice = 450;
 

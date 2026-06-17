@@ -24,7 +24,7 @@ class AfishaController extends Controller
         $winnersByCity = $this->resolveWinnersByCity($cities, $fallbackMovie);
         $routeCities = $cities->all();
         $ticketPrice = $settings?->ticket_price ?? 350;
-        $weeklySchedule = $this->buildSchedule($routeCities, $winnersByCity, $fallbackMovie);
+        $weeklySchedule = $this->buildSchedule($routeCities, $winnersByCity, $fallbackMovie, $settings?->voting_deadline);
 
         return view('afisha.index', compact(
             'weeklySchedule',
@@ -57,10 +57,10 @@ class AfishaController extends Controller
         return $winners;
     }
 
-    private function buildSchedule(array $routeCities, array $winnersByCity, ?Movie $fallbackMovie): array
+    private function buildSchedule(array $routeCities, array $winnersByCity, ?Movie $fallbackMovie, ?Carbon $votingDeadline): array
     {
         $schedule = [];
-        $baseDate = Carbon::today();
+        $baseDate = $this->scheduleStartDate($votingDeadline);
 
         foreach ($routeCities as $day => $city) {
             $movie = $winnersByCity[$city->id] ?? $fallbackMovie;
@@ -84,6 +84,22 @@ class AfishaController extends Controller
         }
 
         return $schedule;
+    }
+
+
+    private function scheduleStartDate(?Carbon $votingDeadline): Carbon
+    {
+        $minimumStartDate = Carbon::today()->addDays(3);
+
+        if (! $votingDeadline) {
+            return $minimumStartDate;
+        }
+
+        $afterDeadline = $votingDeadline->copy()->addDay()->startOfDay();
+
+        return $afterDeadline->greaterThan($minimumStartDate)
+            ? $afterDeadline
+            : $minimumStartDate;
     }
 
     private function defaultVenueForCity(City $city): string

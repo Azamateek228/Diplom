@@ -92,8 +92,8 @@
 
                                     @if ($ticket->status === 'purchased')
                                         <div class="ticket-qr-wrap demo-qr-block">
-                                            <div class="demo-qr-pattern" aria-label="Демо QR-код билета"></div>
-                                            <p class="mb-1"><strong>Демо QR-код</strong></p>
+                                            <img src="{{ $ticket->qr_code_data_uri }}" alt="QR-код билета {{ $ticket->qr_token }}" width="174" height="174">
+                                            <p class="mb-1"><strong>QR-код билета</strong></p>
                                             <p class="mb-0 small">Код билета: <code>{{ $ticket->qr_token }}</code></p>
                                         </div>
                                         <div class="ticket-refund-note mt-2">
