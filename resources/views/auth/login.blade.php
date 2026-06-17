@@ -83,9 +83,6 @@
                 </div>
 
                 <div class="auth-footer">
-                    <p>
-                        <a href="{{ route('password.request') }}" class="auth-link">Забыли пароль?</a>
-                    </p>
                     <p>Нет аккаунта? <a href="{{ route('register') }}" class="auth-link">Зарегистрироваться</a></p>
                 </div>
             </div>

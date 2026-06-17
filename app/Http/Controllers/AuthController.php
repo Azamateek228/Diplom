@@ -6,9 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Mail\TwoFactorCodeMail;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -21,7 +18,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Обработка входа с проверкой блокировки и 2FA
+     * Обработка входа с проверкой блокировки
      */
     public function login(Request $request)
     {
@@ -62,50 +59,12 @@ class AuthController extends Controller
         // Сброс счётчика неудачных попыток при успешном входе
         $user->resetFailedLoginAttempts();
 
-        // Если включена 2FA, отправляем email-код и завершаем вход только после проверки
-        if ($user->two_factor_enabled) {
-            $code = $user->generateTwoFactorCode();
-
-            try {
-                $mailer = $this->resolveTwoFactorMailDriver();
-                Mail::mailer($mailer)->to($user->email)->send(new TwoFactorCodeMail($code, $user->name, 5));
-            } catch (\Throwable $e) {
-                Log::error('Two-factor login mail error', ['user_id' => $user->id, 'message' => $e->getMessage()]);
-
-                return back()->withErrors([
-                    'email' => 'Не удалось подготовить код подтверждения. Подробности записаны в laravel.log.',
-                ])->withInput($request->only('email'));
-            }
-
-            session([
-                '2fa_user_id' => $user->id,
-                '2fa_user_email' => $user->email,
-                '2fa_remember' => $request->filled('remember'),
-                '2fa_last_sent_at' => now()->timestamp,
-            ]);
-
-            return redirect()->route('two-factor.verify');
-        }
-
         // Обычный вход
         Auth::login($user, $request->filled('remember'));
         $request->session()->regenerate();
         
         return redirect('/');
     }
-
-    private function resolveTwoFactorMailDriver(): string
-    {
-        $mailer = (string) config('mail.default', 'log');
-
-        if ($mailer === 'smtp' && blank(config('mail.mailers.smtp.host'))) {
-            Log::warning('SMTP for login 2FA is not configured; using log mailer fallback.');
-            return 'log';
-        }
-
-        return $mailer;
-    }
-
 
     /**
      * Показать форму регистрации

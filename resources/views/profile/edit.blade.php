@@ -65,55 +65,6 @@
                         </div>
                     </div>
 
-                    <div class="profile-section">
-                        <div class="profile-card">
-                            @php
-                                [$emailName, $emailDomain] = array_pad(explode('@', $user->email, 2), 2, '');
-                                $maskedEmail = mb_substr($emailName, 0, 2) . '***' . ($emailDomain ? '@' . $emailDomain : '');
-                            @endphp
-                            <h5 class="profile-card-title">🔐 Безопасность</h5>
-
-                            <div class="security-item">
-                                <div class="security-item-info">
-                                    <div class="security-item-heading">
-                                        <strong>Двухфакторная аутентификация</strong>
-                                        <span class="security-status-badge {{ $user->two_factor_enabled ? 'is-enabled' : 'is-disabled' }}">
-                                            {{ $user->two_factor_enabled ? 'Включена' : 'Отключена' }}
-                                        </span>
-                                    </div>
-                                    <p class="security-item-status">Код подтверждения отправляется на вашу почту {{ $maskedEmail }}.</p>
-                                </div>
-                                <div class="security-actions">
-                                    <a href="{{ route('two-factor.settings') }}" class="auth-btn auth-btn-sm auth-btn-outline">
-                                        {{ $user->two_factor_enabled ? 'Управлять' : 'Включить' }}
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="security-divider"></div>
-
-                            <div class="security-item">
-                                <div class="security-item-info">
-                                    <div class="security-item-heading"><strong>Смена пароля</strong></div>
-                                    <p class="security-item-status">Последнее изменение: {{ $user->updated_at->format('d.m.Y') }}</p>
-                                </div>
-                                <div class="security-actions">
-                                    <a href="{{ route('password.request') }}" class="auth-btn auth-btn-sm auth-btn-outline">Изменить пароль</a>
-                                </div>
-                            </div>
-
-                            @if ($user->is_locked)
-                                <div class="security-divider"></div>
-                                <div class="auth-alert auth-alert-warning">
-                                    <strong>⚠ Аккаунт заблокирован</strong>
-                                    <p class="mb-0 small">
-                                        Причина: {{ $user->lock_reason ?? 'Неизвестно' }}<br>
-                                        Разблокировка: {{ $user->lock_expires_at?->format('d.m.Y H:i') ?? '—' }}
-                                    </p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             @endif
 

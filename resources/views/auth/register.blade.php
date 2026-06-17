@@ -129,7 +129,7 @@
                             required
                         >
                         <label class="auth-checkbox-label" for="accept_terms">
-                            Я принимаю <a href="#" class="auth-link" target="_blank">условия пользовательского соглашения</a>
+                            Я принимаю <a href="{{ route('terms') }}" class="auth-link" target="_blank" rel="noopener">условия пользовательского соглашения</a>
                             <span class="text-danger">*</span>
                         </label>
                         @error('accept_terms')

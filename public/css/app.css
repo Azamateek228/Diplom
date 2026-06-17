@@ -4337,7 +4337,7 @@ body.mobile-menu-open .navbar {
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-rows: auto auto minmax(64px, auto) auto auto minmax(88px, auto) auto;
+    grid-template-rows: auto auto minmax(96px, auto) auto auto minmax(88px, auto) auto;
     gap: 12px;
     padding: 18px;
 }
@@ -4362,12 +4362,12 @@ body.mobile-menu-open .navbar {
 }
 
 .movie-description {
-    min-height: 62px;
-    max-height: 62px;
+    min-height: 92px;
+    max-height: 92px;
     margin: 0;
     display: -webkit-box;
     overflow: hidden;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     color: var(--muted);
     line-height: 1.45;
