@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\QrCodeSvg;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -42,6 +43,11 @@ class Ticket extends Model
     {
         return $this->status === 'purchased'
             && now()->lessThan($this->refund_available_until);
+    }
+
+    public function getQrCodeDataUriAttribute(): string
+    {
+        return QrCodeSvg::dataUri($this->qr_token);
     }
 
     public function city()
